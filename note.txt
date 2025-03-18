@@ -1,0 +1,62 @@
+
+1 số lệnh phổ biến cho project
+        - adb devices    : kiểm tra thiết bị ảo kết nối 
+        - yarn android   : chạy project vs thiết bị android 
+
+        
+
+
+
+
+
+
+
+
+yarn add react-native-fs react-native-gesture-handler react-native-reanimated react-native-safe-area-context react-native-screens
+cd android && ./gradlew clean && cd ..
+yarn android
+
+
+// thư viện màu chữ ở wellcome
+yarn add react-native-svg
+
+
+// thư viện hiệu ứng xuất hiện ở demo ở trang wellcome
+yarn add react-native-animatable
+
+1️⃣ Hiệu ứng xuất hiện (Entrance Animations)
+"fadeIn" – Hiệu ứng mờ dần xuất hiện
+"fadeInLeft" – Xuất hiện từ trái
+"fadeInRight" – Xuất hiện từ phải
+"fadeInUp" – Xuất hiện từ dưới lên
+"fadeInDown" – Xuất hiện từ trên xuống
+"zoomIn" – Phóng to dần vào
+"slideInLeft" – Trượt vào từ trái
+"slideInRight" – Trượt vào từ phải
+"slideInUp" – Trượt vào từ dưới
+"slideInDown" – Trượt vào từ trên
+"bounceIn" – Hiệu ứng bật nảy khi xuất hiện
+2️⃣ Hiệu ứng biến mất (Exit Animations)
+"fadeOut" – Mờ dần biến mất
+"fadeOutLeft" – Biến mất về bên trái
+"fadeOutRight" – Biến mất về bên phải
+"fadeOutUp" – Biến mất lên trên
+"fadeOutDown" – Biến mất xuống dưới
+"zoomOut" – Thu nhỏ dần rồi biến mất
+"slideOutLeft" – Trượt ra ngoài về trái
+"slideOutRight" – Trượt ra ngoài về phải
+"slideOutUp" – Trượt ra ngoài lên trên
+"slideOutDown" – Trượt ra ngoài xuống dưới
+"bounceOut" – Bật nảy rồi biến mất
+3️⃣ Hiệu ứng nhấn mạnh (Attention Seekers)
+"bounce" – Nhấp nhô lên xuống
+"flash" – Nhấp nháy liên tục
+"pulse" – Phồng lên rồi thu lại
+"rubberBand" – Kéo giãn rồi thu lại
+"shake" – Lắc nhẹ qua lại
+"swing" – Đung đưa trái phải
+"tada" – Rung lắc mạnh
+"wobble" – Lắc lư qua lại
+
+// thư viện icon 
+yarn add iconsax-react-native
