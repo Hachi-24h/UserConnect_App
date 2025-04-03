@@ -3,6 +3,8 @@ import 'react-native-gesture-handler';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import screens from './config/screens';
+import FlashMessage from "react-native-flash-message";
+
 // Import màn hình demo
 
 const Stack = createStackNavigator();
@@ -12,7 +14,7 @@ const defaultOptions = {
 };
 
 const App = () => {
-  const [initialScreen, setInitialScreen] = useState("wellcome");
+  const [initialScreen, setInitialScreen] = useState("Demo"); //
   return (
     <NavigationContainer>
       <Stack.Navigator
@@ -33,6 +35,7 @@ const App = () => {
           />
         ))}
       </Stack.Navigator>
+      <FlashMessage position="top" />
     </NavigationContainer>
   );
 };;
