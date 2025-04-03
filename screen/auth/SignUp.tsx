@@ -5,27 +5,48 @@ import { Eye, EyeSlash } from 'iconsax-react-native';
 import Svg, { Text as SvgText, Defs, LinearGradient as SvgLinearGradient, Stop } from 'react-native-svg';
 import styles from '../../Css/SignUp';
 import color from '../../Custom/Color';
-
+import { showNotification } from '../../Custom/notification';
+import { validateRegisterForm, checkUserExists } from '../../utils/auth';
 const SignUp = ({ navigation }: any) => {
   const [phoneNumber, setPhoneNumber] = useState('0379664715');
-  const [username, setUsername] = useState('nam123');
-  const [password, setPassword] = useState('123');
-  const [repeatPassword, setRepeatPassword] = useState('123');
+  const [username, setUsername] = useState('hachi');
+  const [password, setPassword] = useState('nam@1234');
+  const [repeatPassword, setRepeatPassword] = useState('nam@1234');
   const [passwordVisible, setPasswordVisible] = useState(false);
+  const [passwordVisible2, setPasswordVisible2] = useState(false);
+  const handleSignUp = async () => {
 
-  const handleSignUp = () => {
-    if (!phoneNumber || !username || !password || password !== repeatPassword) {
-      Alert.alert('⚠️ Vui lòng nhập đầy đủ thông tin hoặc mật khẩu không khớp!');
+    // kiểm tra regex
+    const isValid = validateRegisterForm(
+      {
+        phoneNumber,
+        username,
+        password,
+        repeatPassword,
+      },
+      showNotification
+    );
+    if (!isValid) return;
+
+    // kiểm tra username và phoneNumber đã tồn tại chưa
+    const exists = await checkUserExists({ phoneNumber, username });
+    if (exists) {
+      showNotification('Phone or username already in use', 'error');
       return;
     }
+    else {
+      // kiểm tra sdt 
+      const formattedPhone = phoneNumber.startsWith('+') ? phoneNumber : `+84${phoneNumber.slice(1)}`;
 
-    const formattedPhone = phoneNumber.startsWith('+') ? phoneNumber : `+84${phoneNumber.slice(1)}`;
-    navigation.navigate('PhoneAuth', {
-      phoneNumber: formattedPhone,
-      username,
-      password,
-    });
+      // gửi đến trang xác thự
+      navigation.navigate('PhoneAuth', {
+        phoneNumber: formattedPhone,
+        username,
+        password,
+      });
+    }
   };
+
 
   return (
     <LinearGradient colors={['#3D5167', '#999999']} style={styles.container}>
@@ -55,27 +76,30 @@ const SignUp = ({ navigation }: any) => {
           value={username}
           onChangeText={setUsername}
         />
-        <View style={styles.passwordContainer}>
-          <TextInput
-            style={styles.passwordInput}
-            placeholder="Password"
-            secureTextEntry={!passwordVisible}
-            placeholderTextColor="#aaa"
-            value={password}
-            onChangeText={setPassword}
-          />
-          <TouchableOpacity onPress={() => setPasswordVisible(!passwordVisible)} style={{ padding: 10 }}>
-            {passwordVisible ? <Eye size={20} color="gray" /> : <EyeSlash size={20} color="gray" />}
-          </TouchableOpacity>
-        </View>
+
+        <TextInput
+          style={styles.input}
+          placeholder="Password"
+          secureTextEntry={!passwordVisible}
+          placeholderTextColor="#aaa"
+          value={password}
+          onChangeText={setPassword}
+        />
+        <TouchableOpacity onPress={() => setPasswordVisible(!passwordVisible)} style={styles.eyeIcon}>
+          {passwordVisible ? <Eye size={20} color="gray" /> : <EyeSlash size={20} color="gray" />}
+        </TouchableOpacity>
+
         <TextInput
           style={styles.input}
           placeholder="Repeat password"
-          secureTextEntry
+          secureTextEntry={!passwordVisible2}
           placeholderTextColor="#aaa"
           value={repeatPassword}
           onChangeText={setRepeatPassword}
         />
+        <TouchableOpacity onPress={() => setPasswordVisible2(!passwordVisible2)} style={styles.eyeIcon2}>
+          {passwordVisible2 ? <Eye size={20} color="gray" /> : <EyeSlash size={20} color="gray" />}
+        </TouchableOpacity>
 
         <TouchableOpacity style={styles.signUpButton} onPress={handleSignUp}>
           <Text style={styles.buttonText}>Sign up</Text>

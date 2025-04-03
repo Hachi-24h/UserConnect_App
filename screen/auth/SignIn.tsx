@@ -9,21 +9,22 @@ import Svg, { Text as SvgText, Defs, LinearGradient as SvgLinearGradient, Stop }
 import { Eye, EyeSlash } from "iconsax-react-native";
 import color from '../../Custom/Color';
 import { login } from '../../utils/auth';
-
+import { showNotification } from '../../Custom/notification';
 const { height, width } = Dimensions.get('window');
 
 const SignInScreen = ({ navigation }: any) => {
   const [username, setUsername] = useState('hachi');
-  const [password, setPassword] = useState('123');
+  const [password, setPassword] = useState('nam@1234');
   const [passwordVisible, setPasswordVisible] = useState(false);
 
   const handleLogin = async () => {
     try {
-      // const res = await login(username, password);
+      const res = await login(username, password);
     
       navigation.navigate('MessHome'); // nếu có
     } catch (error: any) {
-
+        showNotification(
+          error?.response?.data?.message || "Đã có lỗi xảy ra", error)
     console.log("❌ Đăng nhập thất bại", error?.response?.data?.message || "Đã có lỗi xảy ra");
     }
   };

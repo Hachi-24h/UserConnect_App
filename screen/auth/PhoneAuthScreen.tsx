@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, Alert, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
-
+import BASE_URL from '../../config/IpAddress';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { getAuth, signInWithPhoneNumber } from '@react-native-firebase/auth';
 const { width } = Dimensions.get('window');
-
+import { registerUserWithPhone } from '../../utils/auth';
 const PhoneAuthScreen = () => {
   const route = useRoute<any>();
   const navigation = useNavigation<any>();
@@ -12,7 +12,7 @@ const PhoneAuthScreen = () => {
 
   const [confirmation, setConfirmation] = useState<any>(null);
   const [code, setCode] = useState('');
-
+  const phone = phoneNumber!==null ? phoneNumber.replace("+84", "0") : null;
   useEffect(() => {
     const sendOTP = async () => {
       try {
@@ -34,25 +34,21 @@ const PhoneAuthScreen = () => {
       Alert.alert('⚠️ Không có dữ liệu xác nhận!');
       return;
     }
-
+  
     try {
+      console.log('🔐 Đang xác minh mã OTP...');
       await confirmation.confirm(code);
-
-      const res = await fetch('http://192.168.1.147:5000/auth/register/phone', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phoneNumber, username, password }),
-      });
-
-      if (res.ok) {
-        Alert.alert('🎉 Đăng ký thành công!');
-        navigation.navigate('SignIn');
-      } else {
-        Alert.alert('⚠️ Đăng ký thất bại!');
-      }
-    } catch (error) {
-      console.error('❌ Lỗi xác minh:', error);
-      Alert.alert('Sai mã OTP hoặc lỗi xác minh');
+      console.log('✅ Mã OTP chính xác!');
+  
+      const res = await registerUserWithPhone(phone, username, password);
+      console.log('🎉 Đăng ký thành công:', res);
+  
+      Alert.alert('🎉 Đăng ký thành công!');
+      navigation.navigate('UserDetailForm');
+    } catch (error: any) {
+      console.error('❌ Đăng ký thất bại:', error?.response?.data || error.message || error);
+      Alert.alert('⚠️ Đăng ký thất bại!', error?.response?.data?.message || 'Lỗi không xác định');
+      navigation.navigate('SignUp');
     }
   };
 
