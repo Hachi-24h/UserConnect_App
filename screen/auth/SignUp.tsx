@@ -1,12 +1,19 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image, Alert } from 'react-native';
+import {
+  View, Text, TextInput, TouchableOpacity, Image, Alert, Modal, Dimensions
+} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { Eye, EyeSlash } from 'iconsax-react-native';
 import Svg, { Text as SvgText, Defs, LinearGradient as SvgLinearGradient, Stop } from 'react-native-svg';
 import styles from '../../Css/SignUp';
 import color from '../../Custom/Color';
 import { showNotification } from '../../Custom/notification';
-import { validateRegisterForm, checkUserExists } from '../../utils/auth';
+import { validateRegisterForm, checkUserExists, registerUserWithPhone } from '../../utils/auth';
+import { getAuth, signInWithPhoneNumber } from '@react-native-firebase/auth';
+import { CodeField, Cursor, useBlurOnFulfill, useClearByFocusCell } from 'react-native-confirmation-code-field';
+import LoadingModal from '../../Custom/Loading';
+const { width } = Dimensions.get('window');
+const CELL_COUNT = 6;
 const SignUp = ({ navigation }: any) => {
   const [phoneNumber, setPhoneNumber] = useState('0379664715');
   const [username, setUsername] = useState('hachi');
@@ -14,39 +21,60 @@ const SignUp = ({ navigation }: any) => {
   const [repeatPassword, setRepeatPassword] = useState('nam@1234');
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [passwordVisible2, setPasswordVisible2] = useState(false);
-  const handleSignUp = async () => {
+  const [confirmation, setConfirmation] = useState<any>(null);
+  const [otp, setOtp] = useState('');
+  const [showModal, setShowModal] = useState(false);
 
-    // kiểm tra regex
-    const isValid = validateRegisterForm(
-      {
-        phoneNumber,
-        username,
-        password,
-        repeatPassword,
-      },
-      showNotification
-    );
+  const ref = useBlurOnFulfill({ value: otp, cellCount: CELL_COUNT });
+  const [props, getCellOnLayoutHandler] = useClearByFocusCell({ value: otp, setValue: setOtp });
+  const [isLoading, setIsLoading] = useState(false);
+  const formatToE164 = (phone: string) => {
+    return phone.startsWith('0') ? '+84' + phone.slice(1) : phone;
+  };
+
+  const handleSignUp = async () => {
+    const isValid = validateRegisterForm({ phoneNumber, username, password, repeatPassword }, showNotification);
     if (!isValid) return;
 
-    // kiểm tra username và phoneNumber đã tồn tại chưa
     const exists = await checkUserExists({ phoneNumber, username });
     if (exists) {
       showNotification('Phone or username already in use', 'error');
       return;
     }
-    else {
-      // kiểm tra sdt 
-      const formattedPhone = phoneNumber.startsWith('+') ? phoneNumber : `+84${phoneNumber.slice(1)}`;
 
-      // gửi đến trang xác thự
-      navigation.navigate('PhoneAuth', {
-        phoneNumber: formattedPhone,
-        username,
-        password,
-      });
+    const formattedPhone = formatToE164(phoneNumber);
+    try {
+      setIsLoading(true);
+      const result = await signInWithPhoneNumber(getAuth(), formattedPhone);
+      setConfirmation(result);
+      setOtp('');
+      showNotification('OTP sent successfully', 'success');
+      setIsLoading(false);
+      setTimeout(() => setShowModal(true), 600);
+    } catch (err) {
+      // console.error('❌ Lỗi gửi OTP:', err);
+      showNotification('Failed to send OTP !! ', 'error');
+      setIsLoading(false);
     }
   };
 
+  const handleVerifyOTP = async () => {
+    if (!confirmation || otp.length < 6) return;
+
+    try {
+      await confirmation.confirm(otp);
+      const localPhone = phoneNumber.startsWith('+84') ? phoneNumber.replace('+84', '0') : phoneNumber;
+
+      const res = await registerUserWithPhone(localPhone, username, password);
+      showNotification('🎉 Đăng ký thành công!', 'success');
+      setShowModal(false);
+      navigation.navigate('SignIn');
+    } catch (error: any) {
+      // sai mật khẩu hoặc OTP
+      showNotification("Please check your OTP or password", 'error');
+      
+    }
+  };
 
   return (
     <LinearGradient colors={['#3D5167', '#999999']} style={styles.container}>
@@ -62,20 +90,8 @@ const SignUp = ({ navigation }: any) => {
           <SvgText x="60" y="35" fontSize="40" fontWeight="bold" fill="url(#grad)">PULSE</SvgText>
         </Svg>
 
-        <TextInput
-          style={styles.input}
-          placeholder="Phone"
-          placeholderTextColor="#aaa"
-          value={phoneNumber}
-          onChangeText={setPhoneNumber}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Username"
-          placeholderTextColor="#aaa"
-          value={username}
-          onChangeText={setUsername}
-        />
+        <TextInput style={styles.input} placeholder="Phone" placeholderTextColor="#aaa" value={phoneNumber} onChangeText={setPhoneNumber} />
+        <TextInput style={styles.input} placeholder="Username" placeholderTextColor="#aaa" value={username} onChangeText={setUsername} />
 
         <TextInput
           style={styles.input}
@@ -117,6 +133,48 @@ const SignUp = ({ navigation }: any) => {
           </TouchableOpacity>
         </View>
       </View>
+
+      {/* Modal nhập OTP */}
+      <Modal visible={showModal} transparent animationType="fade">
+        <View style={styles.modalContainer}>
+       
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Enter OTP</Text>
+            <Text style={styles.modalSubtitle}>A code has been sent to {formatToE164(phoneNumber)}</Text>
+
+            <CodeField
+              ref={ref}
+              {...props}
+              value={otp}
+              onChangeText={setOtp}
+              cellCount={CELL_COUNT}
+              rootStyle={styles.codeFieldRoot}
+              keyboardType="number-pad"
+              textContentType="oneTimeCode"
+              renderCell={({ index, symbol, isFocused }) => (
+                <View
+                  key={index}
+                  style={[styles.cell, isFocused && styles.cellFocused]}
+                  onLayout={getCellOnLayoutHandler(index)}
+                >
+                  <Text style={styles.cellText}>{symbol || (isFocused ? <Cursor /> : null)}</Text>
+                </View>
+              )}
+            />
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity style={styles.verifyButton} onPress={handleVerifyOTP}>
+                <Text style={styles.verifyText}>Verify OTP</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setShowModal(false)} style={styles.CancelButton}>
+                <Text style={styles.cancelText}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+        
+      </Modal>
+      <LoadingModal visible={isLoading} />
     </LinearGradient>
   );
 };

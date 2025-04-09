@@ -6,26 +6,29 @@ import {
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Svg, { Text as SvgText, Defs, LinearGradient as SvgLinearGradient, Stop } from 'react-native-svg';
-import { Eye, EyeSlash } from "iconsax-react-native";
+import { Colorfilter, Eye, EyeSlash } from "iconsax-react-native";
 import color from '../../Custom/Color';
 import { login } from '../../utils/auth';
 import { showNotification } from '../../Custom/notification';
 const { height, width } = Dimensions.get('window');
-
+import LoadingModal from '../../Custom/Loading';
 const SignInScreen = ({ navigation }: any) => {
   const [username, setUsername] = useState('hachi');
   const [password, setPassword] = useState('nam@1234');
   const [passwordVisible, setPasswordVisible] = useState(false);
-
+  const [loading, setLoading] = useState(false);
   const handleLogin = async () => {
     try {
+      setLoading(true);
       const res = await login(username, password);
-    
+      setLoading(false);
       navigation.navigate('MessHome'); // nếu có
     } catch (error: any) {
-        showNotification(
-          error?.response?.data?.message || "Đã có lỗi xảy ra", error)
-    console.log("❌ Đăng nhập thất bại", error?.response?.data?.message || "Đã có lỗi xảy ra");
+
+      showNotification(
+        error?.response?.data?.message || "Đã có lỗi xảy ra", error);
+      setLoading(false);
+       console.log("❌ Đăng nhập thất bại", error?.response?.data?.message || "Đã có lỗi xảy ra");
     }
   };
 
@@ -68,6 +71,10 @@ const SignInScreen = ({ navigation }: any) => {
           </TouchableOpacity>
         </View>
 
+        <TouchableOpacity style={styles.resetPasswordButton} onPress={() => navigation.navigate('ForgotPassword')}
+        >
+          <Text style={styles.txtReset} >Reset password</Text>
+        </TouchableOpacity>
         <TouchableOpacity style={styles.signInButton} onPress={handleLogin}>
           <Text style={styles.buttonText}>Sign in</Text>
         </TouchableOpacity>
@@ -84,6 +91,7 @@ const SignInScreen = ({ navigation }: any) => {
           </TouchableOpacity>
         </View>
       </View>
+      <LoadingModal visible={loading} />
     </LinearGradient>
   );
 };
@@ -164,6 +172,18 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
   },
+  resetPasswordButton: {
+    width: '100%',
+    filter: 'brightness(0.5)',
+    padding: 0,
+    margin: 0,
+    marginBottom: 15,
+  },
+  txtReset: {
+    textAlign: 'right',
+    color: color.white,
+    fontWeight: 'bold',
+  }
 });
 
 export default SignInScreen;
