@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-               BuildableName = "HachiApp.app"
-               BlueprintName = "HachiApp"
-               ReferencedContainer = "container:HachiApp.xcodeproj">
+               BuildableName = "PulseApp.app"
+               BlueprintName = "PulseApp"
+               ReferencedContainer = "container:PulseApp.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -33,9 +33,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "00E356ED1AD99517003FC87E"
-               BuildableName = "HachiAppTests.xctest"
-               BlueprintName = "HachiAppTests"
-               ReferencedContainer = "container:HachiApp.xcodeproj">
+               BuildableName = "PulseAppTests.xctest"
+               BlueprintName = "PulseAppTests"
+               ReferencedContainer = "container:PulseApp.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -55,9 +55,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "HachiApp.app"
-            BlueprintName = "HachiApp"
-            ReferencedContainer = "container:HachiApp.xcodeproj">
+            BuildableName = "PulseApp.app"
+            BlueprintName = "PulseApp"
+            ReferencedContainer = "container:PulseApp.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -72,9 +72,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "HachiApp.app"
-            BlueprintName = "HachiApp"
-            ReferencedContainer = "container:HachiApp.xcodeproj">
+            BuildableName = "PulseApp.app"
+            BlueprintName = "PulseApp"
+            ReferencedContainer = "container:PulseApp.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

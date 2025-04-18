@@ -82,6 +82,95 @@ const styles = StyleSheet.create({
     color: color.white,
     fontWeight: 'bold',
   },
+  eyeIcon:{
+    width: width * 0.05,
+    height: width * 0.05,
+    top: height * 0.254,
+    position: 'absolute',
+    right: width * 0.1,
+  },
+  eyeIcon2:{
+    width: width * 0.05,
+    height: width * 0.05,
+    top: height * 0.33,
+    position: 'absolute',
+    right: width * 0.1,
+  },
+  
+  modalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: '#1f2937',
+    padding: width * 0.07,
+    borderRadius: 12,
+    width: '85%',
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: height * 0.01,
+  },
+  modalSubtitle: {
+    color: '#aaa',
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: height * 0.02,
+  },
+  codeFieldRoot: {
+    marginTop: height * 0.01,
+    marginBottom: height * 0.02,
+    justifyContent: 'center',
+  },
+  cell: {
+    width: width * 0.11,
+    height: width * 0.11,
+    lineHeight: width * 0.11,
+    fontSize: 20,
+    borderWidth: 1,
+    borderColor: '#00FF99',
+    borderRadius: 10,
+    textAlign: 'center',
+    marginHorizontal: 4,
+    backgroundColor: '#0f172a',
+    color: '#fff',
+  },
+  cellText: {
+    color: '#fff',
+    fontSize: 20,
+    textAlign: 'center',
+  },
+  cellFocused: {
+    borderColor: '#fff',
+  },
+  modalButtons: {
+    marginTop: height * 0.015,
+    width: '100%',
+    alignItems: 'center',
+  },
+  verifyButton: {
+    backgroundColor: '#00FF99',
+    paddingVertical: height * 0.015,
+    paddingHorizontal: width * 0.1,
+    borderRadius: 8,
+    marginBottom: height * 0.015,
+  },
+  verifyText: {
+    color: '#000',
+    fontWeight: 'bold',
+  },
+  CancelButton: {
+    marginTop: 5,
+  },
+  cancelText: {
+    color: '#aaa',
+    fontSize: 14,
+  },
 });
 
 export default styles;

@@ -2,10 +2,14 @@
 1 số lệnh phổ biến cho project
         - adb devices    : kiểm tra thiết bị ảo kết nối 
         - yarn android   : chạy project vs thiết bị android 
+yarn android --deviceId 4fc81d59
+adb kill-server
+adb start-server
+adb devices
 
         
 
-
+git shortlog -s -n
 
 
 
@@ -60,3 +64,11 @@ yarn add react-native-animatable
 
 // thư viện icon 
 yarn add iconsax-react-native
+
+
+
+thông báo tin nahwns
+cmt
+like
+ng khác đăng bài
+fllow

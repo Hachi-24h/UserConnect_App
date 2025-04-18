@@ -17,6 +17,8 @@ export const showNotification = (message, type = "success") => {
         : "#F44336", // Màu đỏ cho lỗi
     color: type === "warning" ? "black" : "white",
     style: {
+      zIndex: 9999,
+      elevation: 9999,
       borderRadius: 10,
       margin: 10,
       paddingHorizontal: 20,

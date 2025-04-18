@@ -17,3 +17,19 @@ export const getToken = async (): Promise<string | null> => {
     return null;
   }
 };
+
+export const saveToken = async (token: string) => {
+  try {
+    await Keychain.setGenericPassword('auth', token);
+  } catch (error) {
+    console.log('❌ Lưu token thất bại:', error);
+  }
+};
+
+export const removeToken = async () => {
+  try {
+    await Keychain.resetGenericPassword();
+  } catch (error) {
+    console.log('❌ Xoá token thất bại:', error);
+  }
+};

@@ -1,5 +1,5 @@
 // screens/SignIn.tsx
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import {
   View, Text, TextInput, Image, TouchableOpacity, Dimensions,
   StyleSheet, Alert
@@ -10,27 +10,45 @@ import { Colorfilter, Eye, EyeSlash } from "iconsax-react-native";
 import color from '../../Custom/Color';
 import { login } from '../../utils/auth';
 import { showNotification } from '../../Custom/notification';
-const { height, width } = Dimensions.get('window');
+import { useSelector } from 'react-redux';
 import LoadingModal from '../../Custom/Loading';
+import { getUserDetails } from '../../utils/auth';
+
+
+const { height, width } = Dimensions.get('window');
 const SignInScreen = ({ navigation }: any) => {
   const [username, setUsername] = useState('hachi');
-  const [password, setPassword] = useState('nam@1234');
+  const [password, setPassword] = useState('123456');
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [loading, setLoading] = useState(false);
+  const user = useSelector((state: any) => state.user);
+  const userDetail = useSelector((state: any) => state.userDetail);
+  
+
   const handleLogin = async () => {
     try {
       setLoading(true);
+  
+      // login xong sẽ lưu user vào Redux
       const res = await login(username, password);
+  
+      // gọi trực tiếp lại hàm getUserDetails và lấy kết quả (đồng bộ)
+      const detail = await getUserDetails(res.user._id); 
+  
       setLoading(false);
-      navigation.navigate('MessHome'); // nếu có
+  
+      if (detail) {
+        navigation.navigate('MessHome');
+      } else {
+        navigation.navigate('UserDetailForm');
+      }
     } catch (error: any) {
-
-      showNotification(
-        error?.response?.data?.message || "Đã có lỗi xảy ra", error);
+      showNotification(error?.response?.data?.message || "Đã có lỗi xảy ra", error);
       setLoading(false);
-       console.log("❌ Đăng nhập thất bại", error?.response?.data?.message || "Đã có lỗi xảy ra");
+      console.log("❌ Đăng nhập thất bại", error?.response?.data?.message || "Đã có lỗi xảy ra");
     }
   };
+  
 
   return (
     <LinearGradient colors={["#3D5167", "#999999"]} style={styles.container}>

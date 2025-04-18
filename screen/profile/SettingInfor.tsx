@@ -15,9 +15,9 @@ import {
   Lock,
   ShieldSecurity,
 } from "iconsax-react-native";
-import color from "../Custom/Color";
+import color from "../../Custom/Color";
 import { Video, Call ,Profile2User,Edit2 ,CloudDrizzle,CloudAdd,ScanBarcode} from "iconsax-react-native";
-import Footer from "./Footer";
+import Footer from "../other/Footer";
 
 const { width, height } = Dimensions.get("window");
 

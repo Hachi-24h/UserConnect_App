@@ -8,6 +8,7 @@ const NotificationDemoScreen = () => {
   const [message, setMessage] = useState('');
   const [type, setType] = useState<'success' | 'warning' | 'error'>('success');
 
+  const [loading, setLoading] = useState(false);
   const handleSend = () => {
     showNotification(message || "This is a notification!", type);
     setMessage('');

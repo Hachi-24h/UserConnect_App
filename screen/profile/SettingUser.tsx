@@ -8,8 +8,9 @@ import {
   Dimensions,
 } from "react-native";
 import { ArrowLeft2 } from "iconsax-react-native";
-import color from "../Custom/Color";
-import styles from "../Css/SettingUser";
+import color from "../../Custom/Color";
+import styles from "../../Css/SettingUser";
+
 const { width, height } = Dimensions.get("window");
 
 const SettingUser = ({ navigation }: any) => {
@@ -18,6 +19,14 @@ const SettingUser = ({ navigation }: any) => {
       <Text style={styles.itemText}>{label}</Text>
     </TouchableOpacity>
   );
+
+  const handleLogout = () => {
+    
+    navigation.reset({
+      index: 0, 
+      routes: [{ name: "SignIn" }], 
+    });
+  };
 
   return (
     <View style={styles.container}>
@@ -31,7 +40,7 @@ const SettingUser = ({ navigation }: any) => {
 
       <ScrollView contentContainerStyle={styles.scroll}>
         {/* Thông tin cá nhân */}
-        {renderItem("Thông tin")}
+        {renderItem("Thông tin", () => navigation.navigate("UserInfo"))}
         {renderItem("Đổi ảnh đại diện")}
         {renderItem("Đổi ảnh bìa")}
         {renderItem("Cập nhật giới thiệu bản thân")}
@@ -44,8 +53,12 @@ const SettingUser = ({ navigation }: any) => {
         <Text style={styles.sectionTitle}>Cài đặt</Text>
         {renderItem("Mã QR của tôi")}
         {renderItem("Quyền riêng tư")}
-        {renderItem("Quản lý tài khoản")}
+        {renderItem("Tài khoản và bảo mật", () => navigation.navigate("ChangePassword"))}
         {renderItem("Cài đặt chung")}
+
+        {/* Đăng xuất */}
+        <View style={styles.divider} />
+        {renderItem("Đăng xuất", handleLogout)}  
       </ScrollView>
     </View>
   );

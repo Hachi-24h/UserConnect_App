@@ -5,22 +5,26 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
-  Platform,Alert
+  Platform,
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import styles from "../../Css/auth/UserDetailFormCss";
-import { getToken } from '../../utils/token'; 
-import BASE_URL from '../../config/IpAddress';
+import { createUserDetail, checkEmailExists } from "../../utils/user";
+import { showNotification } from "../../Custom/notification";
+import { useNavigation } from "@react-navigation/native";
+import { useSelector } from "react-redux";
 
-export default function ProfileUpdateForm() {
+export default function UserDetailForm({navigation}: any) {
+  
+  const user = useSelector((state: any) => state.user);
+  const phone = user?.phoneNumber || "";
+
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
-  const [address, setAddress] = useState("");
-  const [gender, setGender] = useState("");
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [gender, setGender] = useState("");
 
   const onDateChange = (event: any, selectedDate?: Date) => {
     const currentDate = selectedDate || date;
@@ -32,60 +36,89 @@ export default function ProfileUpdateForm() {
     return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
   };
 
+  const isNameValid = (name: string) => {
+    const regex = /^[a-zA-Z\s]+$/;
+    return regex.test(name);
+  };
 
+  const isAtLeast15YearsOld = (dob: Date) => {
+    const today = new Date();
+    const minDOB = new Date(today.getFullYear() - 15, today.getMonth(), today.getDate());
+    return dob <= minDOB;
+  };
 
   const handleSubmit = async () => {
-    const token = await getToken();
-    if (!token) {
-      Alert.alert('❌ Bạn chưa đăng nhập!');
+    // Validate required fields
+    if (!firstName.trim() || !lastName.trim()) {
+      showNotification("First and last name are required", "error");
       return;
     }
-  
-    const userDetail = {
-      firstname: firstName,
-      lastname: lastName,
-      dob: date.toISOString(), // dạng ISO
-      gender,
-      phoneNumber: phone,
-      email,
-      address,
-      bio: "This is bio demo", // bạn có thể cho người dùng nhập sau
-      avatar: "",
-      backgroundAvatar: ""
-    };
-  
-    try {
-      const res = await fetch(`${BASE_URL}/user-detail`,{
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`, 
-        },
-        body: JSON.stringify(userDetail),
-      });
-  
-      const data = await res.json();
-  
-      if (res.ok) {
-        Alert.alert('🎉 Cập nhật thành công!');
-        console.log('✅ Kết quả:', data);
-      } else {
-        Alert.alert('⚠️ Lỗi:', data.message || 'Có lỗi xảy ra');
+
+    if (!isNameValid(firstName) || !isNameValid(lastName)) {
+      showNotification("Names cannot contain numbers or special characters", "error");
+      return;
+    }
+
+    if (!isAtLeast15YearsOld(date)) {
+      showNotification("You must be at least 15 years old", "error");
+      return;
+    }
+
+    if(!email.trim()) {
+      showNotification("Email is required", "error");
+      return;
+    }
+
+    if (email) {
+      const exists = await checkEmailExists(email);
+      if (exists) {
+        showNotification("This email is already in use", "error");
+        return;
       }
-    } catch (err) {
-      console.error('❌ Lỗi gửi dữ liệu:', err);
-      Alert.alert('❌ Không thể kết nối đến server!');
+    }
+
+    const payload = {
+      firstname: firstName.trim().toLocaleLowerCase(),
+      lastname: lastName.trim().toLocaleLowerCase(),
+      dob: date.toISOString(),
+      gender: gender || "other",
+      phoneNumber: phone,
+      email: email || undefined,
+      bio: "This is a default bio",
+      avatar: "",
+      backgroundAvatar: "",
+    };
+
+    try {
+      const res = await createUserDetail(payload);
+      showNotification("🎉 Profile updated successfully!", "success");
+      navigation.navigate("MessHome");
+    } catch (err: any) {
+      showNotification(
+        err?.response?.data?.message || "Failed to update profile",
+        "error"
+      );
     }
   };
-  
 
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerText}>Update Profile Information</Text>
+        <Text style={styles.headerText}>Update Your Profile</Text>
       </View>
 
       <View style={styles.formContainer}>
+        {/* Phone Number - disabled */}
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Phone Number</Text>
+          <TextInput
+            style={[styles.input, { backgroundColor: "#ccc" }]}
+            value={phone}
+            editable={false}
+            placeholderTextColor="#888"
+          />
+        </View>
+
         {/* First Name */}
         <View style={styles.inputContainer}>
           <Text style={styles.label}>First Name</Text>
@@ -131,6 +164,20 @@ export default function ProfileUpdateForm() {
           )}
         </View>
 
+        {/* Email */}
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Email</Text>
+          <TextInput
+            style={styles.input}
+            value={email}
+            onChangeText={setEmail}
+            placeholder="Enter your email"
+            placeholderTextColor="#888"
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+        </View>
+
         {/* Gender */}
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Gender</Text>
@@ -155,47 +202,6 @@ export default function ProfileUpdateForm() {
               </TouchableOpacity>
             ))}
           </View>
-        </View>
-
-        {/* Phone */}
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Phone Number</Text>
-          <TextInput
-            style={styles.input}
-            value={phone}
-            onChangeText={setPhone}
-            placeholder="Enter your phone number"
-            placeholderTextColor="#888"
-            keyboardType="phone-pad"
-          />
-        </View>
-
-        {/* Email */}
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Email</Text>
-          <TextInput
-            style={styles.input}
-            value={email}
-            onChangeText={setEmail}
-            placeholder="Enter your email"
-            placeholderTextColor="#888"
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-        </View>
-
-        {/* Address */}
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Address</Text>
-          <TextInput
-            style={[styles.input, styles.addressInput]}
-            value={address}
-            onChangeText={setAddress}
-            placeholder="Enter your address"
-            placeholderTextColor="#888"
-            multiline
-            numberOfLines={3}
-          />
         </View>
 
         {/* Submit */}

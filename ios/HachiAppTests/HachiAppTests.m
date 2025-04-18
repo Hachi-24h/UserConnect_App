@@ -7,11 +7,11 @@
 #define TIMEOUT_SECONDS 600
 #define TEXT_TO_LOOK_FOR @"Welcome to React"
 
-@interface HachiAppTests : XCTestCase
+@interface PulseAppTests : XCTestCase
 
 @end
 
-@implementation HachiAppTests
+@implementation PulseAppTests
 
 - (BOOL)findSubviewInView:(UIView *)view matching:(BOOL (^)(UIView *view))test
 {
