@@ -1,147 +1,97 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
-  View,
-  Text,
-  TextInput,
-  FlatList,
-  TouchableOpacity,
-  Image,
-  Dimensions,
+  View, Text, FlatList, TextInput, TouchableOpacity, Image, Dimensions
 } from "react-native";
-import { launchImageLibrary, MediaType } from "react-native-image-picker";
+import { useSelector } from "react-redux";
 import {
-  Send,
-  Camera,
-  EmojiHappy,
-  ArrowLeft2,
-  Call,
-  Video,
-  InfoCircle,
+  ArrowLeft2, Send, Camera, EmojiHappy, Call, Video, InfoCircle
 } from "iconsax-react-native";
-import io from "socket.io-client";
 import styles from "../../Css/chat";
+import socket from "../../socket/socket";
 import color from "../../Custom/Color";
+import { getMessages } from "../../socket/chatApi";
 
-const { width, height } = Dimensions.get("window");
+const { width } = Dimensions.get("window");
 
 const ChatScreen = ({ navigation, route }: any) => {
-  // 👇 TODO: Truyền đúng từ route hoặc Redux
-  const conversationId = route.params?.conversationId || "65f...abc";
-  const senderId = route.params?.senderId || "660...xyz";
-
-  const socket = useRef<any>(null);
-  const flatListRef = useRef<FlatList>(null);
+  const { conversationId, otherUser } = route.params;
+  const currentUser = useSelector((state: any) => state.user);
+  const token = currentUser.token;
 
   const [messages, setMessages] = useState<any[]>([]);
   const [inputText, setInputText] = useState("");
+  const flatListRef = useRef<FlatList>(null);
 
-  // 👉 Kết nối socket khi load
   useEffect(() => {
-    socket.current = io("http://localhost:5008", {
-      transports: ["websocket"],
-    });
+    socket.emit("joinRoom", conversationId);
+    fetchMessages();
 
-    socket.current.on("connect", () => {
-      console.log("✅ Socket connected");
-    });
-
-    socket.current.on("receive_message", (msg: any) => {
+    socket.on("receiveMessage", (msg) => {
       setMessages((prev) => [...prev, msg]);
       scrollToBottom();
     });
 
     return () => {
-      socket.current.disconnect();
+      socket.off("receiveMessage");
     };
-  }, []);
+  }, [conversationId]);
 
-  // 👉 Hàm cuộn xuống cuối danh sách
+  const fetchMessages = async () => {
+    try {
+      const res = await getMessages(conversationId, token);
+      // console.log("📩 Danh sách tin nhắn nhận được:", res);
+      setMessages(res);
+      scrollToBottom();
+    } catch (error) {
+      console.error("❌ Lỗi lấy tin nhắn:", error);
+    }
+  };
+  
   const scrollToBottom = () => {
     setTimeout(() => {
       flatListRef.current?.scrollToEnd({ animated: true });
     }, 100);
   };
 
-  // 👉 Gửi tin nhắn văn bản
-  const sendMessage = () => {
-    if (inputText.trim() === "") return;
+  const handleSend = () => {
+    if (!inputText.trim()) return;
 
-    const message = {
+    const msg = {
       conversationId,
-      senderId,
+      senderId: currentUser._id,
       content: inputText,
       type: "text",
-      timestamp: new Date(),
+      timestamp: new Date().toISOString(),
+      isDeleted: false,
+      isPinned: false,
+      name: `${currentUser.firstname} ${currentUser.lastname}`,
+      senderAvatar: currentUser.avatar,
     };
 
-    socket.current.emit("send_message", message);
-
-    setMessages((prev) => [
-      ...prev,
-      { ...message, sender: "me", id: Date.now().toString() },
-    ]);
+    socket.emit("sendMessage", msg);
     setInputText("");
-    scrollToBottom();
   };
 
-  // 👉 Mở thư viện ảnh/video
-  const openMediaLibrary = () => {
-    const options = {
-      mediaType: "mixed" as MediaType,
-      selectionLimit: 1,
-    };
-    launchImageLibrary(options, (response) => {
-      if (response.didCancel || response.errorCode) return;
-      const asset = response.assets?.[0];
-      if (!asset?.uri) return;
-
-      const message = {
-        conversationId,
-        senderId,
-        content: asset.uri,
-        type: asset.type?.startsWith("image") ? "image" : "video",
-        timestamp: new Date(),
-      };
-
-      socket.current.emit("send_message", message);
-
-      setMessages((prev) => [
-        ...prev,
-        { ...message, sender: "me", id: Date.now().toString() },
-      ]);
-      scrollToBottom();
-    });
-  };
-
-  // 👉 Render từng tin nhắn
   const renderMessage = ({ item }: any) => {
-    if (item.type === "text") {
-      return (
-        <View
-          style={[
-            styles.messageBubble,
-            item.sender === "me" ? styles.myMessage : styles.otherMessage,
-          ]}
-        >
-          <Text style={styles.messageText}>{item.content}</Text>
-        </View>
-      );
-    } else {
-      return (
-        <View
-          style={[
-            styles.mediaContainer,
-            item.sender === "me" ? styles.myMedia : styles.otherMedia,
-          ]}
-        >
-          <Image
-            source={{ uri: item.content }}
-            style={styles.media}
-            resizeMode="contain"
-          />
-        </View>
-      );
-    }
+    const isMine = item.senderId?.toString() === currentUser._id?.toString();
+    return (
+      <View
+        style={[
+          styles.messageBubble,
+          isMine ? styles.myMessage : styles.otherMessage,
+          {
+            alignSelf: isMine ? "flex-end" : "flex-start",
+            backgroundColor: isMine ? color.accentBlue : color.gray,
+            marginVertical: 4,
+            padding: 10,
+            borderRadius: 10,
+            maxWidth: "80%",
+          },
+        ]}
+      >
+        <Text style={{ color: isMine ? "white" : "black" }}>{item.content}</Text>
+      </View>
+    );
   };
 
   return (
@@ -151,58 +101,39 @@ const ChatScreen = ({ navigation, route }: any) => {
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <ArrowLeft2 size={28} color={color.orange} />
         </TouchableOpacity>
-        <Image
-          source={{ uri: "https://picsum.photos/50" }}
-          style={styles.avatar}
-        />
+        <Image source={{ uri: otherUser?.avatar }} style={styles.avatar} />
         <View style={styles.userInfo}>
-          <Text style={styles.userName} numberOfLines={1} ellipsizeMode="tail">
-            Nguyễn Minh Thuận
+          <Text style={styles.userName}>
+            {otherUser.firstname} {otherUser.lastname}
           </Text>
-          <Text style={styles.statusText}>Hoạt động 1 giờ trước</Text>
+          <Text style={styles.statusText}>Hoạt động gần đây</Text>
         </View>
         <View style={styles.headerIcons}>
-          <TouchableOpacity>
-            <Call size={26} color={color.orange} />
-          </TouchableOpacity>
-          <TouchableOpacity>
-            <Video size={26} color={color.orange} />
-          </TouchableOpacity>
-          <TouchableOpacity>
-            <InfoCircle size={26} color={color.orange} />
-          </TouchableOpacity>
+          <TouchableOpacity><Call size={26} color={color.orange} /></TouchableOpacity>
+          <TouchableOpacity><Video size={26} color={color.orange} /></TouchableOpacity>
+          <TouchableOpacity><InfoCircle size={26} color={color.orange} /></TouchableOpacity>
         </View>
       </View>
 
-      {/* Danh sách tin nhắn */}
+      {/* Messages */}
       <FlatList
         ref={flatListRef}
         data={messages}
-        keyExtractor={(item) => item.id?.toString()}
+        keyExtractor={(item, index) => item._id || index.toString()}
         renderItem={renderMessage}
         contentContainerStyle={styles.messagesList}
-        style={styles.separator}
       />
 
       {/* Input */}
       <View style={styles.inputContainer}>
-        <TouchableOpacity onPress={openMediaLibrary}>
-          <Camera size={24} color={color.gray} />
-        </TouchableOpacity>
         <TextInput
           style={styles.input}
-          placeholder="Nhắn tin..."
+          placeholder="Nhắn gì đó..."
           placeholderTextColor={color.textSecondary}
           value={inputText}
           onChangeText={setInputText}
         />
-        <TouchableOpacity style={styles.emojiButton}>
-          <EmojiHappy size={24} color={color.gray} />
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={sendMessage}
-          style={[styles.emojiButton, { marginLeft: width * 0.02 }]}
-        >
+        <TouchableOpacity onPress={handleSend}>
           <Send size={24} color={color.accentBlue} />
         </TouchableOpacity>
       </View>

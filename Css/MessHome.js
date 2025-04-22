@@ -68,4 +68,68 @@ export default StyleSheet.create({
     color: color.gray,
     fontSize: width * 0.04,
   },
+  unreadBadge: {
+    backgroundColor: 'red',
+    borderRadius: 12,
+    minWidth: 24,
+    height: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'absolute',
+    right: 10,
+    top: 15,
+    paddingHorizontal: 6,
+  },
+  
+  unreadCount: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  userItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: height * 0.015,
+    paddingHorizontal: width * 0.05,
+    borderBottomWidth: 0.5,
+    borderBottomColor: '#333',
+    position: 'relative',
+  },
+  avatar: {
+    width: width * 0.13,
+    height: width * 0.13,
+    borderRadius: 100,
+    marginRight: width * 0.04,
+  },
+  userInfo: {
+    flex: 1,
+  },
+  username: {
+    fontSize: 16,
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  lastMessage: {
+    fontSize: 14,
+    color: '#aaa',
+    marginTop: 2,
+  },
+  unreadBadge: {
+    backgroundColor: 'red',
+    borderRadius: 12,
+    minWidth: 22,
+    height: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'absolute',
+    right: 15,
+    top: 15,
+    paddingHorizontal: 5,
+  },
+  unreadCount: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  
 });

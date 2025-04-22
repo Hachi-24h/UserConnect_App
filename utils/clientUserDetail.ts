@@ -8,7 +8,7 @@ const clientUserDetail = axios.create({
 clientUserDetail.interceptors.request.use(
   async (config) => {
     const token = await getToken(); // 👈 lấy token từ Keychain
-    console.log("🛡 Token gửi đi:", token); // ✅ thêm dòng này để chắc chắn
+   
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }

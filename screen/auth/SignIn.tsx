@@ -13,8 +13,8 @@ import { showNotification } from '../../Custom/notification';
 import { useSelector } from 'react-redux';
 import LoadingModal from '../../Custom/Loading';
 import { getUserDetails } from '../../utils/auth';
-
-
+import { useDispatch } from 'react-redux';
+import { setUser } from '../../store/userSlice';
 const { height, width } = Dimensions.get('window');
 const SignInScreen = ({ navigation }: any) => {
   const [username, setUsername] = useState('hachi');
@@ -23,7 +23,7 @@ const SignInScreen = ({ navigation }: any) => {
   const [loading, setLoading] = useState(false);
   const user = useSelector((state: any) => state.user);
   const userDetail = useSelector((state: any) => state.userDetail);
-  
+  const dispatch = useDispatch();
 
   const handleLogin = async () => {
     try {
@@ -31,7 +31,13 @@ const SignInScreen = ({ navigation }: any) => {
   
       // login xong sẽ lưu user vào Redux
       const res = await login(username, password);
-  
+      
+      dispatch(setUser({
+        _id: res.user._id,
+        token: res.token,
+        phoneNumber: res.user.phoneNumber, // ✅ thêm dòng này
+      }));
+
       // gọi trực tiếp lại hàm getUserDetails và lấy kết quả (đồng bộ)
       const detail = await getUserDetails(res.user._id); 
   
@@ -40,7 +46,7 @@ const SignInScreen = ({ navigation }: any) => {
       if (detail) {
         navigation.navigate('MessHome');
       } else {
-        navigation.navigate('UserDetailForm');
+        navigation.navigate('UserDetailForm', { userId: res.user._id });
       }
     } catch (error: any) {
       showNotification(error?.response?.data?.message || "Đã có lỗi xảy ra", error);

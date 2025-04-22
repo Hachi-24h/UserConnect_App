@@ -1,3 +1,3 @@
-const BASE_URL = 'http://172.20.76.39';
+const BASE_URL = 'http://192.168.0.101';
 
 export default BASE_URL;
