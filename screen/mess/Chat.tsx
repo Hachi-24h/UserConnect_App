@@ -10,6 +10,9 @@ import styles from "../../Css/chat";
 import socket from "../../socket/socket";
 import color from "../../Custom/Color";
 import { getMessages } from "../../socket/chatApi";
+import { useDispatch } from 'react-redux';
+import { resetUnread } from '../../store/unreadSlice';
+
 
 const { width } = Dimensions.get("window");
 
@@ -26,6 +29,17 @@ const ChatScreen = ({ navigation, route }: any) => {
   const conversationId= user.conversationId ;
   console.log("conversationId là: ", conversationId);
   console.log(" user nhận đc là: \n", otherUser);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(resetUnread(user.conversationId)); // 🔥 reset ngay khi mở
+    fetchMessages();
+  }, []);
+
+  useEffect(() => {
+    dispatch({ type: 'userDetail/setCurrentConversationId', payload: user.conversationId });
+  }, []);
+  
   useEffect(() => {
     socket.emit("joinRoom", conversationId);
     fetchMessages();

@@ -28,12 +28,16 @@ type UserItem = {
   timestamp?: string;
 };
 
-const MessHome = ({navigation}:any) => {
+const MessHome = ({ navigation }: any) => {
   const [users, setUsers] = useState<UserItem[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<UserItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const user = useSelector((state: any) => state.user);
+  const unreadCounts = useSelector((state: any) => state.unread);
+
+
+
   const userId = user?._id;
   const token = user?.token;
 
@@ -65,7 +69,7 @@ const MessHome = ({navigation}:any) => {
         const other = conversation.members.find((m: any) =>
           (m.userId || m._id)?.toString() !== userId.toString()
         );
-        
+
         const lastMsg = conversation.messages?.[conversation.messages.length - 1];
 
         if (!other || (!other.userId && !other._id)) return null;
@@ -122,12 +126,12 @@ const MessHome = ({navigation}:any) => {
   //       }, {
   //         headers: { Authorization: `Bearer ${token}` },
   //       });
-  
+
   //       const conversationId = res.data._id;
-       
+
   //       showNotification("tạo cuộc trò chuyện thành công ","success");
   //       // navigation.navigate('Chat', {
-          
+
   //       //   user: { ...user, conversationId }
   //       // });
   //     }
@@ -136,11 +140,11 @@ const MessHome = ({navigation}:any) => {
   //     Alert.alert('Lỗi', 'Không thể tạo cuộc trò chuyện');
   //   }
   // };
-  
+
   const handleUserPress = async (user: UserItem) => {
     try {
       let conversationId = user.conversationId;
-  
+
       if (!conversationId) {
         const res = await axios.post(`${BASE_URL}:3000/chat/conversations/private`, {
           user1: userId,
@@ -148,17 +152,17 @@ const MessHome = ({navigation}:any) => {
         }, {
           headers: { Authorization: `Bearer ${token}` }
         });
-  
+
         conversationId = res.data._id;
       }
-  
+
       // GỌI API CHUẨN: /users/user-details/:userId
       const detailRes = await axios.get(`${BASE_URL}:3000/users/user-details/${user._id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-  
+
       const detail = detailRes.data?.data;
-  
+
       const fullUserInfo = {
         _id: user._id,
         conversationId,
@@ -169,16 +173,21 @@ const MessHome = ({navigation}:any) => {
       };
       console.log('thông tin user đc nhắn tin :\n', fullUserInfo);
       navigation.navigate('Chat', { user: fullUserInfo });
-  
+
     } catch (err) {
       console.error('❌ Lỗi khi tạo cuộc trò chuyện hoặc lấy user detail:', err);
       Alert.alert('Lỗi', 'Không thể mở cuộc trò chuyện');
     }
   };
+
   
 
   const renderItem = ({ item }: { item: UserItem }) => (
     console.log("item là: ", item),
+    console.log("item.id:", item._id),
+  console.log("conversationId:", item.conversationId),
+  console.log("unreadCounts:", unreadCounts),
+ 
     <TouchableOpacity style={styles.itemContainer} onPress={() => handleUserPress(item)}>
       <Image source={{ uri: item.avatar }} style={styles.avatar} />
       <View style={styles.textContainer}>
@@ -188,8 +197,18 @@ const MessHome = ({navigation}:any) => {
         </View>
         <View style={styles.row}>
           <Text numberOfLines={1} style={styles.lastMessage}>{item.lastMessage}</Text>
-          {/* <Icon name="chevron-forward" size={16} color="#aaa" /> */}
+         
+          {item.conversationId && unreadCounts[item.conversationId] > 0 && (
+         
+            <View style={styles.unreadBadge}>
+              {/* <Text style={styles.unreadCount}>{unreadCounts[item.conversationId]}</Text> */}
+              <Text style={styles.unreadCount}>1</Text>
+            </View>
+          )}
+
+
         </View>
+
       </View>
     </TouchableOpacity>
   );
@@ -218,7 +237,7 @@ const MessHome = ({navigation}:any) => {
           renderItem={renderItem}
         />
       )}
-    <Footer navigation={navigation} />
+      <Footer navigation={navigation} />
     </View>
   );
 };
@@ -281,6 +300,18 @@ const styles = StyleSheet.create({
     color: '#fff',
     textAlign: 'center',
     marginTop: 20,
+  },
+  unreadBadge: {
+    backgroundColor: 'red',
+    borderRadius: 10,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    marginLeft: 8,
+  },
+  unreadCount: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: 'bold',
   },
 });
 
