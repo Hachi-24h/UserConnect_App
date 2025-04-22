@@ -14,14 +14,18 @@ import { getMessages } from "../../socket/chatApi";
 const { width } = Dimensions.get("window");
 
 const ChatScreen = ({ navigation, route }: any) => {
-  const { conversationId, otherUser } = route.params;
+  const { user } = route.params;
+
   const currentUser = useSelector((state: any) => state.user);
   const token = currentUser.token;
 
   const [messages, setMessages] = useState<any[]>([]);
   const [inputText, setInputText] = useState("");
   const flatListRef = useRef<FlatList>(null);
-
+  const otherUser = user;
+  const conversationId= user.conversationId ;
+  console.log("conversationId là: ", conversationId);
+  console.log(" user nhận đc là: \n", otherUser);
   useEffect(() => {
     socket.emit("joinRoom", conversationId);
     fetchMessages();

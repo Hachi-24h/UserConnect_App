@@ -109,27 +109,7 @@ export default StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
   },
-  lastMessage: {
-    fontSize: 14,
-    color: '#aaa',
-    marginTop: 2,
-  },
-  unreadBadge: {
-    backgroundColor: 'red',
-    borderRadius: 12,
-    minWidth: 22,
-    height: 22,
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'absolute',
-    right: 15,
-    top: 15,
-    paddingHorizontal: 5,
-  },
-  unreadCount: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
+
+
   
 });

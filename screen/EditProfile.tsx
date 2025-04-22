@@ -3,7 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, Image, Switch, ScrollView } fr
 
 import styles from "../Css/EditProfile";
 import color from "../Custom/Color";
-import Footer from "./Footer";
+import Footer from "./other/Footer";
 
 const EditProfile = ({ navigation }: any) => {
     const [isPrivate, setIsPrivate] = useState(false);
