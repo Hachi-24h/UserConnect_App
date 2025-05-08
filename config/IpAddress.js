@@ -1,3 +1,3 @@
-const BASE_URL = 'http://172.20.82.135';
+const BASE_URL = 'https://pulse-gateway.up.railway.app';
 
 export default BASE_URL;

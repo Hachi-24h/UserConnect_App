@@ -7,16 +7,15 @@ import {
   Image,
   ActivityIndicator,
   Alert,
-  StyleSheet,
   TextInput
 } from 'react-native';
 import axios from 'axios';
-import { useSelector } from 'react-redux';
-import { useNavigation } from '@react-navigation/native';
-import { SearchNormal, ArrowRight2 } from 'iconsax-react-native';
+import { useSelector, useDispatch } from 'react-redux';
+import { increaseUnread } from '../../store/unreadSlice';
+import socket from '../../socket/socket';
+import  BASE_URL  from '../../config/IpAddress';
 
-import BASE_URL from '../../config/IpAddress';
-import { showNotification } from '../../Custom/notification';
+import styles from "../../Css/mess/MessHome";
 import Footer from '../other/Footer';
 
 type UserItem = {
@@ -25,6 +24,7 @@ type UserItem = {
   username: string;
   lastMessage: string;
   conversationId: string | null;
+  lastMessageSenderId?: string;
   timestamp?: string;
 };
 
@@ -36,15 +36,49 @@ const MessHome = ({ navigation }: any) => {
   const user = useSelector((state: any) => state.user);
   const unreadCounts = useSelector((state: any) => state.unread);
 
-
-
-  const userId = user?._id;
+  const userLoginId = user?._id;
   const token = user?.token;
-
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    if (userId && token) fetchUsers();
-  }, [userId]);
+    if (userLoginId && token) fetchUsers();
+  }, [userLoginId, token]);
+
+  useEffect(() => {
+    if (userLoginId) {
+      socket.emit("joinRoom", userLoginId); //  SAI Ở ĐÂY , IDROOM 
+      console.log("🔗 MessHome joined room với id:", userLoginId);
+    }
+  }, [userLoginId]);
+
+
+  
+
+  useEffect(() => {
+    if (!userLoginId) return;
+  
+    const handleReceiveMessage = (msg: any) => {
+      console.log("📩 MessHome nhận realtime:", msg); // Log tin nhắn nhận được
+  
+      console.log("Receiver ID:", msg.receiverId); // In ID người nhận từ tin nhắn
+      console.log("User Login ID:", userLoginId);  // In ID của user đang đăng nhập
+  
+      // Kiểm tra nếu tin nhắn đến từ user khác và thuộc conversation của login user
+      if (msg.receiverId === userLoginId) {
+        dispatch(increaseUnread(msg.conversationId));  // Cập nhật unread trong Redux
+        fetchUsers();  // Cập nhật lại danh sách và tin nhắn cuối
+      } else {
+        console.log("Tin nhắn không dành cho người dùng này.");
+      }
+    };
+  
+    socket.on("receiveMessage", handleReceiveMessage);
+  
+    return () => {
+      socket.off("receiveMessage", handleReceiveMessage);  // Cleanup khi component unmount
+    };
+  }, [userLoginId, dispatch]);
+  
 
   useEffect(() => {
     if (searchTerm.trim() === '') {
@@ -61,33 +95,42 @@ const MessHome = ({ navigation }: any) => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`${BASE_URL}:3000/chat/conversations/all/${userId}`, {
+
+      const res = await axios.get(`${BASE_URL}/chat/conversations/all/${userLoginId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      let formatted = res.data.map((conversation: any) => {
+      const uniqueMap = new Map();
+      console.log("🔗 MessHome lấy danh sách cuộc trò chuyện:", res.data);
+      (res.data as any[]).forEach((conversation) => {
         const other = conversation.members.find((m: any) =>
-          (m.userId || m._id)?.toString() !== userId.toString()
+          (m.userId || m._id)?.toString() !== userLoginId.toString()
         );
 
+        if (!other || (!other.userId && !other._id)) return;
+
+        const otherId = other.userId || other._id;
         const lastMsg = conversation.messages?.[conversation.messages.length - 1];
 
-        if (!other || (!other.userId && !other._id)) return null;
+        if (!uniqueMap.has(otherId)) {
+          uniqueMap.set(otherId, {
+            _id: otherId,
+            avatar: other.avatar || 'https://placehold.co/100x100',
+            username: other.name || `${other.firstname || ''} ${other.lastname || ''}`.trim(),
+            lastMessage: lastMsg?.content || 'Nhấn để bắt đầu trò chuyện',
+            timestamp: lastMsg?.timestamp
+              ? new Date(lastMsg.timestamp).toLocaleTimeString()
+              : '',
+            conversationId: conversation._id,
+            lastMessageSenderId: lastMsg?.senderId || '',
+          });
+        }
+      });
 
-        return {
-          _id: other.userId || other._id,
-          avatar: other.avatar || 'https://placehold.co/100x100',
-          username: other.name || `${other.firstname || ''} ${other.lastname || ''}`.trim(),
-          lastMessage: lastMsg?.content || 'Nhấn để bắt đầu trò chuyện',
-          timestamp: lastMsg?.timestamp
-            ? new Date(lastMsg.timestamp).toLocaleTimeString()
-            : '',
-          conversationId: conversation._id,
-        };
-      }).filter(Boolean);
+      let formatted = Array.from(uniqueMap.values());
 
       if (formatted.length === 0) {
-        const followRes = await axios.get(`${BASE_URL}:3000/follow/followings/${userId}`, {
+        const followRes = await axios.get(`${BASE_URL}/follow/followings/${userLoginId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -111,43 +154,13 @@ const MessHome = ({ navigation }: any) => {
     }
   };
 
-  // const handleUserPress = async (user: UserItem) => {
-  //   try {
-  //     if (user.conversationId) {
-  //       navigation.navigate('Chat', { user });
-  //     } else {
-  //       console.log('id user đang login:\n', userId);
-  //       console.log('id user đang nhấn:\n', user._id);
-  //       console.log('token :  \n', token);
-  //       console.log('thông tin user đc nhắn tin :\n', user);
-  //       const res = await axios.post(`${BASE_URL}:3000/chat/conversations/private`, {
-  //         senderId: userId,
-  //         receiverId: user._id,
-  //       }, {
-  //         headers: { Authorization: `Bearer ${token}` },
-  //       });
-
-  //       const conversationId = res.data._id;
-
-  //       showNotification("tạo cuộc trò chuyện thành công ","success");
-  //       // navigation.navigate('Chat', {
-
-  //       //   user: { ...user, conversationId }
-  //       // });
-  //     }
-  //   } catch (err) {
-  //     console.error('❌ Lỗi tạo cuộc trò chuyện:', err);
-  //     Alert.alert('Lỗi', 'Không thể tạo cuộc trò chuyện');
-  //   }
-  // };
-
   const handleUserPress = async (user: UserItem) => {
     try {
       let conversationId = user.conversationId;
 
       if (!conversationId) {
-        const res = await axios.post(`${BASE_URL}:3000/chat/conversations/private`, {
-          user1: userId,
+        const res = await axios.post(`${BASE_URL}/chat/conversations/private`, {
+          user1: userLoginId,
           user2: user._id,
         }, {
           headers: { Authorization: `Bearer ${token}` }
@@ -156,22 +169,20 @@ const MessHome = ({ navigation }: any) => {
         conversationId = res.data._id;
       }
 
-      // GỌI API CHUẨN: /users/user-details/:userId
-      const detailRes = await axios.get(`${BASE_URL}:3000/users/user-details/${user._id}`, {
+      const detailRes = await axios.get(`${BASE_URL}/users/user-details/${user._id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
       const detail = detailRes.data?.data;
 
       const fullUserInfo = {
-        _id: user._id,
+        userChatId: user._id,
         conversationId,
         avatar: detail.avatar,
         firstname: detail.firstname,
         lastname: detail.lastname,
         username: `${detail.firstname} ${detail.lastname}`,
       };
-      console.log('thông tin user đc nhắn tin :\n', fullUserInfo);
       navigation.navigate('Chat', { user: fullUserInfo });
 
     } catch (err) {
@@ -180,43 +191,46 @@ const MessHome = ({ navigation }: any) => {
     }
   };
 
-  
+  const renderItem = ({ item }: { item: UserItem }) => {
+    const isSentByMe = item.lastMessage?.startsWith("Bạn:") || false;
+    const conversationUnreadCount = item.conversationId ? unreadCounts[item.conversationId] || 0 : 0;
 
-  const renderItem = ({ item }: { item: UserItem }) => (
-    console.log("item là: ", item),
-    console.log("item.id:", item._id),
-  console.log("conversationId:", item.conversationId),
-  console.log("unreadCounts:", unreadCounts),
- 
-    <TouchableOpacity style={styles.itemContainer} onPress={() => handleUserPress(item)}>
-      <Image source={{ uri: item.avatar }} style={styles.avatar} />
-      <View style={styles.textContainer}>
-        <View style={styles.row}>
-          <Text style={styles.username}>{item.username}</Text>
-          <Text style={styles.time}>{item.timestamp}</Text>
+    let displayMessage = item.lastMessage;
+    if (item.conversationId && item.lastMessage) {
+      const senderId = item.lastMessageSenderId || '';
+      if (senderId === userLoginId) {
+        displayMessage = `Bạn: ${item.lastMessage}`;
+      } else {
+        displayMessage = `${item.username}: ${item.lastMessage}`;
+      }
+    }
+
+    return (
+      <TouchableOpacity style={styles.itemContainer} onPress={() => handleUserPress(item)}>
+        <Image source={{ uri: item.avatar }} style={styles.avatar} />
+        <View style={styles.textContainer}>
+          <View style={styles.row}>
+            <Text style={styles.username}>{item.username}</Text>
+            <Text style={styles.time}>{item.timestamp}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text numberOfLines={1} style={styles.lastMessage}>
+              {displayMessage}
+            </Text>
+            {item.conversationId && conversationUnreadCount > 0 && (
+              <View style={styles.unreadBadge}>
+                <Text style={styles.unreadCount}>{conversationUnreadCount}</Text>
+              </View>
+            )}
+          </View>
         </View>
-        <View style={styles.row}>
-          <Text numberOfLines={1} style={styles.lastMessage}>{item.lastMessage}</Text>
-         
-          {item.conversationId && unreadCounts[item.conversationId] > 0 && (
-         
-            <View style={styles.unreadBadge}>
-              {/* <Text style={styles.unreadCount}>{unreadCounts[item.conversationId]}</Text> */}
-              <Text style={styles.unreadCount}>1</Text>
-            </View>
-          )}
-
-
-        </View>
-
-      </View>
-    </TouchableOpacity>
-  );
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View style={styles.container}>
       <View style={styles.searchWrapper}>
-        {/* <Icon name="search" size={20} color="#888" /> */}
         <TextInput
           placeholder="Tìm kiếm"
           placeholderTextColor="#aaa"
@@ -241,78 +255,5 @@ const MessHome = ({ navigation }: any) => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#000',
-  },
-  searchWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#222',
-    margin: 10,
-    paddingHorizontal: 10,
-    borderRadius: 10,
-  },
-  searchInput: {
-    flex: 1,
-    padding: 10,
-    color: '#fff',
-  },
-  itemContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderBottomWidth: 0.5,
-    borderBottomColor: '#444',
-  },
-  avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    marginRight: 12,
-  },
-  textContainer: {
-    flex: 1,
-  },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  username: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  time: {
-    color: '#aaa',
-    fontSize: 12,
-  },
-  lastMessage: {
-    color: '#ccc',
-    fontSize: 14,
-    flex: 1,
-  },
-  noResult: {
-    color: '#fff',
-    textAlign: 'center',
-    marginTop: 20,
-  },
-  unreadBadge: {
-    backgroundColor: 'red',
-    borderRadius: 10,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    marginLeft: 8,
-  },
-  unreadCount: {
-    color: 'white',
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-});
 
 export default MessHome;

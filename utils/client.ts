@@ -2,7 +2,7 @@ import axios from 'axios';
 import { getToken } from './token';
 import BASE_URL from '../config/IpAddress';
 const client = axios.create({
-  baseURL: `${BASE_URL}:5000`,
+  baseURL: `${BASE_URL}`,
   timeout: 5000,
 });
 

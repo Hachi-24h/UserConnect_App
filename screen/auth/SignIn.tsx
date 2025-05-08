@@ -17,8 +17,8 @@ import { useDispatch } from 'react-redux';
 import { setUser } from '../../store/userSlice';
 const { height, width } = Dimensions.get('window');
 const SignInScreen = ({ navigation }: any) => {
-  const [username, setUsername] = useState('hachi');
-  const [password, setPassword] = useState('123456');
+  const [username, setUsername] = useState('hachi11');
+  const [password, setPassword] = useState('hachi11');
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const user = useSelector((state: any) => state.user);

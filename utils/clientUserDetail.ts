@@ -2,7 +2,7 @@ import axios from 'axios';
 import { getToken } from './token';
 import BASE_URL from '../config/IpAddress';
 const clientUserDetail = axios.create({
-  baseURL: `${BASE_URL}:5002`,
+  baseURL: `${BASE_URL}`,
   timeout: 5000,
 });
 clientUserDetail.interceptors.request.use(
