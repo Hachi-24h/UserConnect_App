@@ -1,5 +1,5 @@
 // screens/SignIn.tsx
-import React, { useState,useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View, Text, TextInput, Image, TouchableOpacity, Dimensions,
   StyleSheet, Alert
@@ -15,23 +15,27 @@ import LoadingModal from '../../Custom/Loading';
 import { getUserDetails } from '../../utils/auth';
 import { useDispatch } from 'react-redux';
 import { setUser } from '../../store/userSlice';
+import axios from 'axios';
+import ip from '../../config/IpAddress';
+import { setConversations } from '../../store/chatSlice';
+import { setUnreadCounts } from '../../store/unreadSlice';
 const { height, width } = Dimensions.get('window');
 const SignInScreen = ({ navigation }: any) => {
   const [username, setUsername] = useState('hachi11');
   const [password, setPassword] = useState('hachi11');
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [loading, setLoading] = useState(false);
-  const user = useSelector((state: any) => state.user);
-  const userDetail = useSelector((state: any) => state.userDetail);
   const dispatch = useDispatch();
+  const BASE_URL = ip.BASE_URL; // Địa chỉ IP của server
+
 
   const handleLogin = async () => {
     try {
       setLoading(true);
-  
+
       // login xong sẽ lưu user vào Redux
       const res = await login(username, password);
-      
+
       dispatch(setUser({
         _id: res.user._id,
         token: res.token,
@@ -39,10 +43,26 @@ const SignInScreen = ({ navigation }: any) => {
       }));
 
       // gọi trực tiếp lại hàm getUserDetails và lấy kết quả (đồng bộ)
-      const detail = await getUserDetails(res.user._id); 
-  
+      const detail = await getUserDetails(res.user._id);
+      // Lấy danh sách các cuộc trò chuyện
+      const conversationsRes = await axios.get(`${BASE_URL}/chat/conversations/all/${res.user._id}`, {
+        headers: { Authorization: `Bearer ${res.token}` },
+      });
+      const conversations = conversationsRes.data;
+      dispatch(setConversations(conversations));
+      
+      // 🔥 Tạo map chứa unread count
+      const unreadMap: { [key: string]: number } = {};
+
+      conversations.forEach((conv: { _id: string; unreadCount?: number }) => {
+        unreadMap[conv._id] = conv.unreadCount || 0;
+      });
+      
+      dispatch(setUnreadCounts(unreadMap));
+      
+
       setLoading(false);
-  
+
       if (detail) {
         navigation.navigate('MessHome');
       } else {
@@ -54,7 +74,7 @@ const SignInScreen = ({ navigation }: any) => {
       console.log("❌ Đăng nhập thất bại", error?.response?.data?.message || "Đã có lỗi xảy ra");
     }
   };
-  
+
 
   return (
     <LinearGradient colors={["#3D5167", "#999999"]} style={styles.container}>

@@ -1,38 +1,34 @@
 import React, { useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  FlatList,
-  TouchableOpacity,
-  Image,
-  ActivityIndicator,
-  Alert,
-  TextInput
-} from 'react-native';
+import { View, Text, ActivityIndicator, Alert, TextInput } from 'react-native';
 import axios from 'axios';
 import { useSelector, useDispatch } from 'react-redux';
 import { increaseUnread } from '../../store/unreadSlice';
 import socket from '../../socket/socket';
-import  BASE_URL  from '../../config/IpAddress';
+import ip from '../../config/IpAddress';
+const BASE_URL = ip.BASE_URL;
+import UserList from './component/UserList'; // Import UserList component
 
 import styles from "../../Css/mess/MessHome";
 import Footer from '../other/Footer';
+import { useFocusEffect } from '@react-navigation/native'; // Thêm vào đây
+
+import { resetUnreadCount } from '../../store/unreadSlice';
 
 type UserItem = {
   _id: string;
   avatar: string;
   username: string;
   lastMessage: string;
+  timestamp?: string;
   conversationId: string | null;
   lastMessageSenderId?: string;
-  timestamp?: string;
 };
 
 const MessHome = ({ navigation }: any) => {
   const [users, setUsers] = useState<UserItem[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<UserItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState<boolean>(true);
+  const [searchTerm, setSearchTerm] = useState<string>('');
   const user = useSelector((state: any) => state.user);
   const unreadCounts = useSelector((state: any) => state.unread);
 
@@ -40,52 +36,19 @@ const MessHome = ({ navigation }: any) => {
   const token = user?.token;
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    if (userLoginId && token) fetchUsers();
-  }, [userLoginId, token]);
 
-  useEffect(() => {
-    if (userLoginId) {
-      socket.emit("joinRoom", userLoginId); //  SAI Ở ĐÂY , IDROOM 
-      console.log("🔗 MessHome joined room với id:", userLoginId);
-    }
-  }, [userLoginId]);
-
-
-  
-
-  useEffect(() => {
-    if (!userLoginId) return;
-  
-    const handleReceiveMessage = (msg: any) => {
-      console.log("📩 MessHome nhận realtime:", msg); // Log tin nhắn nhận được
-  
-      console.log("Receiver ID:", msg.receiverId); // In ID người nhận từ tin nhắn
-      console.log("User Login ID:", userLoginId);  // In ID của user đang đăng nhập
-  
-      // Kiểm tra nếu tin nhắn đến từ user khác và thuộc conversation của login user
-      if (msg.receiverId === userLoginId) {
-        dispatch(increaseUnread(msg.conversationId));  // Cập nhật unread trong Redux
-        fetchUsers();  // Cập nhật lại danh sách và tin nhắn cuối
-      } else {
-        console.log("Tin nhắn không dành cho người dùng này.");
-      }
-    };
-  
-    socket.on("receiveMessage", handleReceiveMessage);
-  
-    return () => {
-      socket.off("receiveMessage", handleReceiveMessage);  // Cleanup khi component unmount
-    };
-  }, [userLoginId, dispatch]);
-  
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchUsers(); // chỉ gọi API, không socket, không listener
+    }, [userLoginId])
+  );
 
   useEffect(() => {
     if (searchTerm.trim() === '') {
       setFilteredUsers(users);
     } else {
       setFilteredUsers(
-        users.filter((u) =>
+        users.filter((u: UserItem) =>
           u.username.toLowerCase().includes(searchTerm.toLowerCase())
         )
       );
@@ -95,46 +58,99 @@ const MessHome = ({ navigation }: any) => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-
+  
       const res = await axios.get(`${BASE_URL}/chat/conversations/all/${userLoginId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-
+  
       const uniqueMap = new Map();
-      console.log("🔗 MessHome lấy danh sách cuộc trò chuyện:", res.data);
-      (res.data as any[]).forEach((conversation) => {
-        const other = conversation.members.find((m: any) =>
-          (m.userId || m._id)?.toString() !== userLoginId.toString()
-        );
-
-        if (!other || (!other.userId && !other._id)) return;
-
-        const otherId = other.userId || other._id;
+  
+      const fetchUserDetailTasks = res.data.map(async (conversation:any) => {
+        const isGroup = conversation.isGroup;
         const lastMsg = conversation.messages?.[conversation.messages.length - 1];
-
-        if (!uniqueMap.has(otherId)) {
-          uniqueMap.set(otherId, {
-            _id: otherId,
-            avatar: other.avatar || 'https://placehold.co/100x100',
-            username: other.name || `${other.firstname || ''} ${other.lastname || ''}`.trim(),
-            lastMessage: lastMsg?.content || 'Nhấn để bắt đầu trò chuyện',
-            timestamp: lastMsg?.timestamp
-              ? new Date(lastMsg.timestamp).toLocaleTimeString()
-              : '',
-            conversationId: conversation._id,
-            lastMessageSenderId: lastMsg?.senderId || '',
-          });
+        const lastSenderId = lastMsg?.senderId;
+  
+        if (isGroup) {
+          let senderName = "Không rõ";
+  
+          // Nếu có người gửi cuối
+          if (lastSenderId) {
+            try {
+              const senderRes = await axios.get(`${BASE_URL}/users/user-details/${lastSenderId}`, {
+                headers: { Authorization: `Bearer ${token}` },
+              });
+              const sender = senderRes.data?.data;
+              senderName = `${sender.firstname || ''} ${sender.lastname || ''}`.trim();
+            } catch (error) {
+              console.error(`❌ Không lấy được thông tin người gửi nhóm:`, (error as any).message);
+            }
+          }
+  
+          if (!uniqueMap.has(conversation._id)) {
+            uniqueMap.set(conversation._id, {
+              _id: conversation._id,
+              avatar: conversation.avatar || 'https://placehold.co/100x100',
+              username: conversation.groupName || 'Nhóm không tên',
+              lastMessage: lastMsg?.content
+                ? `${senderName}: ${lastMsg.content}`
+                : 'Bắt đầu trò chuyện nhóm',
+              timestamp: lastMsg?.timestamp
+                ? new Date(lastMsg.timestamp).toLocaleTimeString()
+                : '',
+              conversationId: conversation._id,
+              lastMessageSenderId: lastSenderId || '',
+            });
+          }
+        } else {
+          const other = conversation.members.find((m:any) =>
+            (m.userId || m._id)?.toString() !== userLoginId.toString()
+          );
+  
+          if (!other || (!other.userId && !other._id)) return;
+  
+          const otherId = other.userId || other._id;
+  
+          try {
+            const detailRes = await axios.get(`${BASE_URL}/users/user-details/${otherId}`, {
+              headers: { Authorization: `Bearer ${token}` },
+            });
+  
+            const detail = detailRes.data?.data;
+            const isMe = lastSenderId === userLoginId;
+            const senderName = isMe ? "Bạn" : `${detail.firstname} ${detail.lastname}`.trim();
+  
+            if (!uniqueMap.has(otherId)) {
+              uniqueMap.set(otherId, {
+                _id: otherId,
+                avatar: detail.avatar || other.avatar || 'https://placehold.co/100x100',
+                username: `${detail.firstname || ''} ${detail.lastname || ''}`.trim(),
+                lastMessage: lastMsg?.content
+                  ? `${senderName}: ${lastMsg.content}`
+                  : 'Nhấn để bắt đầu trò chuyện',
+                timestamp: lastMsg?.timestamp
+                  ? new Date(lastMsg.timestamp).toLocaleTimeString()
+                  : '',
+                conversationId: conversation._id,
+                lastMessageSenderId: lastSenderId || '',
+              });
+            }
+          } catch (error) {
+            console.error(`❌ Không lấy được user ${otherId}:`, (error as any).message);
+          }
         }
       });
-
+  
+      await Promise.all(fetchUserDetailTasks);
+  
       let formatted = Array.from(uniqueMap.values());
-
+      console.log("📩 MessHome danh sách người dùng (có nhóm & cá nhân):", formatted);
+  
       if (formatted.length === 0) {
         const followRes = await axios.get(`${BASE_URL}/follow/followings/${userLoginId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-
-        formatted = followRes.data.data.map((item: any) => ({
+  
+        formatted = followRes.data.data.map((item:any) => ({
           _id: item.user._id,
           avatar: item.user.avatar || 'https://placehold.co/100x100',
           username: `${item.user.firstname} ${item.user.lastname}`.trim(),
@@ -143,16 +159,22 @@ const MessHome = ({ navigation }: any) => {
           conversationId: null,
         }));
       }
-
+  
       setUsers(formatted);
       setFilteredUsers(formatted);
-    } catch (error: any) {
+    } catch (error) {
       console.error('❌ Lỗi lấy dữ liệu:', error);
       Alert.alert('Lỗi', 'Không thể tải danh sách người dùng');
     } finally {
       setLoading(false);
     }
   };
+  
+  
+  
+  // useEffect(() => {
+  //   if (userLoginId && token) fetchUsers();
+  // }, [userLoginId, token]);
 
   const handleUserPress = async (user: UserItem) => {
     try {
@@ -169,12 +191,16 @@ const MessHome = ({ navigation }: any) => {
         conversationId = res.data._id;
       }
 
+      if (conversationId) {
+        //@ts-ignore
+        dispatch(resetUnreadCount(userLoginId, conversationId, token));
+      }
       const detailRes = await axios.get(`${BASE_URL}/users/user-details/${user._id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
       const detail = detailRes.data?.data;
-
+      // console.log("📩 MessHome nhận chi tiết người dùng:", detail);
       const fullUserInfo = {
         userChatId: user._id,
         conversationId,
@@ -189,43 +215,6 @@ const MessHome = ({ navigation }: any) => {
       console.error('❌ Lỗi khi tạo cuộc trò chuyện hoặc lấy user detail:', err);
       Alert.alert('Lỗi', 'Không thể mở cuộc trò chuyện');
     }
-  };
-
-  const renderItem = ({ item }: { item: UserItem }) => {
-    const isSentByMe = item.lastMessage?.startsWith("Bạn:") || false;
-    const conversationUnreadCount = item.conversationId ? unreadCounts[item.conversationId] || 0 : 0;
-
-    let displayMessage = item.lastMessage;
-    if (item.conversationId && item.lastMessage) {
-      const senderId = item.lastMessageSenderId || '';
-      if (senderId === userLoginId) {
-        displayMessage = `Bạn: ${item.lastMessage}`;
-      } else {
-        displayMessage = `${item.username}: ${item.lastMessage}`;
-      }
-    }
-
-    return (
-      <TouchableOpacity style={styles.itemContainer} onPress={() => handleUserPress(item)}>
-        <Image source={{ uri: item.avatar }} style={styles.avatar} />
-        <View style={styles.textContainer}>
-          <View style={styles.row}>
-            <Text style={styles.username}>{item.username}</Text>
-            <Text style={styles.time}>{item.timestamp}</Text>
-          </View>
-          <View style={styles.row}>
-            <Text numberOfLines={1} style={styles.lastMessage}>
-              {displayMessage}
-            </Text>
-            {item.conversationId && conversationUnreadCount > 0 && (
-              <View style={styles.unreadBadge}>
-                <Text style={styles.unreadCount}>{conversationUnreadCount}</Text>
-              </View>
-            )}
-          </View>
-        </View>
-      </TouchableOpacity>
-    );
   };
 
   return (
@@ -245,10 +234,10 @@ const MessHome = ({ navigation }: any) => {
       ) : filteredUsers.length === 0 ? (
         <Text style={styles.noResult}>Không có kết quả phù hợp</Text>
       ) : (
-        <FlatList
-          data={filteredUsers}
-          keyExtractor={(item) => item._id}
-          renderItem={renderItem}
+        <UserList
+          users={filteredUsers}
+          onUserPress={handleUserPress}
+          unreadCounts={unreadCounts}
         />
       )}
       <Footer navigation={navigation} />

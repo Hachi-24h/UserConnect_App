@@ -62,6 +62,7 @@ const ChatScreen = ({ navigation }: any) => {
 
   const dispatch = useDispatch();
   const currentUser = useSelector((state: RootState) => state.user);
+
   const conversationId = user.conversationId;
 
   const messages = useSelector(selectMessagesByConversation(conversationId));
@@ -106,6 +107,7 @@ const ChatScreen = ({ navigation }: any) => {
     try {
       const res: Message[] = await getMessages(conversationId, currentUser.token);
       dispatch(setMessages({ conversationId, messages: res }));
+      console.log("📩 Tin nhắn đã được tải:", res);
       scrollToBottom();
     } catch (error) {
       console.error("❌ Lỗi lấy tin nhắn:", error);
