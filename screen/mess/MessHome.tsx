@@ -58,21 +58,21 @@ const MessHome = ({ navigation }: any) => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-  
+
       const res = await axios.get(`${BASE_URL}/chat/conversations/all/${userLoginId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-  
+
       const uniqueMap = new Map();
-  
+
       const fetchUserDetailTasks = res.data.map(async (conversation:any) => {
         const isGroup = conversation.isGroup;
         const lastMsg = conversation.messages?.[conversation.messages.length - 1];
         const lastSenderId = lastMsg?.senderId;
-  
+
         if (isGroup) {
           let senderName = "Không rõ";
-  
+
           // Nếu có người gửi cuối
           if (lastSenderId) {
             try {
@@ -85,7 +85,7 @@ const MessHome = ({ navigation }: any) => {
               console.error(`❌ Không lấy được thông tin người gửi nhóm:`, (error as any).message);
             }
           }
-  
+
           if (!uniqueMap.has(conversation._id)) {
             uniqueMap.set(conversation._id, {
               _id: conversation._id,
@@ -105,20 +105,20 @@ const MessHome = ({ navigation }: any) => {
           const other = conversation.members.find((m:any) =>
             (m.userId || m._id)?.toString() !== userLoginId.toString()
           );
-  
+
           if (!other || (!other.userId && !other._id)) return;
-  
+
           const otherId = other.userId || other._id;
-  
+
           try {
             const detailRes = await axios.get(`${BASE_URL}/users/user-details/${otherId}`, {
               headers: { Authorization: `Bearer ${token}` },
             });
-  
+
             const detail = detailRes.data?.data;
             const isMe = lastSenderId === userLoginId;
             const senderName = isMe ? "Bạn" : `${detail.firstname} ${detail.lastname}`.trim();
-  
+
             if (!uniqueMap.has(otherId)) {
               uniqueMap.set(otherId, {
                 _id: otherId,
@@ -139,17 +139,17 @@ const MessHome = ({ navigation }: any) => {
           }
         }
       });
-  
+
       await Promise.all(fetchUserDetailTasks);
-  
+
       let formatted = Array.from(uniqueMap.values());
       console.log("📩 MessHome danh sách người dùng (có nhóm & cá nhân):", formatted);
-  
+
       if (formatted.length === 0) {
         const followRes = await axios.get(`${BASE_URL}/follow/followings/${userLoginId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-  
+
         formatted = followRes.data.data.map((item:any) => ({
           _id: item.user._id,
           avatar: item.user.avatar || 'https://placehold.co/100x100',
@@ -159,7 +159,7 @@ const MessHome = ({ navigation }: any) => {
           conversationId: null,
         }));
       }
-  
+
       setUsers(formatted);
       setFilteredUsers(formatted);
     } catch (error) {
@@ -169,53 +169,67 @@ const MessHome = ({ navigation }: any) => {
       setLoading(false);
     }
   };
-  
-  
-  
-  // useEffect(() => {
-  //   if (userLoginId && token) fetchUsers();
-  // }, [userLoginId, token]);
 
-  const handleUserPress = async (user: UserItem) => {
-    try {
-      let conversationId = user.conversationId;
 
-      if (!conversationId) {
-        const res = await axios.post(`${BASE_URL}/chat/conversations/private`, {
-          user1: userLoginId,
-          user2: user._id,
-        }, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
 
-        conversationId = res.data._id;
-      }
+const handleUserPress = async (user: UserItem) => {
+  try {
+    let conversationId = user.conversationId;
 
-      if (conversationId) {
-        //@ts-ignore
-        dispatch(resetUnreadCount(userLoginId, conversationId, token));
-      }
+    if (!conversationId) {
+      const res = await axios.post(`${BASE_URL}/chat/conversations/private`, {
+        user1: userLoginId,
+        user2: user._id,
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      conversationId = res.data._id;
+    }
+
+    if (conversationId) {
+      //@ts-ignore
+      dispatch(resetUnreadCount(userLoginId, conversationId, token));
+    }
+
+    let fullUserInfo;
+
+    const isGroup = user.username?.startsWith("Nhóm") || user.username?.includes("Ông"); // tuỳ cách đặt tên nhóm
+    if (isGroup) {
+      fullUserInfo = {
+        userChatId: '', // nhóm không cần user ID cụ thể
+        conversationId,
+        avatar: user.avatar,
+        firstname: '',
+        lastname: '',
+        username: user.username,
+        isGroup: true,
+      };
+    } else {
       const detailRes = await axios.get(`${BASE_URL}/users/user-details/${user._id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
       const detail = detailRes.data?.data;
-      // console.log("📩 MessHome nhận chi tiết người dùng:", detail);
-      const fullUserInfo = {
+      fullUserInfo = {
         userChatId: user._id,
         conversationId,
         avatar: detail.avatar,
         firstname: detail.firstname,
         lastname: detail.lastname,
         username: `${detail.firstname} ${detail.lastname}`,
+        isGroup: false,
       };
-      navigation.navigate('Chat', { user: fullUserInfo });
-
-    } catch (err) {
-      console.error('❌ Lỗi khi tạo cuộc trò chuyện hoặc lấy user detail:', err);
-      Alert.alert('Lỗi', 'Không thể mở cuộc trò chuyện');
     }
-  };
+
+    navigation.navigate('Chat', { user: fullUserInfo });
+
+  } catch (err) {
+    console.error('❌ Lỗi khi tạo cuộc trò chuyện hoặc lấy user detail:', err);
+    Alert.alert('Lỗi', 'Không thể mở cuộc trò chuyện');
+  }
+};
+
 
   return (
     <View style={styles.container}>
@@ -246,3 +260,4 @@ const MessHome = ({ navigation }: any) => {
 };
 
 export default MessHome;
+

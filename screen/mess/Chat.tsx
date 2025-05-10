@@ -28,6 +28,7 @@ const { width } = Dimensions.get("window");
 
 // ===================== Types =====================
 interface UserChat {
+  isGroup: any;
   avatar: string;
   conversationId: string;
   firstname: string;
@@ -69,7 +70,11 @@ const ChatScreen = ({ navigation }: any) => {
 
   const flatListRef = useRef<FlatList>(null);
   const [inputText, setInputText] = useState("");
-
+  const userDetail = useSelector((state: any) => state.userDetail);  // Getting user details from Redux
+  const name = `${userDetail.firstname} ${userDetail.lastname}`;
+  const avatar = userDetail.avatar || "https://i.postimg.cc/6pXNwv51/backgrond-mac-dinh.jpg";  // Default avatar if not available
+  console.log("name: ", name);
+ 
   useEffect(() => {
     if (conversationId) {
       dispatch(resetUnread(conversationId));
@@ -87,7 +92,7 @@ const ChatScreen = ({ navigation }: any) => {
       });
     };
   }, []);
-    
+
 
   useEffect(() => {
     socket.emit("joinRoom", conversationId);
@@ -130,8 +135,8 @@ const ChatScreen = ({ navigation }: any) => {
       content: inputText,
       timestamp: new Date().toISOString(),
       type: "text",
-      name: `${currentUser.firstname} ${currentUser.lastname}`,
-      senderAvatar: currentUser.avatar,
+      name: name,
+      senderAvatar: avatar,
     };
 
     socket.emit("sendMessage", msg);
@@ -142,25 +147,37 @@ const ChatScreen = ({ navigation }: any) => {
 
   const renderMessage = ({ item }: { item: Message }) => {
     const isMine = item.senderId?.toString() === currentUser._id?.toString();
+    const isGroup = user?.isGroup;
+
     return (
-      <View
-        style={[
-          styles.messageBubble,
-          isMine ? styles.myMessage : styles.otherMessage,
-          {
-            alignSelf: isMine ? "flex-end" : "flex-start",
-            backgroundColor: isMine ? color.accentBlue : color.gray,
-            marginVertical: 4,
-            padding: 10,
-            borderRadius: 10,
-            maxWidth: "80%",
-          },
-        ]}
-      >
-        <Text style={{ color: isMine ? "white" : "black" }}>{item.content}</Text>
+      <View style={{ marginVertical: 4 }}>
+        {!isMine && isGroup && item.name && (
+          <Text style={{ marginLeft: 8, fontWeight: "bold", color: "white" }}>
+            {item.name}
+          </Text>
+        )}
+        <View
+          style={[
+            styles.messageBubble,
+            isMine ? styles.myMessage : styles.otherMessage,
+            {
+              alignSelf: isMine ? "flex-end" : "flex-start",
+              backgroundColor: isMine ? color.accentBlue : color.gray,
+              padding: 10,
+              borderRadius: 10,
+              maxWidth: "80%",
+              marginTop: 2,
+            },
+          ]}
+        >
+          <Text style={{ color: isMine ? "white" : "black" }}>
+            {item.content}
+          </Text>
+        </View>
       </View>
     );
   };
+
 
   return (
     <View style={styles.container}>
@@ -172,8 +189,9 @@ const ChatScreen = ({ navigation }: any) => {
         <Image source={{ uri: user.avatar }} style={styles.avatar} />
         <View style={styles.userInfo}>
           <Text style={styles.userName}>
-            {user.firstname} {user.lastname}
+            {user.firstname || user.username} {user.lastname || ''}
           </Text>
+
           <Text style={styles.statusText}>Hoạt động gần đây</Text>
         </View>
         <View style={styles.headerIcons}>

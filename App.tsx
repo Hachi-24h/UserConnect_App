@@ -15,6 +15,7 @@ import { increaseUnread } from './store/unreadSlice';
 
 import CustomToast from './Custom/CustomToast';
 import { incrementUnreadCount } from './store/unreadSlice';
+import { Alert } from 'react-native';
 const Stack = createStackNavigator();
 
 const defaultOptions = {
@@ -53,11 +54,12 @@ const AppContent = () => {
   useEffect(() => {
     const handleReceiveMessage = (msg: any) => {
       console.log("📩 Nhận tin nhắn từ socket:", msg);
+    
       const isSender = msg.senderId === userLoginId;
       const isReceiver = msg.receiverId === userLoginId;
   
       // 👉 Chỉ thông báo nếu bạn KHÔNG phải là người gửi
-      if (!isSender) {
+     
         setToastMsg({
           name: msg.name,
           content: msg.content,
@@ -65,13 +67,13 @@ const AppContent = () => {
           timestamp: msg.timestamp,
         });
         setToastVisible(true);
-      }
+      
   
       // 👉 Luôn cộng unread nếu bạn là người nhận
-      if (isReceiver) {
+      
         // @ts-ignore
         dispatch(incrementUnreadCount(msg.receiverId, msg.conversationId, user.token));
-      }
+      
     };
   
     socket.on("receiveMessage", handleReceiveMessage);
