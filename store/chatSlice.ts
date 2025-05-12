@@ -26,8 +26,14 @@ interface Conversation {
   avatar: string;
   updatedAt?: string;
   lastMessage?: string;
-  otherUser?: OtherUser | null;
+  lastMessageSenderId?: string; // ✅ THÊM DÒNG NÀY
+  otherUser?: {
+    _id: string;
+    name: string;
+    avatar: string;
+  } | null;
 }
+
 
 interface ChatState {
   conversations: Conversation[];
@@ -69,13 +75,19 @@ const chatSlice = createSlice({
     },
     updateLastMessage: (
       state,
-      action: PayloadAction<{ conversationId: string; content: string; timestamp: string }>
+      action: PayloadAction<{
+        conversationId: string;
+        content: string;
+        timestamp: string;
+        senderId: string;
+      }>
     ) => {
-      const { conversationId, content, timestamp } = action.payload;
+      const { conversationId, content, timestamp, senderId } = action.payload;
       const conversation = state.conversations.find(conv => conv._id === conversationId);
       if (conversation) {
         conversation.lastMessage = content;
         conversation.updatedAt = timestamp;
+        conversation.lastMessageSenderId = senderId; // ✅ Ghi thẳng, không cần check
       }
     },
     clearMessages: (state, action: PayloadAction<string>) => {
@@ -117,23 +129,23 @@ export const fetchConversations = (userId: string, token: string) => async (disp
 
       const otherUser =
         !conv.isGroup && conv.members?.find((m: any) => m._id !== userId);
-
+      const lastMsg = conv.messages?.[conv.messages.length - 1];
       conversationsFormatted.push({
         _id: conv._id,
         isGroup: conv.isGroup,
         groupName: conv.groupName || '',
         avatar: conv.avatar || '',
         updatedAt: conv.updatedAt,
-        lastMessage: conv.messages?.[conv.messages.length - 1]?.content || '',
+        lastMessage: lastMsg?.content || '',
+        lastMessageSenderId: lastMsg?.senderId || null, // ✅ Dòng mới
         otherUser: otherUser
           ? {
-              _id: otherUser._id,
-              name: otherUser.name,
-              avatar: otherUser.avatar,
-            }
+            _id: otherUser._id,
+            name: otherUser.name,
+            avatar: otherUser.avatar,
+          }
           : null,
       });
-
       messagesMap[conv._id] = (conv.messages || []).map((msg: any) => ({
         _id: msg._id,
         senderId: msg.senderId,

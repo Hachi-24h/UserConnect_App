@@ -1,16 +1,18 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, Image } from 'react-native';
 import styles from "../../../Css/mess/MessHome";
-
+import { useSelector } from 'react-redux';
+import { getUserDetails } from '../../../utils/auth';
 
 type UserItem = {
   _id: string;
   avatar: string;
   username: string;
   lastMessage: string;
+  isGroup: boolean;
   timestamp?: string;
   conversationId: string | null;
-  lastMessageSenderId?: string; // Có thể là string hoặc undefined
+  lastMessageSenderId?: string;
 };
 
 interface UserListProps {
@@ -20,12 +22,56 @@ interface UserListProps {
 }
 
 const UserList: React.FC<UserListProps> = ({ users, onUserPress, unreadCounts }) => {
+  const user = useSelector((state: any) => state.user);
+  const userLoginId = user?._id;
+
+  const [groupSenderNames, setGroupSenderNames] = useState<{ [id: string]: string }>({});
+
+  // ✅ Fetch tên người gửi cuối trong nhóm nếu cần
+  useEffect(() => {
+    users.forEach((item) => {
+      const senderId = item.lastMessageSenderId;
+      if (
+        item.isGroup &&
+        senderId &&
+        senderId !== userLoginId &&
+        !groupSenderNames[senderId]
+      ) {
+        getUserDetails(senderId).then((user) => {
+          if (user?.lastname || user?.firstname) {
+            const name = `${user.lastname || ""} ${user.firstname || ""}`.trim();
+            setGroupSenderNames((prev) => ({
+              ...prev,
+              [senderId]: name,
+            }));
+          }
+        });
+      }
+    });
+  }, [users, userLoginId]);
 
   const renderItem = ({ item }: { item: UserItem }) => {
-    // console.log("🚀 ~ file: UserList.tsx:30 ~ renderItem ~ item:----------------------\n", item,"\n-----------------------\n");
     const conversationUnreadCount = item.conversationId ? unreadCounts[item.conversationId] || 0 : 0;
-    const displayMessage = item.lastMessage;
+    const isGroup = item.isGroup;
+    const isMyMessage = item.lastMessageSenderId === userLoginId;
+    let displayMessage = "";
+    let idLastMessageSender = item.lastMessageSenderId;
 
+
+
+    if (isGroup) {
+      if (isMyMessage) {
+        displayMessage = `Bạn: ${item.lastMessage}`;
+      } else {
+        const senderId = item.lastMessageSenderId || userLoginId;
+        const senderName = groupSenderNames[senderId] || "Ai đó";
+        displayMessage = `${senderName.split(" ")[0]}: ${item.lastMessage}`;
+      }
+    } else {
+      displayMessage = isMyMessage
+        ? `Bạn: ${item.lastMessage}`
+        : `${item.username.split(' ')[0]}: ${item.lastMessage}`;
+    }
     return (
       <TouchableOpacity style={styles.itemContainer} onPress={() => onUserPress(item)}>
         <Image source={{ uri: item.avatar }} style={styles.avatar} />
@@ -48,7 +94,6 @@ const UserList: React.FC<UserListProps> = ({ users, onUserPress, unreadCounts })
       </TouchableOpacity>
     );
   };
-
 
   return (
     <FlatList

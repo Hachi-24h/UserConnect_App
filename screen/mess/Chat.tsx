@@ -75,7 +75,7 @@ const ChatScreen = ({ navigation }: any) => {
   const name = `${userDetail.firstname} ${userDetail.lastname}`;
   const avatar = userDetail.avatar || "https://i.postimg.cc/6pXNwv51/backgrond-mac-dinh.jpg";  // Default avatar if not available
   console.log("name: ", name);
- 
+
   useEffect(() => {
     if (conversationId) {
       dispatch(resetUnread(conversationId));
@@ -85,7 +85,7 @@ const ChatScreen = ({ navigation }: any) => {
       });
     }
   }, [conversationId]);
-  
+
   useEffect(() => {
     return () => {
       dispatch({
@@ -96,12 +96,12 @@ const ChatScreen = ({ navigation }: any) => {
   }, []);
 
 
-useEffect(() => {
-  if (!conversationId) return;
+  useEffect(() => {
+    if (!conversationId) return;
 
-  socket.emit("joinRoom", conversationId);
-  fetchMessages();
-}, [conversationId]);
+    socket.emit("joinRoom", conversationId);
+    fetchMessages();
+  }, [conversationId]);
 
   const fetchMessages = async () => {
     try {
@@ -120,36 +120,37 @@ useEffect(() => {
     }, 100);
   };
 
-const handleSend = () => {
-  if (!inputText.trim()) return;
+  const handleSend = () => {
+    if (!inputText.trim()) return;
 
-  const msg: Message = {
-    conversationId,
-    senderId: currentUser._id,
-    receiverId: user.userChatId,
-    content: inputText,
-    timestamp: new Date().toISOString(),
-    type: "text",
-    name: name,
-    senderAvatar: avatar,
+    const msg: Message = {
+      conversationId,
+      senderId: currentUser._id,
+      receiverId: user.userChatId,
+      content: inputText,
+      timestamp: new Date().toISOString(),
+      type: "text",
+      name: name,
+      senderAvatar: avatar,
+    };
+
+    socket.emit("sendMessage", msg);
+
+    dispatch(addMessage({
+      conversationId,
+      message: msg
+    }));
+
+    dispatch(updateLastMessage({
+      conversationId,
+      content: msg.content,
+      timestamp: msg.timestamp,
+      senderId: msg.senderId, // ✅ QUAN TRỌNG
+    }));
+
+    setInputText("");
+    scrollToBottom();
   };
-
-  socket.emit("sendMessage", msg);
-
-  dispatch(addMessage({
-    conversationId,
-    message: msg
-  }));
-
-  dispatch(updateLastMessage({
-    conversationId,
-    content: msg.content,
-    timestamp: msg.timestamp
-  }));
-  
-  setInputText("");
-  scrollToBottom();
-};
 
   const renderMessage = ({ item }: { item: Message }) => {
     const isMine = item.senderId?.toString() === currentUser._id?.toString();

@@ -12,8 +12,10 @@ type UserItem = {
   username: string;
   lastMessage: string;
   timestamp?: string;
+
   conversationId: string | null;
   lastMessageSenderId?: string;
+  isGroup: boolean; // ✅ ok
 };
 
 const MessHome = ({ navigation }: any) => {
@@ -31,6 +33,9 @@ const MessHome = ({ navigation }: any) => {
     if (!conversations || conversations.length === 0) return;
 
     const result = conversations.map((conv: any) => {
+      console.log("🚀 ~ file: MessHome.tsx:20 ~ conv:\n", conv,
+        "\n-----------------------\n",
+      );
       const isGroup = conv.isGroup;
       const lastMessage = conv.lastMessage || "Nhấn để bắt đầu trò chuyện";
 
@@ -40,9 +45,11 @@ const MessHome = ({ navigation }: any) => {
       if (isGroup) {
         displayName = conv.groupName || "Nhóm không tên";
         avatar = conv.avatar || 'https://placehold.co/100x100';
+      
       } else if (conv.otherUser) {
         displayName = conv.otherUser.name || "Không rõ";
         avatar = conv.otherUser.avatar || 'https://placehold.co/100x100';
+        
       }
 
       return {
@@ -54,7 +61,8 @@ const MessHome = ({ navigation }: any) => {
           ? new Date(conv.updatedAt).toLocaleTimeString()
           : '',
         conversationId: conv._id,
-        lastMessageSenderId: '', // Có thể thêm nếu cần từ messagesByConversation
+          lastMessageSenderId: conv.lastMessageSenderId || null, // ✅ Lấy người gửi cuối
+        isGroup,
       };
     });
 
