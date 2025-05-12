@@ -1,21 +1,33 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import axios from 'axios';
 import ip from '../config/IpAddress';
 const BASE_URL = ip.BASE_URL;
 
+// ================= Types =================
+interface UnreadState {
+  [conversationId: string]: number;
+}
+
+interface UnreadPayload {
+  userId: string;
+  conversationId: string;
+  token: string;
+}
+
+// ================= Slice =================
 const unreadSlice = createSlice({
   name: 'unread',
-  initialState: {},
+  initialState: {} as UnreadState,
 
   reducers: {
-    setUnreadCounts: (state, action) => {
+    setUnreadCounts: (state, action: PayloadAction<UnreadState>) => {
       return { ...action.payload };
     },
-    increaseUnread: (state, action) => {
+    increaseUnread: (state, action: PayloadAction<string>) => {
       const id = action.payload;
       state[id] = (state[id] || 0) + 1;
     },
-    resetUnread: (state, action) => {
+    resetUnread: (state, action: PayloadAction<string>) => {
       const id = action.payload;
       state[id] = 0;
     },
@@ -32,8 +44,9 @@ export const {
   clearAllUnread,
 } = unreadSlice.actions;
 
-// ✅ Gọi API tăng tin chưa đọc + update Redux
-export const incrementUnreadCount = (userId, conversationId, token) => async (dispatch) => {
+// ================= Async Thunks =================
+
+export const incrementUnreadCount = ({ userId, conversationId, token }: UnreadPayload) => async (dispatch: any) => {
   try {
     await axios.patch(
       `${BASE_URL}/chat/deleted-conversations/unread-count/increment`,
@@ -45,13 +58,12 @@ export const incrementUnreadCount = (userId, conversationId, token) => async (di
       }
     );
     dispatch(increaseUnread(conversationId));
-  } catch (error) {
+  } catch (error: any) {
     console.error("❌ Lỗi tăng unread:", error.response?.data || error.message);
   }
 };
 
-// ✅ Gọi API đặt unread = 0 + update Redux
-export const resetUnreadCount = (userId, conversationId, token) => async (dispatch) => {
+export const resetUnreadCount = (userId: string, conversationId: string, token: string) => async (dispatch: any) => {
   try {
     await axios.patch(
       `${BASE_URL}/chat/deleted-conversations/unread-count`,
@@ -63,7 +75,7 @@ export const resetUnreadCount = (userId, conversationId, token) => async (dispat
       }
     );
     dispatch(resetUnread(conversationId));
-  } catch (error) {
+  } catch (error: any) {
     console.error("❌ Lỗi reset unread:", error.response?.data || error.message);
   }
 };

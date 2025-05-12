@@ -24,6 +24,7 @@ import { resetUnread } from "../../store/unreadSlice";
 import { addMessage, setMessages } from "../../store/chatSlice";
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { selectMessagesByConversation } from '../../store/chatSelectors';
+import { updateLastMessage } from "../../store/chatSlice";
 const { width } = Dimensions.get("window");
 
 // ===================== Types =====================
@@ -84,6 +85,7 @@ const ChatScreen = ({ navigation }: any) => {
       });
     }
   }, [conversationId]);
+  
   useEffect(() => {
     return () => {
       dispatch({
@@ -99,21 +101,6 @@ useEffect(() => {
 
   socket.emit("joinRoom", conversationId);
   fetchMessages();
-
-  const handleReceiveMessage = (msg: Message) => {
-    dispatch(addMessage({ conversationId: msg.conversationId, message: msg }));
-
-    // Chỉ scroll nếu là phòng hiện tại
-    if (msg.conversationId === conversationId) {
-      scrollToBottom();
-    }
-  };
-
-  socket.on("receiveMessage", handleReceiveMessage);
-
-  return () => {
-    socket.off("receiveMessage", handleReceiveMessage);
-  };
 }, [conversationId]);
 
   const fetchMessages = async () => {
@@ -133,25 +120,36 @@ useEffect(() => {
     }, 100);
   };
 
-  const handleSend = () => {
-    if (!inputText.trim()) return;
+const handleSend = () => {
+  if (!inputText.trim()) return;
 
-    const msg: Message = {
-      conversationId,
-      senderId: currentUser._id,
-      receiverId: user.userChatId,
-      content: inputText,
-      timestamp: new Date().toISOString(),
-      type: "text",
-      name: name,
-      senderAvatar: avatar,
-    };
-
-    socket.emit("sendMessage", msg);
-
-    setInputText("");
-    scrollToBottom();
+  const msg: Message = {
+    conversationId,
+    senderId: currentUser._id,
+    receiverId: user.userChatId,
+    content: inputText,
+    timestamp: new Date().toISOString(),
+    type: "text",
+    name: name,
+    senderAvatar: avatar,
   };
+
+  socket.emit("sendMessage", msg);
+
+  dispatch(addMessage({
+    conversationId,
+    message: msg
+  }));
+
+  dispatch(updateLastMessage({
+    conversationId,
+    content: msg.content,
+    timestamp: msg.timestamp
+  }));
+  
+  setInputText("");
+  scrollToBottom();
+};
 
   const renderMessage = ({ item }: { item: Message }) => {
     const isMine = item.senderId?.toString() === currentUser._id?.toString();
