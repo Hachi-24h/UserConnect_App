@@ -143,7 +143,7 @@ const MessHome = ({ navigation }: any) => {
       await Promise.all(fetchUserDetailTasks);
 
       let formatted = Array.from(uniqueMap.values());
-      console.log("📩 MessHome danh sách người dùng (có nhóm & cá nhân):", formatted);
+      // console.log("📩 MessHome danh sách người dùng (có nhóm & cá nhân):", formatted);
 
       if (formatted.length === 0) {
         const followRes = await axios.get(`${BASE_URL}/follow/followings/${userLoginId}`, {

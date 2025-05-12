@@ -16,6 +16,7 @@ import { increaseUnread } from './store/unreadSlice';
 import CustomToast from './Custom/CustomToast';
 import { incrementUnreadCount } from './store/unreadSlice';
 import { Alert } from 'react-native';
+import { showNotification } from './Custom/notification';
 const Stack = createStackNavigator();
 
 const defaultOptions = {
@@ -41,7 +42,7 @@ const AppContent = () => {
         // console.log(`🔁 [Re]Join room sau khi chuyển trang: ${conv._id}`);
       });
     }
-    console.log("🔁 Đã join lại tất cả các room sau khi chuyển trang.");
+    console.log("🔁 Đã tham gia tất cả các phòng=============================");
   };
 
   // 🔄 Join room khi chuyển trang
@@ -51,36 +52,42 @@ const AppContent = () => {
   }, [navigationRef, conversations, userLoginId]);
 
   // 🔥 Lắng nghe tin nhắn toàn cục
-  useEffect(() => {
-    const handleReceiveMessage = (msg: any) => {
-      console.log("📩 Nhận tin nhắn từ socket:", msg);
-    
-      const isSender = msg.senderId === userLoginId;
-      const isReceiver = msg.receiverId === userLoginId;
-  
-      // 👉 Chỉ thông báo nếu bạn KHÔNG phải là người gửi
-     
-        setToastMsg({
-          name: msg.name,
-          content: msg.content,
-          senderAvatar: msg.senderAvatar,
-          timestamp: msg.timestamp,
-        });
-        setToastVisible(true);
-      
-  
-      // 👉 Luôn cộng unread nếu bạn là người nhận
-      
-        // @ts-ignore
-        dispatch(incrementUnreadCount(msg.receiverId, msg.conversationId, user.token));
-      
-    };
-  
-    socket.on("receiveMessage", handleReceiveMessage);
+ useEffect(() => {
+  const handleReceiveMessage = (msg: any) => {
+    const isSender = msg.senderId === userLoginId;
+
+    // 💥 Chỉ xử lý nếu bạn KHÔNG phải là người gửi
+    if (isSender) return;
+
+    // ✅ Toast / thông báo
+    setToastMsg({
+      name: msg.name,
+      content: msg.content,
+      senderAvatar: msg.senderAvatar,
+      timestamp: msg.timestamp,
+    });
+    setToastVisible(true);
+
+    // ✅ Cập nhật unread + Redux
+    //@ts-ignore
+    dispatch(incrementUnreadCount(msg.receiverId, msg.conversationId, user.token));
+    dispatch({
+      type: 'chat/updateLastMessage',
+      payload: {
+        conversationId: msg.conversationId,
+        content: msg.content,
+        senderId: msg.senderId,
+        name: msg.name,
+        timestamp: msg.timestamp,
+      },
+    });
+  };
+  socket.on("receiveMessage", handleReceiveMessage);
     return () => {
-      socket.off("receiveMessage", handleReceiveMessage);
-    };
-  }, [dispatch, userLoginId]);
+    socket.off("receiveMessage", handleReceiveMessage);
+  };
+}, [dispatch, userLoginId, ]);
+  
   return (
     <NavigationContainer
       ref={navigationRef}

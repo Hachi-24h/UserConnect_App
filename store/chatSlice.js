@@ -32,6 +32,7 @@ const chatSlice = createSlice({
     clearConversations: (state) => {
       state.conversations = [];
     },
+    
   },
 });
 
@@ -44,6 +45,11 @@ export const {
 } = chatSlice.actions;
 
 // ✅ Thunk action để fetch lại conversations
+
+
+export default chatSlice.reducer;
+
+
 export const fetchConversations = (userId, token) => async (dispatch) => {
   try {
     const res = await axios.get(`${BASE_URL}/chat/conversations/all/${userId}`, {
@@ -65,5 +71,3 @@ export const fetchConversations = (userId, token) => async (dispatch) => {
     console.error("❌ Redux: fetch conversations failed:", error);
   }
 };
-
-export default chatSlice.reducer;

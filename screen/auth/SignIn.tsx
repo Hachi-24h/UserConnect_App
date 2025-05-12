@@ -49,7 +49,18 @@ const SignInScreen = ({ navigation }: any) => {
       const conversationsRes = await axios.get(`${BASE_URL}/chat/conversations/all/${res.user._id}`, {
         headers: { Authorization: `Bearer ${res.token}` },
       });
+
+
+
+
+
+
       const conversations = conversationsRes.data;
+      console.log("Danh sách cuộc hội thoại: ", conversations);
+      const message= conversations[0]?.messages
+      console.log("Nội dung tin nhắn cá nhân trong biến message:\n ", message);
+      const messageGroup = conversations[2]?.messages
+      console.log("Nội dung tin nhắn nhóm trong biến messageGroup:\n ", messageGroup);
       dispatch(setConversations(conversations));
       
       // 🔥 Tạo map chứa unread count
