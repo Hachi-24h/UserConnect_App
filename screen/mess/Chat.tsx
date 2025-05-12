@@ -94,19 +94,27 @@ const ChatScreen = ({ navigation }: any) => {
   }, []);
 
 
-  useEffect(() => {
-    socket.emit("joinRoom", conversationId);
-    fetchMessages();
+useEffect(() => {
+  if (!conversationId) return;
 
-    socket.on("receiveMessage", (msg: Message) => {
-      dispatch(addMessage({ conversationId, message: msg }));
+  socket.emit("joinRoom", conversationId);
+  fetchMessages();
+
+  const handleReceiveMessage = (msg: Message) => {
+    dispatch(addMessage({ conversationId: msg.conversationId, message: msg }));
+
+    // Chỉ scroll nếu là phòng hiện tại
+    if (msg.conversationId === conversationId) {
       scrollToBottom();
-    });
+    }
+  };
 
-    return () => {
-      socket.off("receiveMessage");
-    };
-  }, [conversationId]);
+  socket.on("receiveMessage", handleReceiveMessage);
+
+  return () => {
+    socket.off("receiveMessage", handleReceiveMessage);
+  };
+}, [conversationId]);
 
   const fetchMessages = async () => {
     try {

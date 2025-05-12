@@ -19,6 +19,9 @@ import axios from 'axios';
 import ip from '../../config/IpAddress';
 import { setConversations } from '../../store/chatSlice';
 import { setUnreadCounts } from '../../store/unreadSlice';
+
+import { fetchConversations } from '../../store/chatSlice';
+
 const { height, width } = Dimensions.get('window');
 const SignInScreen = ({ navigation }: any) => {
   const [username, setUsername] = useState('hachi11');
@@ -46,32 +49,9 @@ const SignInScreen = ({ navigation }: any) => {
       // gọi trực tiếp lại hàm getUserDetails và lấy kết quả (đồng bộ)
       const detail = await getUserDetails(res.user._id);
       // Lấy danh sách các cuộc trò chuyện
-      const conversationsRes = await axios.get(`${BASE_URL}/chat/conversations/all/${res.user._id}`, {
-        headers: { Authorization: `Bearer ${res.token}` },
-      });
+      // @ts-ignore
+    await dispatch(fetchConversations(res.user._id, res.token));
 
-
-
-
-
-
-      const conversations = conversationsRes.data;
-      console.log("Danh sách cuộc hội thoại: ", conversations);
-      const message= conversations[0]?.messages
-      console.log("Nội dung tin nhắn cá nhân trong biến message:\n ", message);
-      const messageGroup = conversations[2]?.messages
-      console.log("Nội dung tin nhắn nhóm trong biến messageGroup:\n ", messageGroup);
-      dispatch(setConversations(conversations));
-      
-      // 🔥 Tạo map chứa unread count
-      const unreadMap: { [key: string]: number } = {};
-
-      conversations.forEach((conv: { _id: string; unreadCount?: number }) => {
-        unreadMap[conv._id] = conv.unreadCount || 0;
-      });
-      
-      dispatch(setUnreadCounts(unreadMap));
-      
 
       setLoading(false);
 

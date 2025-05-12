@@ -22,6 +22,7 @@ interface UserListProps {
 const UserList: React.FC<UserListProps> = ({ users, onUserPress, unreadCounts }) => {
 
   const renderItem = ({ item }: { item: UserItem }) => {
+    // console.log("🚀 ~ file: UserList.tsx:30 ~ renderItem ~ item:----------------------\n", item,"\n-----------------------\n");
     const conversationUnreadCount = item.conversationId ? unreadCounts[item.conversationId] || 0 : 0;
     const displayMessage = item.lastMessage;
 
