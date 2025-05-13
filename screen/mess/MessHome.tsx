@@ -137,6 +137,7 @@ const MessHome = ({ navigation }: any) => {
       )}
 
       <Footer navigation={navigation} />
+      
     </View>
   );
 };

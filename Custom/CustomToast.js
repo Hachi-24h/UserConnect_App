@@ -1,20 +1,29 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { View, Text, Image, StyleSheet, Modal, Animated } from 'react-native';
 
 const CustomToast = ({ visible, onHide, msg }) => {
-  const fadeAnim = new Animated.Value(0);
-
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(-50)).current; // bắt đầu ở trên cao
+  console.log('msg:', msg);
   useEffect(() => {
     if (visible) {
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 200,
-        useNativeDriver: true,
-      }).start();
+      // Chạy cả fade + slide cùng lúc
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 1100,
+          useNativeDriver: true,
+        }),
+        Animated.timing(slideAnim, {
+          toValue: 0,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+      ]).start();
 
       const timer = setTimeout(() => {
         onHide();
-      }, 1000);
+      }, 2000); // hiển thị trong 2s
 
       return () => clearTimeout(timer);
     }
@@ -23,13 +32,18 @@ const CustomToast = ({ visible, onHide, msg }) => {
   if (!visible) return null;
 
   return (
-    <Modal transparent animationType="fade">
+    <Modal transparent animationType="none">
       <View style={styles.overlay}>
-        <Animated.View style={[styles.toast, { opacity: fadeAnim }]}>
-          <Image
-            source={{ uri: msg.senderAvatar }}
-            style={styles.avatar}
-          />
+        <Animated.View
+          style={[
+            styles.toast,
+            {
+              opacity: fadeAnim,
+              transform: [{ translateY: slideAnim }],
+            },
+          ]}
+        >
+          <Image source={{ uri: msg.senderAvatar }} style={styles.avatar} />
           <View style={styles.textContainer}>
             <Text style={styles.name}>{msg.name}</Text>
             <Text style={styles.content} numberOfLines={1}>
@@ -48,7 +62,7 @@ const CustomToast = ({ visible, onHide, msg }) => {
 const styles = StyleSheet.create({
   overlay: {
     position: 'absolute',
-    top: 50,
+    top: 5,
     left: 10,
     right: 10,
     zIndex: 999,

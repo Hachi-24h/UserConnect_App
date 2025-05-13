@@ -2,10 +2,12 @@ import socket from './socket';
 import { showNotification } from '../Custom/notification';
 import { incrementUnreadCount } from '../store/unreadSlice';
 import { addMessage, updateLastMessage } from '../store/chatSlice';
+import { playNotificationSound } from '../Custom/soundPlayer';
 
 interface Message {
     _id: string;
     conversationId: string;
+    isGroup: boolean;
     senderId: string;
     content: string;
     timestamp: string;
@@ -43,19 +45,21 @@ export const setupSocketListeners = ({
         if (isSender) return;
 
         const isActive = msg.conversationId === currentConversationId;
-
+     
+        console.log("🛑 tên cuộc trò chuyện : ", msg.isGroup);
+        playNotificationSound();
         // 🔔 Hiển thị thông báo nếu không ở trong phòng đó
         if (!isActive) {
-            showNotification(`${msg.name} đã nhắn: ${msg.content}`, "success");
+            // showNotification(`${msg.name} đã nhắn: ${msg.content}`, "success");
 
             // Nếu muốn toast UI (tuỳ chọn)
-            // setToastMsg({
-            //   name: msg.name,
-            //   content: msg.content,
-            //   senderAvatar: msg.senderAvatar,
-            //   timestamp: msg.timestamp,
-            // });
-            // setToastVisible(true);
+            setToastMsg({
+              name: msg.name,
+              content: msg.content,
+              senderAvatar: msg.senderAvatar,
+              timestamp: msg.timestamp,
+            });
+            setToastVisible(true);
         }
 
         // ✅ Thêm tin nhắn mới vào Redux
@@ -86,4 +90,5 @@ export const setupSocketListeners = ({
         socket.off("receiveMessage", handleReceiveMessage);
         console.log("🛑 Đã huỷ lắng nghe receiveMessage");
     };
+    
 };
