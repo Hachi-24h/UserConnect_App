@@ -77,14 +77,7 @@ export const setupSocketListeners = ({
             senderId: msg.senderId, // ✅ đúng luôn
         }));
 
-        // ✅ Tăng số tin chưa đọc nếu đang không ở trong phòng
-        if (!isActive) {
-            dispatch(incrementUnreadCount({
-                userId,
-                conversationId: msg.conversationId,
-                token,
-            }));
-        }
+      
     };
 
     socket.on("receiveMessage", handleReceiveMessage);

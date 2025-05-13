@@ -5,7 +5,7 @@ import UserList from './component/UserList';
 import styles from "../../Css/mess/MessHome";
 import Footer from '../other/Footer';
 import { resetUnreadCount } from '../../store/unreadSlice';
-
+import { getToken } from '../../utils/token';
 type UserItem = {
   _id: string;
   avatar: string;
@@ -28,14 +28,22 @@ const MessHome = ({ navigation }: any) => {
   const unreadCounts = useSelector((state: any) => state.unread);
   const userLoginId = user?._id;
   const dispatch = useDispatch();
+  const [token, setToken] = useState<string | null>(null);
 
+  useEffect(() => {
+    const fetchToken = async () => {
+      const storedToken = await getToken();
+      setToken(storedToken);
+      console.log("✅ Token lấy được từ async storage:", storedToken);
+    };
+    fetchToken();
+  }, []);
+  console.log("token : ", token);
   useEffect(() => {
     if (!conversations || conversations.length === 0) return;
 
     const result = conversations.map((conv: any) => {
-      console.log("🚀 ~ file: MessHome.tsx:20 ~ conv:\n", conv,
-        "\n-----------------------\n",
-      );
+     
       const isGroup = conv.isGroup;
       const lastMessage = conv.lastMessage || "Nhấn để bắt đầu trò chuyện";
 
@@ -45,23 +53,21 @@ const MessHome = ({ navigation }: any) => {
       if (isGroup) {
         displayName = conv.groupName || "Nhóm không tên";
         avatar = conv.avatar || 'https://placehold.co/100x100';
-      
+
       } else if (conv.otherUser) {
         displayName = conv.otherUser.name || "Không rõ";
         avatar = conv.otherUser.avatar || 'https://placehold.co/100x100';
-        
-      }
 
+      }
+      console.log("thời gian tin nhắn cuối: ", conv.updatedAt);
       return {
         _id: conv._id,
         avatar,
         username: displayName,
         lastMessage,
-        timestamp: conv.updatedAt
-          ? new Date(conv.updatedAt).toLocaleTimeString()
-          : '',
+        timestamp: conv.updatedAt,
         conversationId: conv._id,
-          lastMessageSenderId: conv.lastMessageSenderId || null, // ✅ Lấy người gửi cuối
+        lastMessageSenderId: conv.lastMessageSenderId || null, // ✅ Lấy người gửi cuối
         isGroup,
       };
     });
@@ -86,10 +92,10 @@ const MessHome = ({ navigation }: any) => {
     try {
       const conversationId = user.conversationId;
       const isGroup = user.username?.startsWith("Nhóm") || user.username?.includes("Ông");
-
+      
       if (conversationId) {
         //@ts-ignore
-        // dispatch(resetUnreadCount(userLoginId, conversationId, user.token));
+        dispatch(resetUnreadCount(userLoginId, conversationId, token));
       }
 
       const fullUserInfo = {

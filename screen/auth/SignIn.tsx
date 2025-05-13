@@ -39,7 +39,7 @@ const SignInScreen = ({ navigation }: any) => {
       // login xong sẽ lưu user vào Redux
       const res = await login(username, password);
 
-
+  
       dispatch(setUser({
         _id: res.user._id,
         token: res.token,
