@@ -93,7 +93,7 @@ const ForgotPasswordScreen = ({ navigation }: any) => {
 
       <TextInput
         style={styles.input}
-        placeholder="e.g. 0379664715"
+        placeholder="Phone number"
         placeholderTextColor="#aaa"
         keyboardType="phone-pad"
         value={phoneNumber}

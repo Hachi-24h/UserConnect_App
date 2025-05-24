@@ -2066,10 +2066,10 @@
   dependencies:
     firebase "11.3.1"
 
-"@react-native-firebase/auth@^21.12.3":
-  version "21.12.3"
-  resolved "https://registry.yarnpkg.com/@react-native-firebase/auth/-/auth-21.12.3.tgz#45921d980a9d67b60002403fee98ba0a9688ae09"
-  integrity sha512-GK0yZfOxNP3CwczsMIYzldBf9Qv26DCstOTGvwusC75XppSyWE/b6I2ZqB219wv9zyvVgO2DRnRcGk2FaQtCsw==
+"@react-native-firebase/auth@^22.2.0":
+  version "22.2.0"
+  resolved "https://registry.yarnpkg.com/@react-native-firebase/auth/-/auth-22.2.0.tgz#1011a0b4c0bda1e5a173d71d444aceaa78e1eb51"
+  integrity sha512-RnuZVisa9a/ey9nyeBHUDkMNwoHLRuvDCjGwC/qgj/ygyEAjOTV4zqZ/OHSVOhQO/UwU4L0tYdxwT2EQorhgDA==
   dependencies:
     plist "^3.1.0"
 

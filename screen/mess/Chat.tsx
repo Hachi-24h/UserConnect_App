@@ -1,31 +1,16 @@
 import React, { useState, useEffect, useRef } from "react";
-import {
-  View,
-  Text,
-  FlatList,
-  TextInput,
-  TouchableOpacity,
-  Image,
-  Dimensions,
-} from "react-native";
+import { View, FlatList } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
-import {
-  ArrowLeft2,
-  Send,
-  Call,
-  Video,
-  InfoCircle,
-} from "iconsax-react-native";
+import { RouteProp, useRoute } from "@react-navigation/native";
 import styles from "../../Css/chat";
 import socket from "../../socket/socket";
-import color from "../../Custom/Color";
 import { getMessages } from "../../socket/chatApi";
 import { resetUnread } from "../../store/unreadSlice";
-import { addMessage, setMessages } from "../../store/chatSlice";
-import { RouteProp, useRoute } from "@react-navigation/native";
+import { addMessage, setMessages, updateLastMessage } from "../../store/chatSlice";
 import { selectMessagesByConversation } from '../../store/chatSelectors';
-import { updateLastMessage } from "../../store/chatSlice";
-const { width } = Dimensions.get("window");
+import MessageBubble from "./component/MessageBubble";
+import ChatHeader from "./component/ChatHeader";
+import MessageInput from "./component/MessageInput";
 
 // ===================== Types =====================
 interface UserChat {
@@ -64,41 +49,28 @@ const ChatScreen = ({ navigation }: any) => {
 
   const dispatch = useDispatch();
   const currentUser = useSelector((state: RootState) => state.user);
-
   const conversationId = user.conversationId;
-
   const messages = useSelector(selectMessagesByConversation(conversationId));
-
+  const userDetail = useSelector((state: any) => state.userDetail);
   const flatListRef = useRef<FlatList>(null);
+
   const [inputText, setInputText] = useState("");
-  const userDetail = useSelector((state: any) => state.userDetail);  // Getting user details from Redux
   const name = `${userDetail.firstname} ${userDetail.lastname}`;
-  const avatar = userDetail.avatar || "https://i.postimg.cc/6pXNwv51/backgrond-mac-dinh.jpg";  // Default avatar if not available
-  console.log("name: ", name);
+  const avatar = userDetail.avatar || "https://i.postimg.cc/6pXNwv51/backgrond-mac-dinh.jpg";
 
   useEffect(() => {
     if (conversationId) {
       dispatch(resetUnread(conversationId));
-      dispatch({
-        type: "userDetail/setCurrentConversationId",
-        payload: conversationId,
-      });
+      dispatch({ type: "userDetail/setCurrentConversationId", payload: conversationId });
     }
+
+    return () => {
+      dispatch({ type: "userDetail/setCurrentConversationId", payload: null });
+    };
   }, [conversationId]);
 
   useEffect(() => {
-    return () => {
-      dispatch({
-        type: "userDetail/setCurrentConversationId",
-        payload: null,
-      });
-    };
-  }, []);
-
-
-  useEffect(() => {
     if (!conversationId) return;
-
     socket.emit("joinRoom", conversationId);
     fetchMessages();
   }, [conversationId]);
@@ -107,7 +79,6 @@ const ChatScreen = ({ navigation }: any) => {
     try {
       const res: Message[] = await getMessages(conversationId, currentUser.token);
       dispatch(setMessages({ conversationId, messages: res }));
-      console.log("📩 Tin nhắn đã được tải:", res);
       scrollToBottom();
     } catch (error) {
       console.error("❌ Lỗi lấy tin nhắn:", error);
@@ -130,91 +101,29 @@ const ChatScreen = ({ navigation }: any) => {
       content: inputText,
       timestamp: new Date().toISOString(),
       type: "text",
-      name: name,
+      name,
       senderAvatar: avatar,
     };
 
     socket.emit("sendMessage", msg);
-
-    dispatch(addMessage({
-      conversationId,
-      message: msg
-    }));
-
-    dispatch(updateLastMessage({
-      conversationId,
-      content: msg.content,
-      timestamp: msg.timestamp,
-      senderId: msg.senderId, // ✅ QUAN TRỌNG
-    }));
-
+    dispatch(addMessage({ conversationId, message: msg }));
+    dispatch(updateLastMessage({ conversationId, content: msg.content, timestamp: msg.timestamp, senderId: msg.senderId }));
     setInputText("");
     scrollToBottom();
   };
 
-  const renderMessage = ({ item }: { item: Message }) => {
-    const isMine = item.senderId?.toString() === currentUser._id?.toString();
-    const isGroup = user?.isGroup;
-
-    return (
-      <View style={{ marginVertical: 4 }}>
-        {!isMine && isGroup && item.name && (
-          <Text style={{ marginLeft: 8, fontWeight: "bold", color: "white" }}>
-            {item.name}
-          </Text>
-        )}
-        <View
-          style={[
-            styles.messageBubble,
-            isMine ? styles.myMessage : styles.otherMessage,
-            {
-              alignSelf: isMine ? "flex-end" : "flex-start",
-              backgroundColor: isMine ? color.accentBlue : color.gray,
-              padding: 10,
-              borderRadius: 10,
-              maxWidth: "80%",
-              marginTop: 2,
-            },
-          ]}
-        >
-          <Text style={{ color: isMine ? "white" : "black" }}>
-            {item.content}
-          </Text>
-        </View>
-      </View>
-    );
-  };
-
+  const renderMessage = ({ item }: { item: Message }) => (
+    <MessageBubble
+      message={item}
+      isMine={item.senderId?.toString() === currentUser._id?.toString()}
+      isGroup={user?.isGroup}
+    />
+  );
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <ArrowLeft2 size={28} color={color.orange} />
-        </TouchableOpacity>
-        <Image source={{ uri: user.avatar }} style={styles.avatar} />
-        <View style={styles.userInfo}>
-          <Text style={styles.userName}>
-            {user.firstname || user.username} {user.lastname || ''}
-          </Text>
+      <ChatHeader user={user} navigation={navigation} />
 
-          <Text style={styles.statusText}>Hoạt động gần đây</Text>
-        </View>
-        <View style={styles.headerIcons}>
-          <TouchableOpacity>
-            <Call size={26} color={color.orange} />
-          </TouchableOpacity>
-          <TouchableOpacity>
-            <Video size={26} color={color.orange} />
-          </TouchableOpacity>
-          <TouchableOpacity>
-            <InfoCircle size={26} color={color.orange} />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {/* Messages */}
       <FlatList
         ref={flatListRef}
         data={messages}
@@ -223,21 +132,9 @@ const ChatScreen = ({ navigation }: any) => {
         contentContainerStyle={styles.messagesList}
       />
 
-      {/* Input */}
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Nhắn gì đó..."
-          placeholderTextColor={color.textSecondary}
-          value={inputText}
-          onChangeText={setInputText}
-        />
-        <TouchableOpacity onPress={handleSend}>
-          <Send size={24} color={color.accentBlue} />
-        </TouchableOpacity>
-      </View>
+      <MessageInput inputText={inputText} setInputText={setInputText} handleSend={handleSend} />
     </View>
   );
 };
 
-export default ChatScreen;
+export default ChatScreen;  

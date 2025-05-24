@@ -7,7 +7,7 @@ const BASE_URL = ip.BASE_URL;
 
 // ================= Types =================
 interface Message {
-  _id: string;
+  _id?: string;
   senderId: string;
   content: string;
   timestamp: string;
@@ -130,13 +130,19 @@ export const fetchConversations = (userId: string, token: string) => async (disp
       const otherUser =
         !conv.isGroup && conv.members?.find((m: any) => m._id !== userId);
       const lastMsg = conv.messages?.[conv.messages.length - 1];
+      let displayContent = lastMsg?.content || '';
+      if (lastMsg?.type === 'image') {
+        displayContent = 'Đã gửi một ảnh mới';
+      } else if (lastMsg?.type === 'file') {
+        displayContent = 'Đã gửi một file mới';
+      }
       conversationsFormatted.push({
         _id: conv._id,
         isGroup: conv.isGroup,
         groupName: conv.groupName || '',
         avatar: conv.avatar || '',
         updatedAt: conv.updatedAt,
-        lastMessage: lastMsg?.content || '',
+        lastMessage: displayContent || '',
         lastMessageSenderId: lastMsg?.senderId || null, // ✅ Dòng mới
         otherUser: otherUser
           ? {

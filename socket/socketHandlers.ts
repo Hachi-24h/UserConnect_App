@@ -13,6 +13,7 @@ interface Message {
     timestamp: string;
     name?: string;
     senderAvatar?: string;
+    type: string; // ✅ thêm dòng này
 }
 
 interface SetupSocketParams {
@@ -42,22 +43,29 @@ export const setupSocketListeners = ({
 
     const handleReceiveMessage = (msg: Message) => {
         const isSender = msg.senderId === userId;
+        console.log("🛑 Tin nhắn nhận được: ", msg);
         if (isSender) return;
 
         const isActive = msg.conversationId === currentConversationId;
-     
-        console.log("🛑 tên cuộc trò chuyện : ", msg.isGroup);
+
+
         playNotificationSound();
+        let displayContent = msg.content;
+        if (msg.type === "image") {
+            displayContent = "Đã gửi một ảnh mới";
+        } else if (msg.type === "file") {
+            displayContent = "Đã gửi một file mới";
+        }
         // 🔔 Hiển thị thông báo nếu không ở trong phòng đó
         if (!isActive) {
             // showNotification(`${msg.name} đã nhắn: ${msg.content}`, "success");
 
             // Nếu muốn toast UI (tuỳ chọn)
             setToastMsg({
-              name: msg.name,
-              content: msg.content,
-              senderAvatar: msg.senderAvatar,
-              timestamp: msg.timestamp,
+                name: msg.name,
+                content: displayContent,
+                senderAvatar: msg.senderAvatar,
+                timestamp: msg.timestamp,
             });
             setToastVisible(true);
         }
@@ -76,12 +84,12 @@ export const setupSocketListeners = ({
         // ✅ Cập nhật tin nhắn cuối
         dispatch(updateLastMessage({
             conversationId: msg.conversationId,
-            content: msg.content,
+            content: displayContent,
             timestamp: msg.timestamp,
             senderId: msg.senderId, // ✅ đúng luôn
         }));
 
-      
+
     };
 
     socket.on("receiveMessage", handleReceiveMessage);
@@ -90,5 +98,5 @@ export const setupSocketListeners = ({
         socket.off("receiveMessage", handleReceiveMessage);
         console.log("🛑 Đã huỷ lắng nghe receiveMessage");
     };
-    
+
 };

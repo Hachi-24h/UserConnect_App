@@ -34,7 +34,7 @@ const MessHome = ({ navigation }: any) => {
     const fetchToken = async () => {
       const storedToken = await getToken();
       setToken(storedToken);
-      console.log("✅ Token lấy được từ async storage:", storedToken);
+      // console.log("✅ Token lấy được từ async storage:", storedToken);
     };
     fetchToken();
   }, []);
@@ -43,8 +43,9 @@ const MessHome = ({ navigation }: any) => {
     if (!conversations || conversations.length === 0) return;
 
     const result = conversations.map((conv: any) => {
-     
+
       const isGroup = conv.isGroup;
+      
       const lastMessage = conv.lastMessage || "Nhấn để bắt đầu trò chuyện";
 
       let displayName = "Không rõ";
@@ -92,7 +93,7 @@ const MessHome = ({ navigation }: any) => {
     try {
       const conversationId = user.conversationId;
       const isGroup = user.username?.startsWith("Nhóm") || user.username?.includes("Ông");
-      
+
       if (conversationId) {
         //@ts-ignore
         dispatch(resetUnreadCount(userLoginId, conversationId, token));
@@ -137,7 +138,7 @@ const MessHome = ({ navigation }: any) => {
       )}
 
       <Footer navigation={navigation} />
-      
+
     </View>
   );
 };
