@@ -13,7 +13,7 @@ interface Message {
     timestamp: string;
     name?: string;
     senderAvatar?: string;
-    type: string; // ✅ thêm dòng này
+    type: string; // Add this line if missing
 }
 
 interface SetupSocketParams {
@@ -78,6 +78,9 @@ export const setupSocketListeners = ({
                 senderId: msg.senderId,
                 content: msg.content,
                 timestamp: msg.timestamp,
+                type: msg.type,
+                name: msg.name,
+                senderAvatar: msg.senderAvatar,
             }
         }));
 

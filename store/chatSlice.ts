@@ -11,10 +11,13 @@ interface Message {
   senderId: string;
   content: string;
   timestamp: string;
+  type: string;
+  name?: string;
+  senderAvatar?: string;
 }
 
-interface OtherUser {
-  _id: string;
+interface Member {
+  userId: string;
   name: string;
   avatar: string;
 }
@@ -26,14 +29,14 @@ interface Conversation {
   avatar: string;
   updatedAt?: string;
   lastMessage?: string;
-  lastMessageSenderId?: string; // ✅ THÊM DÒNG NÀY
+  lastMessageSenderId?: string;
   otherUser?: {
     _id: string;
     name: string;
     avatar: string;
   } | null;
+  members?: Member[];
 }
-
 
 interface ChatState {
   conversations: Conversation[];
@@ -83,11 +86,11 @@ const chatSlice = createSlice({
       }>
     ) => {
       const { conversationId, content, timestamp, senderId } = action.payload;
-      const conversation = state.conversations.find(conv => conv._id === conversationId);
+      const conversation = state.conversations.find(c => c._id === conversationId);
       if (conversation) {
         conversation.lastMessage = content;
         conversation.updatedAt = timestamp;
-        conversation.lastMessageSenderId = senderId; // ✅ Ghi thẳng, không cần check
+        conversation.lastMessageSenderId = senderId;
       }
     },
     clearMessages: (state, action: PayloadAction<string>) => {
@@ -119,6 +122,7 @@ export const fetchConversations = (userId: string, token: string) => async (disp
     });
 
     const rawConversations = res.data;
+    console.log("✅ Fetched conversations:", rawConversations);
 
     const conversationsFormatted: Conversation[] = [];
     const messagesMap: { [key: string]: Message[] } = {};
@@ -130,33 +134,43 @@ export const fetchConversations = (userId: string, token: string) => async (disp
       const otherUser =
         !conv.isGroup && conv.members?.find((m: any) => m._id !== userId);
       const lastMsg = conv.messages?.[conv.messages.length - 1];
+
       let displayContent = lastMsg?.content || '';
-      if (lastMsg?.type === 'image') {
-        displayContent = 'Đã gửi một ảnh mới';
-      } else if (lastMsg?.type === 'file') {
-        displayContent = 'Đã gửi một file mới';
-      }
+      if (lastMsg?.type === 'image') displayContent = 'Đã gửi một ảnh mới';
+      else if (lastMsg?.type === 'file') displayContent = 'Đã gửi một file mới';
+
+      const members: Member[] = conv.members.map((m: any) => ({
+        userId: m.userId,
+        name: m.name,
+        avatar: m.avatar || '',
+      }));
+
       conversationsFormatted.push({
         _id: conv._id,
         isGroup: conv.isGroup,
         groupName: conv.groupName || '',
         avatar: conv.avatar || '',
         updatedAt: conv.updatedAt,
-        lastMessage: displayContent || '',
-        lastMessageSenderId: lastMsg?.senderId || null, // ✅ Dòng mới
+        lastMessage: displayContent,
+        lastMessageSenderId: lastMsg?.senderId || null,
         otherUser: otherUser
           ? {
-            _id: otherUser._id,
-            name: otherUser.name,
-            avatar: otherUser.avatar,
-          }
+              _id: otherUser._id,
+              name: otherUser.name,
+              avatar: otherUser.avatar,
+            }
           : null,
+        members: conv.isGroup ? members : undefined,
       });
+
       messagesMap[conv._id] = (conv.messages || []).map((msg: any) => ({
         _id: msg._id,
         senderId: msg.senderId,
         content: msg.content,
         timestamp: msg.timestamp,
+        type: msg.type,
+        name: msg.name,
+        senderAvatar: msg.senderAvatar,
       }));
     }
 
@@ -167,7 +181,7 @@ export const fetchConversations = (userId: string, token: string) => async (disp
       dispatch(setMessages({ conversationId, messages }));
     }
 
-    console.log("✅ Redux updated: conversations + messages");
+    console.log("✅ Redux updated: conversations + messages + members");
   } catch (err: any) {
     console.error("❌ Failed to fetch conversations", err.response?.data || err.message);
   }

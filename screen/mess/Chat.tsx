@@ -1,3 +1,4 @@
+// Chat.tsx
 import React, { useState, useEffect, useRef } from "react";
 import { View, FlatList } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
@@ -12,7 +13,6 @@ import MessageBubble from "./component/MessageBubble";
 import ChatHeader from "./component/ChatHeader";
 import MessageInput from "./component/MessageInput";
 
-// ===================== Types =====================
 interface UserChat {
   isGroup: any;
   avatar: string;
@@ -42,21 +42,20 @@ interface RootState {
   };
 }
 
-// ===================== Component =====================
 const ChatScreen = ({ navigation }: any) => {
   const route = useRoute<RouteProp<Record<string, { user: UserChat }>, string>>();
   const { user } = route.params;
-
   const dispatch = useDispatch();
   const currentUser = useSelector((state: RootState) => state.user);
   const conversationId = user.conversationId;
   const messages = useSelector(selectMessagesByConversation(conversationId));
-  const userDetail = useSelector((state: any) => state.userDetail);
+  // console.log("ChatScreen", messages);
+  const userDetailState = useSelector((state: any) => state.userDetail);
   const flatListRef = useRef<FlatList>(null);
 
   const [inputText, setInputText] = useState("");
-  const name = `${userDetail.firstname} ${userDetail.lastname}`;
-  const avatar = userDetail.avatar || "https://i.postimg.cc/6pXNwv51/backgrond-mac-dinh.jpg";
+  const name = `${userDetailState.firstname} ${userDetailState.lastname}`;
+  const avatar = userDetailState.avatar || "https://i.postimg.cc/6pXNwv51/backgrond-mac-dinh.jpg";
 
   useEffect(() => {
     if (conversationId) {
@@ -72,7 +71,10 @@ const ChatScreen = ({ navigation }: any) => {
   useEffect(() => {
     if (!conversationId) return;
     socket.emit("joinRoom", conversationId);
-    fetchMessages();
+
+    if (!messages || messages.length === 0) {
+      fetchMessages(); // chỉ fetch nếu chưa có tin nhắn
+    }
   }, [conversationId]);
 
   const fetchMessages = async () => {
@@ -93,7 +95,6 @@ const ChatScreen = ({ navigation }: any) => {
 
   const handleSend = () => {
     if (!inputText.trim()) return;
-
     const msg: Message = {
       conversationId,
       senderId: currentUser._id,
@@ -104,7 +105,6 @@ const ChatScreen = ({ navigation }: any) => {
       name,
       senderAvatar: avatar,
     };
-
     socket.emit("sendMessage", msg);
     dispatch(addMessage({ conversationId, message: msg }));
     dispatch(updateLastMessage({ conversationId, content: msg.content, timestamp: msg.timestamp, senderId: msg.senderId }));
@@ -112,18 +112,25 @@ const ChatScreen = ({ navigation }: any) => {
     scrollToBottom();
   };
 
-  const renderMessage = ({ item }: { item: Message }) => (
-    <MessageBubble
-      message={item}
-      isMine={item.senderId?.toString() === currentUser._id?.toString()}
-      isGroup={user?.isGroup}
-    />
-  );
+  const renderMessage = ({ item, index }: { item: Message; index: number }) => {
+    const isMine = item.senderId?.toString() === currentUser._id?.toString();
+    const isGroup = user?.isGroup;
+    const prevMsg = messages[index - 1];
+    const showAvatar = isGroup && (!prevMsg || prevMsg.senderId !== item.senderId);
+    return (
+      <MessageBubble
+        message={item}
+        isMine={isMine}
+        isGroup={isGroup}
+        showAvatar={showAvatar}
+        conversationId={conversationId} // ✅ THÊM
+      />
+    );
+  };
 
   return (
     <View style={styles.container}>
       <ChatHeader user={user} navigation={navigation} />
-
       <FlatList
         ref={flatListRef}
         data={messages}
@@ -131,10 +138,9 @@ const ChatScreen = ({ navigation }: any) => {
         renderItem={renderMessage}
         contentContainerStyle={styles.messagesList}
       />
-
       <MessageInput inputText={inputText} setInputText={setInputText} handleSend={handleSend} />
     </View>
   );
 };
 
-export default ChatScreen;  
+export default ChatScreen; 

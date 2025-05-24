@@ -10,3 +10,12 @@ export const selectMessagesByConversation = (conversationId) =>
     (messagesByConversation) =>
       messagesByConversation[conversationId] || []
   );
+
+export const selectMembersByConversationId = (conversationId) =>
+  createSelector(
+    (state) => state.chat.conversations,
+    (conversations) => {
+      const conv = conversations.find(c => c._id === conversationId);
+      return conv?.members || [];
+    }
+  );
