@@ -1,6 +1,5 @@
-// Chat.tsx
 import React, { useState, useEffect, useRef } from "react";
-import { View, FlatList } from "react-native";
+import { View, Text, FlatList } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
 import { RouteProp, useRoute } from "@react-navigation/native";
 import styles from "../../Css/chat";
@@ -49,7 +48,6 @@ const ChatScreen = ({ navigation }: any) => {
   const currentUser = useSelector((state: RootState) => state.user);
   const conversationId = user.conversationId;
   const messages = useSelector(selectMessagesByConversation(conversationId));
-  // console.log("ChatScreen", messages);
   const userDetailState = useSelector((state: any) => state.userDetail);
   const flatListRef = useRef<FlatList>(null);
 
@@ -73,7 +71,7 @@ const ChatScreen = ({ navigation }: any) => {
     socket.emit("joinRoom", conversationId);
 
     if (!messages || messages.length === 0) {
-      fetchMessages(); // chỉ fetch nếu chưa có tin nhắn
+      fetchMessages();
     }
   }, [conversationId]);
 
@@ -107,40 +105,92 @@ const ChatScreen = ({ navigation }: any) => {
     };
     socket.emit("sendMessage", msg);
     dispatch(addMessage({ conversationId, message: msg }));
-    dispatch(updateLastMessage({ conversationId, content: msg.content, timestamp: msg.timestamp, senderId: msg.senderId }));
+    dispatch(updateLastMessage({
+      conversationId,
+      content: msg.content,
+      timestamp: msg.timestamp,
+      senderId: msg.senderId
+    }));
     setInputText("");
     scrollToBottom();
   };
 
-  const renderMessage = ({ item, index }: { item: Message; index: number }) => {
-    const isMine = item.senderId?.toString() === currentUser._id?.toString();
-    const isGroup = user?.isGroup;
-    const prevMsg = messages[index - 1];
-    const showAvatar = isGroup && (!prevMsg || prevMsg.senderId !== item.senderId);
-    return (
-      <MessageBubble
-        message={item}
-        isMine={isMine}
-        isGroup={isGroup}
-        showAvatar={showAvatar}
-        conversationId={conversationId} // ✅ THÊM
-      />
-    );
+  const formatDate = (iso: string) => {
+    const d = new Date(iso);
+    return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`;
   };
+
+  const buildMessageListWithDates = (messages: Message[]) => {
+    const result: any[] = [];
+    let lastDate = null;
+    for (const msg of messages) {
+      const dateStr = formatDate(msg.timestamp);
+      if (dateStr !== lastDate) {
+        result.push({ type: 'date', date: dateStr });
+        lastDate = dateStr;
+      }
+      result.push({ type: 'message', data: msg });
+    }
+    return result;
+  };
+
+  const messageListWithDates = buildMessageListWithDates(messages);
 
   return (
     <View style={styles.container}>
       <ChatHeader user={user} navigation={navigation} />
+
       <FlatList
         ref={flatListRef}
-        data={messages}
-        keyExtractor={(item, index) => item._id || index.toString()}
-        renderItem={renderMessage}
+        data={messageListWithDates}
+        keyExtractor={(item, index) => item?.data?._id || `${item.type}-${index}`}
+        renderItem={({ item, index }) => {
+          if (item.type === 'date') {
+            return (
+              <View style={{ alignItems: 'center', marginVertical: 10 }}>
+                <View style={{
+                  backgroundColor: '#ccc',
+                  borderRadius: 20,
+                  paddingHorizontal: 12,
+                  paddingVertical: 4,
+                }}>
+                  <Text style={{ fontSize: 12, color: '#444' }}>── {item.date} ──</Text>
+                </View>
+              </View>
+            );
+          }
+
+          const msg: Message = item.data;
+          const isMine = msg.senderId?.toString() === currentUser._id?.toString();
+          const isGroup = user?.isGroup;
+
+          // ✅ Fix đúng logic avatar (bỏ qua item type === 'date')
+          let prevMsg = null;
+          for (let i = index - 1; i >= 0; i--) {
+            if (messageListWithDates[i]?.type === 'message') {
+              prevMsg = messageListWithDates[i].data;
+              break;
+            }
+          }
+
+          const showAvatar = isGroup && (!prevMsg || prevMsg.senderId !== msg.senderId);
+
+          return (
+            <MessageBubble
+              message={msg}
+              isMine={isMine}
+              isGroup={isGroup}
+              showAvatar={showAvatar}
+              conversationId={conversationId}
+            />
+          );
+        }}
         contentContainerStyle={styles.messagesList}
       />
+
       <MessageInput inputText={inputText} setInputText={setInputText} handleSend={handleSend} />
     </View>
   );
 };
 
-export default ChatScreen; 
+export default ChatScreen;
