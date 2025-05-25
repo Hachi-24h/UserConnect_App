@@ -135,14 +135,43 @@ export const setupSocketListeners = ({
         // setToastVisible(true);
     };
 
+    // lắng nghe sự kiện thành viên bị xoá khỏi nhóm
+    const handleMemberRemoved = (data: { conversationId: string; userId: string }) => {
+        const { conversationId, userId: removedUserId } = data;
+
+        if (removedUserId !== userId) return; // Không phải mình thì bỏ qua
+
+        console.log("🚫 Bạn đã bị kick khỏi nhóm:", conversationId);
+
+        // Lấy tên nhóm từ Redux trước khi xoá
+        let groupName = "Unknown Group";
+
+        dispatch((dispatchFn: any, getState: any) => {
+            const { chat } = getState();
+            const targetConv = chat.conversations.find((conv: any) => conv._id === conversationId);
+            groupName = targetConv?.groupName || "Unknown Group";
+
+            const updated = chat.conversations.filter((conv: any) => conv._id !== conversationId);
+            dispatch(setConversations(updated));
+        });
+
+        // ✅ Thông báo
+        showNotification(`You have been removed from the group "${groupName}"`, "error");
+    };
+
+
+
+
     socket.on("receiveMessage", handleReceiveMessage);
     socket.on("newConversation", handleNewConversation);
     socket.on("groupDisbanded", handleGroupDisbanded);
+    socket.on("memberRemoved", handleMemberRemoved);
     return () => {
         socket.off("receiveMessage", handleReceiveMessage);
         socket.off("newConversation", handleNewConversation);
         socket.off("groupDisbanded", handleGroupDisbanded);
-        console.log("🛑 Đã huỷ lắng nghe receiveMessage và newConversation");
+        socket.off("memberRemoved", handleMemberRemoved);
+        console.log("🛑 Đã huỷ lắng nghe các sự kiện ");
     };
 
 };
