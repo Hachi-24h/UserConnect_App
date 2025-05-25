@@ -68,7 +68,7 @@ const MessHome = ({ navigation }: any) => {
         lastMessage,
         timestamp: conv.updatedAt,
         conversationId: conv._id,
-        lastMessageSenderId: conv.lastMessageSenderId || null, // ✅ Lấy người gửi cuối
+        lastMessageSenderId: conv.lastMessageSenderId || null, 
         isGroup,
       };
     });

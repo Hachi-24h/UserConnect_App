@@ -20,6 +20,7 @@
     "axios": "^1.8.4",
     "bcryptjs": "^3.0.2",
     "date-fns": "^4.1.0",
+    "date-fns-tz": "^3.2.0",
     "dayjs": "^1.11.13",
     "dotenv": "^16.5.0",
     "iconsax-react-native": "^0.0.8",

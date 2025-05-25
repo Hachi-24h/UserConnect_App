@@ -52,9 +52,9 @@ export const setupSocketListeners = ({
         playNotificationSound();
         let displayContent = msg.content;
         if (msg.type === "image") {
-            displayContent = "Đã gửi một ảnh mới";
+            displayContent = "Sent a new picture";
         } else if (msg.type === "file") {
-            displayContent = "Đã gửi một file mới";
+            displayContent = "Sent a new filei";
         }
         // 🔔 Hiển thị thông báo nếu không ở trong phòng đó
         if (!isActive) {

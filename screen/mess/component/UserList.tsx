@@ -54,6 +54,7 @@ const UserList: React.FC<UserListProps> = ({ users, onUserPress, unreadCounts })
   }, [users, userLoginId]);
 
   const renderItem = ({ item }: { item: UserItem }) => {
+    console.log("thời gian tin nhắn cuối : ", item.timestamp);
     const conversationUnreadCount = item.conversationId ? unreadCounts[item.conversationId] || 0 : 0;
     const isGroup = item.isGroup;
     const isMyMessage = item.lastMessageSenderId === userLoginId;

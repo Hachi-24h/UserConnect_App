@@ -122,7 +122,7 @@ export const fetchConversations = (userId: string, token: string) => async (disp
     });
 
     const rawConversations = res.data;
-    console.log("✅ Fetched conversations:", rawConversations);
+    // console.log("✅ Fetched conversations:", rawConversations);
 
     const conversationsFormatted: Conversation[] = [];
     const messagesMap: { [key: string]: Message[] } = {};
@@ -136,21 +136,21 @@ export const fetchConversations = (userId: string, token: string) => async (disp
       const lastMsg = conv.messages?.[conv.messages.length - 1];
 
       let displayContent = lastMsg?.content || '';
-      if (lastMsg?.type === 'image') displayContent = 'Đã gửi một ảnh mới';
-      else if (lastMsg?.type === 'file') displayContent = 'Đã gửi một file mới';
-
+      if (lastMsg?.type === 'image') displayContent = 'Sent a new picture';
+      else if (lastMsg?.type === 'file') displayContent = 'Sent a new filei';
+        
       const members: Member[] = conv.members.map((m: any) => ({
         userId: m.userId,
         name: m.name,
         avatar: m.avatar || '',
       }));
-
+      // console.log(` thời gian tin nhắn cuối: của id : ${conv._id} là ${lastMsg?.timestamp}`);
       conversationsFormatted.push({
         _id: conv._id,
         isGroup: conv.isGroup,
         groupName: conv.groupName || '',
         avatar: conv.avatar || '',
-        updatedAt: conv.updatedAt,
+        updatedAt: lastMsg?.timestamp,
         lastMessage: displayContent,
         lastMessageSenderId: lastMsg?.senderId || null,
         otherUser: otherUser
