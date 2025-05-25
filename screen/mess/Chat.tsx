@@ -11,6 +11,7 @@ import { selectMessagesByConversation } from '../../store/chatSelectors';
 import MessageBubble from "./component/MessageBubble";
 import ChatHeader from "./component/ChatHeader";
 import MessageInput from "./component/MessageInput";
+import { setCurrentConversationId } from "../../store/userDetailSlice";
 
 interface UserChat {
   isGroup: any;
@@ -58,14 +59,13 @@ const ChatScreen = ({ navigation }: any) => {
   useEffect(() => {
     if (conversationId) {
       dispatch(resetUnread(conversationId));
-      dispatch({ type: "userDetail/setCurrentConversationId", payload: conversationId });
+      dispatch(setCurrentConversationId(conversationId));
     }
 
     return () => {
-      dispatch({ type: "userDetail/setCurrentConversationId", payload: null });
+      dispatch(setCurrentConversationId(null));
     };
   }, [conversationId]);
-
   useEffect(() => {
     if (!conversationId) return;
     socket.emit("joinRoom", conversationId);

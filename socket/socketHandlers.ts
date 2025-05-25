@@ -43,18 +43,18 @@ export const setupSocketListeners = ({
 
     const handleReceiveMessage = (msg: Message) => {
         const isSender = msg.senderId === userId;
-        console.log("🛑 Tin nhắn nhận được: ", msg);
+        // console.log("🛑 Tin nhắn nhận được: ", msg);
         if (isSender) return;
-
+        
         const isActive = msg.conversationId === currentConversationId;
-
+        console.log("🛑 Tin nhắn nhận được trong phòng: ", msg.conversationId, " - Hiện tại: ", currentConversationId);
 
         playNotificationSound();
         let displayContent = msg.content;
         if (msg.type === "image") {
             displayContent = "Sent a new picture";
         } else if (msg.type === "file") {
-            displayContent = "Sent a new filei";
+            displayContent = "Sent a new file";
         }
         // 🔔 Hiển thị thông báo nếu không ở trong phòng đó
         if (!isActive) {

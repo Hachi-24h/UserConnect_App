@@ -137,7 +137,7 @@ export const fetchConversations = (userId: string, token: string) => async (disp
 
       let displayContent = lastMsg?.content || '';
       if (lastMsg?.type === 'image') displayContent = 'Sent a new picture';
-      else if (lastMsg?.type === 'file') displayContent = 'Sent a new filei';
+      else if (lastMsg?.type === 'file') displayContent = 'Sent a new file';
         
       const members: Member[] = conv.members.map((m: any) => ({
         userId: m.userId,

@@ -38,7 +38,7 @@ const MessHome = ({ navigation }: any) => {
     };
     fetchToken();
   }, []);
-  console.log("token : ", token);
+  // console.log("token : ", token);
   useEffect(() => {
     if (!conversations || conversations.length === 0) return;
 
@@ -60,7 +60,7 @@ const MessHome = ({ navigation }: any) => {
         avatar = conv.otherUser.avatar || 'https://placehold.co/100x100';
 
       }
-      console.log("thời gian tin nhắn cuối: ", conv.updatedAt);
+      // console.log("thời gian tin nhắn cuối: ", conv.updatedAt);
       return {
         _id: conv._id,
         avatar,
