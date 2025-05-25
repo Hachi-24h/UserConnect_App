@@ -1,9 +1,10 @@
 import socket from './socket';
 
-import { addMessage, updateLastMessage } from '../store/chatSlice';
+import { addMessage, deleteMessage, revokeMessage, updateLastMessage } from '../store/chatSlice';
 import { playNotificationSound } from '../Custom/soundPlayer';
 import { setConversations } from '../store/chatSlice';
 import { showNotification } from '../Custom/notification';
+
 interface Message {
     _id: string;
     conversationId: string;
@@ -44,24 +45,18 @@ export const setupSocketListeners = ({
     // lắng nghe sự kiện nhận tin nhắn
     const handleReceiveMessage = (msg: Message) => {
         const isSender = msg.senderId === userId;
-        // console.log("🛑 Tin nhắn nhận được: ", msg);
-        if (isSender) return;
-
         const isActive = msg.conversationId === currentConversationId;
-        console.log("🛑 Tin nhắn nhận được trong phòng: ", msg.conversationId, " - Hiện tại: ", currentConversationId);
 
-        playNotificationSound();
         let displayContent = msg.content;
         if (msg.type === "image") {
             displayContent = "Sent a new picture";
         } else if (msg.type === "file") {
             displayContent = "Sent a new file";
         }
-        // 🔔 Hiển thị thông báo nếu không ở trong phòng đó
-        if (!isActive) {
-            // showNotification(`${msg.name} đã nhắn: ${msg.content}`, "success");
 
-            // Nếu muốn toast UI (tuỳ chọn)
+        // ✅ Chỉ thông báo nếu KHÔNG phải là người gửi & không đang ở phòng đó
+        if (!isSender && !isActive) {
+            playNotificationSound();
             setToastMsg({
                 name: msg.name,
                 content: displayContent,
@@ -71,7 +66,7 @@ export const setupSocketListeners = ({
             setToastVisible(true);
         }
 
-        // ✅ Thêm tin nhắn mới vào Redux
+        // ✅ Luôn cập nhật Redux, kể cả là mình gửi từ thiết bị khác
         dispatch(addMessage({
             conversationId: msg.conversationId,
             message: {
@@ -85,15 +80,12 @@ export const setupSocketListeners = ({
             }
         }));
 
-        // ✅ Cập nhật tin nhắn cuối
         dispatch(updateLastMessage({
             conversationId: msg.conversationId,
             content: displayContent,
             timestamp: msg.timestamp,
-            senderId: msg.senderId, // ✅ đúng luôn
+            senderId: msg.senderId,
         }));
-
-
     };
     // lắng nghe sự kiện tạo nhóm mới
     const handleNewConversation = (conv: any) => {
@@ -159,19 +151,42 @@ export const setupSocketListeners = ({
         showNotification(`You have been removed from the group "${groupName}"`, "error");
     };
 
+    // lắng nghe sự kiện thu hồi tin nhắn
+    const handleMessageRevoked = (data: { messageId: string; conversationId: string }) => {
+        dispatch(revokeMessage({
+            messageId: data.messageId,
+            conversationId: data.conversationId,
+        }));
+    };
 
+    // lắng nghe sự kiện xoá tin nhắn
+    const handleMessageDeleted = (data: { conversationId: string; messageId: string }) => {
+        const { conversationId, messageId } = data;
+
+        console.log("🗑️ Tin nhắn đã bị xoá:", messageId);
+
+        dispatch(deleteMessage({ conversationId, messageId }));
+
+        // (tuỳ chọn) showNotification hoặc toast
+        // showNotification("A message has been deleted", "info");
+    };
 
 
     socket.on("receiveMessage", handleReceiveMessage);
     socket.on("newConversation", handleNewConversation);
     socket.on("groupDisbanded", handleGroupDisbanded);
     socket.on("memberRemoved", handleMemberRemoved);
+    socket.on("messageRevoked", handleMessageRevoked);
+    socket.on("messageDeleted", handleMessageDeleted);
     return () => {
         socket.off("receiveMessage", handleReceiveMessage);
         socket.off("newConversation", handleNewConversation);
         socket.off("groupDisbanded", handleGroupDisbanded);
         socket.off("memberRemoved", handleMemberRemoved);
+        socket.off("messageRevoked", handleMessageRevoked);
+        socket.off("messageDeleted", handleMessageDeleted);
         console.log("🛑 Đã huỷ lắng nghe các sự kiện ");
+
     };
 
 };

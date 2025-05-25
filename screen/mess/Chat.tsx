@@ -103,16 +103,9 @@ const ChatScreen = ({ navigation }: any) => {
       name,
       senderAvatar: avatar,
     };
-    socket.emit("sendMessage", msg);
-    dispatch(addMessage({ conversationId, message: msg }));
-    dispatch(updateLastMessage({
-      conversationId,
-      content: msg.content,
-      timestamp: msg.timestamp,
-      senderId: msg.senderId
-    }));
+    socket.emit("sendMessage", msg); // Gửi đi
     setInputText("");
-    scrollToBottom();
+    scrollToBottom(); // Giữ lại scroll
   };
 
   const formatDate = (iso: string) => {

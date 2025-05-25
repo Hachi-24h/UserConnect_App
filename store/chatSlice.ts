@@ -14,6 +14,8 @@ interface Message {
   type: string;
   name?: string;
   senderAvatar?: string;
+  isDeleted?: boolean;
+  isPinned?: boolean; // ✅ thêm dòng này
 }
 
 interface Member {
@@ -100,6 +102,53 @@ const chatSlice = createSlice({
       state.conversations = [];
       state.messagesByConversation = {};
     },
+    revokeMessage: (state, action) => {
+      const { conversationId, messageId } = action.payload;
+      const conv = state.messagesByConversation[conversationId];
+      if (!conv) return;
+
+      const msgIndex = conv.findIndex(msg => msg._id === messageId);
+      if (msgIndex !== -1) {
+        conv[msgIndex].content = "Message revoked";
+        conv[msgIndex].isDeleted = true; // nếu bạn dùng flag này
+        conv[msgIndex].type = "text"; // đổi về text để render đúng
+      }
+    },
+    deleteMessage: (
+      state,
+      action: PayloadAction<{ conversationId: string; messageId: string }>
+    ) => {
+      const { conversationId, messageId } = action.payload;
+      const conv = state.messagesByConversation[conversationId];
+      if (!conv) return;
+
+      const index = conv.findIndex((msg) => msg._id === messageId);
+      if (index !== -1) {
+        conv.splice(index, 1); // Xoá tin nhắn
+
+        // ✅ Sau khi xoá: cập nhật lại tin nhắn cuối cho hội thoại
+        const conversation = state.conversations.find(c => c._id === conversationId);
+        if (conversation) {
+          const lastMsg = [...conv].reverse().find(msg => !msg.isDeleted); // tìm tin nhắn chưa bị xoá
+
+          if (lastMsg) {
+            let displayContent = lastMsg.content;
+            if (lastMsg.type === 'image') displayContent = 'Sent a new picture';
+            else if (lastMsg.type === 'file') displayContent = 'Sent a new file';
+
+            conversation.lastMessage = displayContent;
+            conversation.updatedAt = lastMsg.timestamp;
+            conversation.lastMessageSenderId = lastMsg.senderId;
+          } else {
+            // Nếu không còn tin nhắn nào
+            conversation.lastMessage = '';
+            conversation.updatedAt = '';
+            conversation.lastMessageSenderId = undefined;
+          }
+        }
+      }
+    },
+
   },
 });
 
@@ -109,7 +158,8 @@ export const {
   addMessage,
   updateLastMessage,
   clearMessages,
-  clearConversations,
+  clearConversations, revokeMessage
+  , deleteMessage,
 } = chatSlice.actions;
 
 export default chatSlice.reducer;
@@ -138,7 +188,7 @@ export const fetchConversations = (userId: string, token: string) => async (disp
       let displayContent = lastMsg?.content || '';
       if (lastMsg?.type === 'image') displayContent = 'Sent a new picture';
       else if (lastMsg?.type === 'file') displayContent = 'Sent a new file';
-        
+
       const members: Member[] = conv.members.map((m: any) => ({
         userId: m.userId,
         name: m.name,
@@ -155,10 +205,10 @@ export const fetchConversations = (userId: string, token: string) => async (disp
         lastMessageSenderId: lastMsg?.senderId || null,
         otherUser: otherUser
           ? {
-              _id: otherUser._id,
-              name: otherUser.name,
-              avatar: otherUser.avatar,
-            }
+            _id: otherUser._id,
+            name: otherUser.name,
+            avatar: otherUser.avatar,
+          }
           : null,
         members: conv.isGroup ? members : undefined,
       });
