@@ -85,11 +85,21 @@ const ChatScreen = ({ navigation }: any) => {
     }
   };
 
+
   const scrollToBottom = () => {
-    setTimeout(() => {
-      flatListRef.current?.scrollToEnd({ animated: true });
-    }, 100);
+    if (flatListRef.current && messageListWithDates.length > 0) {
+      flatListRef.current.scrollToIndex({
+        index: messageListWithDates.length - 1,
+        animated: true,
+      });
+    }
   };
+
+  // const scrollToBottom = () => {
+  //   setTimeout(() => {
+  //     flatListRef.current?.scrollToEnd({ animated: true });
+  //   }, 100);
+  // };
 
   const handleSend = () => {
     if (!inputText.trim()) return;
@@ -108,6 +118,11 @@ const ChatScreen = ({ navigation }: any) => {
     scrollToBottom(); // Giữ lại scroll
   };
 
+  useEffect(() => {
+    if (messages && messages.length > 0) {
+      scrollToBottom();
+    }
+  }, [messages]);
   const formatDate = (iso: string) => {
     const d = new Date(iso);
     return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`;
@@ -179,6 +194,11 @@ const ChatScreen = ({ navigation }: any) => {
           );
         }}
         contentContainerStyle={styles.messagesList}
+        getItemLayout={(data, index) => ({
+          length: 100, // Ước lượng chiều cao mỗi dòng
+          offset: 100 * index,
+          index,
+        })}
       />
 
       <MessageInput inputText={inputText} setInputText={setInputText} handleSend={handleSend} />
