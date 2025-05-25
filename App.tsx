@@ -32,6 +32,13 @@ const AppContent = () => {
   const [toastVisible, setToastVisible] = useState(false);
   const [toastMsg, setToastMsg] = useState({});
 
+  useEffect(() => {
+    if (userLoginId) {
+      socket.emit("setup", userLoginId); // ✅ GIÚP JOIN ROOM USER ID
+      console.log("📡 Gửi setup socket với userId:", userLoginId);
+    }
+  }, [userLoginId]);
+
   // 🔁 Join tất cả phòng mỗi khi navigation thay đổi
   const joinAllRooms = () => {
     if (userLoginId && conversations.length > 0) {

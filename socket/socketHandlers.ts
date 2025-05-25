@@ -1,9 +1,9 @@
 import socket from './socket';
-import { showNotification } from '../Custom/notification';
-import { incrementUnreadCount } from '../store/unreadSlice';
+
 import { addMessage, updateLastMessage } from '../store/chatSlice';
 import { playNotificationSound } from '../Custom/soundPlayer';
-
+import { setConversations } from '../store/chatSlice';
+import { showNotification } from '../Custom/notification';
 interface Message {
     _id: string;
     conversationId: string;
@@ -41,11 +41,12 @@ export const setupSocketListeners = ({
     });
     console.log("🔁 Đã tham gia tất cả các phòng hội thoại");
 
+    // lắng nghe sự kiện nhận tin nhắn
     const handleReceiveMessage = (msg: Message) => {
         const isSender = msg.senderId === userId;
         // console.log("🛑 Tin nhắn nhận được: ", msg);
         if (isSender) return;
-        
+
         const isActive = msg.conversationId === currentConversationId;
         console.log("🛑 Tin nhắn nhận được trong phòng: ", msg.conversationId, " - Hiện tại: ", currentConversationId);
 
@@ -94,12 +95,54 @@ export const setupSocketListeners = ({
 
 
     };
+    // lắng nghe sự kiện tạo nhóm mới
+    const handleNewConversation = (conv: any) => {
+        // console.log("📥 Nhận nhóm mới:", conv);
+
+        // 🚪 Tham gia room ngay lập tức
+        socket.emit("joinRoom", conv._id);
+
+        // ✅ Cập nhật Redux: thêm vào danh sách hội thoại
+        dispatch((dispatchFn: any, getState: any) => {
+            const { chat } = getState();
+            const updated = [...chat.conversations, conv];
+            dispatch(setConversations(updated));
+        });
+
+        // (Tuỳ chọn) Thông báo toast
+        setToastMsg({
+            name: conv.groupName || 'New Group',
+            content: "You have been added to a group",
+            senderAvatar: conv.avatar || '',
+            timestamp: new Date().toISOString(),
+        });
+        setToastVisible(true);
+    };
+    // lắng nghe sự kiện nhóm bị giải tán
+    const handleGroupDisbanded = (data: { conversationId: string; groupName: string }) => {
+        const { conversationId, groupName } = data;
+        // console.log("💥 Nhóm bị giải tán:", groupName, conversationId);
+
+        // Xoá nhóm khỏi Redux
+        dispatch((dispatchFn: any, getState: any) => {
+            const { chat } = getState();
+            const updated = chat.conversations.filter((conv: any) => conv._id !== conversationId);
+            dispatch(setConversations(updated));
+        });
+
+        // Thông báo toast
+        showNotification(`Group <<${groupName}>> has been disbanded`, "success");
+        // setToastVisible(true);
+    };
 
     socket.on("receiveMessage", handleReceiveMessage);
-
+    socket.on("newConversation", handleNewConversation);
+    socket.on("groupDisbanded", handleGroupDisbanded);
     return () => {
         socket.off("receiveMessage", handleReceiveMessage);
-        console.log("🛑 Đã huỷ lắng nghe receiveMessage");
+        socket.off("newConversation", handleNewConversation);
+        socket.off("groupDisbanded", handleGroupDisbanded);
+        console.log("🛑 Đã huỷ lắng nghe receiveMessage và newConversation");
     };
 
 };
