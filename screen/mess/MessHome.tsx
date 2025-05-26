@@ -6,6 +6,9 @@ import styles from "../../Css/mess/MessHome";
 import Footer from '../other/Footer';
 import { resetUnreadCount } from '../../store/unreadSlice';
 import { getToken } from '../../utils/token';
+import MessHomeHeader from './component/MessHomeHeader';
+import CreateGroupModal from './component/CreateGroupModal';
+import socket from '../../socket/socket';
 type UserItem = {
   _id: string;
   avatar: string;
@@ -30,6 +33,8 @@ const MessHome = ({ navigation }: any) => {
   const dispatch = useDispatch();
   const [token, setToken] = useState<string | null>(null);
 
+  
+  const [showCreateModal, setShowCreateModal] = useState(false);
   useEffect(() => {
     const fetchToken = async () => {
       const storedToken = await getToken();
@@ -45,7 +50,7 @@ const MessHome = ({ navigation }: any) => {
     const result = conversations.map((conv: any) => {
 
       const isGroup = conv.isGroup;
-      
+
       const lastMessage = conv.lastMessage || "Nhấn để bắt đầu trò chuyện";
 
       let displayName = "Không rõ";
@@ -68,7 +73,7 @@ const MessHome = ({ navigation }: any) => {
         lastMessage,
         timestamp: conv.updatedAt,
         conversationId: conv._id,
-        lastMessageSenderId: conv.lastMessageSenderId || null, 
+        lastMessageSenderId: conv.lastMessageSenderId || null,
         isGroup,
       };
     });
@@ -117,15 +122,11 @@ const MessHome = ({ navigation }: any) => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.searchWrapper}>
-        <TextInput
-          placeholder="Tìm kiếm"
-          placeholderTextColor="#aaa"
-          style={styles.searchInput}
-          value={searchTerm}
-          onChangeText={setSearchTerm}
-        />
-      </View>
+      <MessHomeHeader
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        onCreateGroup={() => setShowCreateModal(true)}
+      />
 
       {filteredUsers.length === 0 ? (
         <Text style={styles.noResult}>Không có kết quả phù hợp</Text>
@@ -136,6 +137,13 @@ const MessHome = ({ navigation }: any) => {
           unreadCounts={unreadCounts}
         />
       )}
+
+      <CreateGroupModal
+        visible={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        currentUser={user}
+        socket={socket}
+      />
 
       <Footer navigation={navigation} />
 

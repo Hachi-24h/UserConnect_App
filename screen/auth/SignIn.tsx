@@ -21,6 +21,7 @@ import { setConversations } from '../../store/chatSlice';
 import { setUnreadCounts } from '../../store/unreadSlice';
 
 import { fetchConversations } from '../../store/chatSlice';
+import { fetchFollowings } from '../../store/followingSlice';
 
 const { height, width } = Dimensions.get('window');
 const SignInScreen = ({ navigation }: any) => {
@@ -39,7 +40,7 @@ const SignInScreen = ({ navigation }: any) => {
       // login xong sẽ lưu user vào Redux
       const res = await login(username, password);
 
-  
+
       dispatch(setUser({
         _id: res.user._id,
         token: res.token,
@@ -50,9 +51,9 @@ const SignInScreen = ({ navigation }: any) => {
       const detail = await getUserDetails(res.user._id);
       // Lấy danh sách các cuộc trò chuyện
       // @ts-ignore
-    await dispatch(fetchConversations(res.user._id, res.token));
-
-
+      await dispatch(fetchConversations(res.user._id, res.token));
+      // @ts-ignore
+      dispatch(fetchFollowings(res.user._id));
       setLoading(false);
 
       if (detail) {

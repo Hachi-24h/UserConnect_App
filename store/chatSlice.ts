@@ -172,7 +172,7 @@ export const fetchConversations = (userId: string, token: string) => async (disp
     });
 
     const rawConversations = res.data;
-    // console.log("✅ Fetched conversations:", rawConversations);
+    console.log("✅ Fetched conversations:", rawConversations);
 
     const conversationsFormatted: Conversation[] = [];
     const messagesMap: { [key: string]: Message[] } = {};
