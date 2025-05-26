@@ -33,7 +33,7 @@ const MessHome = ({ navigation }: any) => {
   const dispatch = useDispatch();
   const [token, setToken] = useState<string | null>(null);
 
-  
+
   const [showCreateModal, setShowCreateModal] = useState(false);
   useEffect(() => {
     const fetchToken = async () => {
@@ -47,10 +47,12 @@ const MessHome = ({ navigation }: any) => {
   useEffect(() => {
     if (!conversations || conversations.length === 0) return;
 
-    const result = conversations.map((conv: any) => {
-
+    const filteredConvs = conversations.filter(
+      (conv: any) =>
+        conv.isGroup || (conv.lastMessage && conv.lastMessage.trim() !== '')
+    );
+    const result = filteredConvs.map((conv: any) => {
       const isGroup = conv.isGroup;
-
       const lastMessage = conv.lastMessage || "Nhấn để bắt đầu trò chuyện";
 
       let displayName = "Không rõ";
@@ -59,13 +61,11 @@ const MessHome = ({ navigation }: any) => {
       if (isGroup) {
         displayName = conv.groupName || "Nhóm không tên";
         avatar = conv.avatar || 'https://placehold.co/100x100';
-
       } else if (conv.otherUser) {
         displayName = conv.otherUser.name || "Không rõ";
         avatar = conv.otherUser.avatar || 'https://placehold.co/100x100';
-
       }
-      // console.log("thời gian tin nhắn cuối: ", conv.updatedAt);
+
       return {
         _id: conv._id,
         avatar,
@@ -81,6 +81,7 @@ const MessHome = ({ navigation }: any) => {
     setUsers(result);
     setFilteredUsers(result);
   }, [conversations]);
+
 
   useEffect(() => {
     if (searchTerm.trim() === '') {

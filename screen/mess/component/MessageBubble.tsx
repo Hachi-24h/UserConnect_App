@@ -69,28 +69,29 @@ export default function MessageBubble({ message, isMine, isGroup, showAvatar, co
 
   return (
     <View style={{ paddingVertical: 4, flexDirection: 'row', alignItems: 'flex-start' }}>
-      {/* Avatar trái nếu là nhóm và người gửi không phải mình */}
-      {isLeftIndent ? (
+      {isLeftIndent && (
         <View style={{ width: 40, marginRight: 8 }}>
-          {showAvatar && (
+          {showAvatar ? (
             <Image
               source={{ uri: senderAvatar }}
               style={{ width: 32, height: 32, borderRadius: 16 }}
             />
-          )}
+          ) : null}
         </View>
-      ) : null}
+      )}
 
       <View style={{ flex: 1 }}>
-        {/* Tên người gửi (chỉ trong nhóm và khác người trước) */}
         {isLeftIndent && showAvatar && (
           <Text style={{ marginBottom: 2, fontWeight: "bold", color: 'white', fontSize: 12 }}>
             {senderName}
           </Text>
         )}
 
-        {/* Bubble + thời gian */}
-        <View style={{ flexDirection: 'column', alignItems: isMine ? 'flex-end' : 'flex-start' }}>
+        <View style={{
+          flexDirection: 'column',
+          alignItems: isMine ? 'flex-end' : 'flex-start',
+       
+        }}>
           <View
             style={[
               styles.messageBubble,

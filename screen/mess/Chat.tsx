@@ -56,6 +56,11 @@ const ChatScreen = ({ navigation }: any) => {
   const name = `${userDetailState.firstname} ${userDetailState.lastname}`;
   const avatar = userDetailState.avatar || "https://i.postimg.cc/6pXNwv51/backgrond-mac-dinh.jpg";
 
+  const conversation = useSelector((state: any) =>
+    state.chat.conversations.find((c: any) => c._id === conversationId)
+  );
+  const isGroup = conversation?.isGroup;
+
   useEffect(() => {
     if (conversationId) {
       dispatch(resetUnread(conversationId));
@@ -170,7 +175,8 @@ const ChatScreen = ({ navigation }: any) => {
 
           const msg: Message = item.data;
           const isMine = msg.senderId?.toString() === currentUser._id?.toString();
-          const isGroup = user?.isGroup;
+          
+          
 
           // ✅ Fix đúng logic avatar (bỏ qua item type === 'date')
           let prevMsg = null;

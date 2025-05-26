@@ -66,7 +66,7 @@ const chatSlice = createSlice({
       action: PayloadAction<{ conversationId: string; messages: Message[] }>
     ) => {
       const { conversationId, messages } = action.payload;
-      state.messagesByConversation[conversationId] = messages;
+      state.messagesByConversation[conversationId] = [...messages];
     },
     addMessage: (
       state,
@@ -194,7 +194,7 @@ export const fetchConversations = (userId: string, token: string) => async (disp
         name: m.name,
         avatar: m.avatar || '',
       }));
-      // console.log(` thời gian tin nhắn cuối: của id : ${conv._id} là ${lastMsg?.timestamp}`);
+
       conversationsFormatted.push({
         _id: conv._id,
         isGroup: conv.isGroup,
@@ -205,15 +205,15 @@ export const fetchConversations = (userId: string, token: string) => async (disp
         lastMessageSenderId: lastMsg?.senderId || null,
         otherUser: otherUser
           ? {
-            _id: otherUser._id,
-            name: otherUser.name,
-            avatar: otherUser.avatar,
-          }
+              _id: otherUser._id,
+              name: otherUser.name,
+              avatar: otherUser.avatar,
+            }
           : null,
         members: conv.isGroup ? members : undefined,
       });
 
-      messagesMap[conv._id] = (conv.messages || []).map((msg: any) => ({
+      const msgList = (conv.messages || []).map((msg: any) => ({
         _id: msg._id,
         senderId: msg.senderId,
         content: msg.content,
@@ -222,6 +222,12 @@ export const fetchConversations = (userId: string, token: string) => async (disp
         name: msg.name,
         senderAvatar: msg.senderAvatar,
       }));
+
+      if (msgList.length === 0) {
+        dispatch(clearMessages(conv._id)); // ✅ xoá hẳn nếu rỗng
+      } else {
+        messagesMap[conv._id] = msgList;   // ✅ chỉ set nếu có tin nhắn
+      }
     }
 
     dispatch(setUnreadCounts(unreadMap));
