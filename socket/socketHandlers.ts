@@ -136,7 +136,7 @@ export const setupSocketListeners = ({
     // lắng nghe sự kiện thành viên bị xoá khỏi nhóm
     const handleMemberRemoved = (data: { conversationId: string; userId: string }) => {
         const { conversationId, userId: removedUserId } = data;
-        const { chat, userDetail } = store.getState();
+        const { chat, } = store.getState();
         if (removedUserId !== userId) // Không phải mình thì bỏ qua
         {
             const updatedConversations = chat.conversations.map((conv: any) => {
@@ -187,23 +187,54 @@ export const setupSocketListeners = ({
     };
 
     // lắng nghe sự kiện rời nhóm 
-
     const handleMemberLeft = (data: { conversationId: string; userId: string }) => {
         const { conversationId, userId: leftUserId } = data;
 
-        if (leftUserId !== userId) return;
-
-        console.log("👋 Bạn đã rời khỏi nhóm:", conversationId);
-
-        // ✅ Truy cập state an toàn, không dùng useSelector
         const { chat } = store.getState();
-        const targetConv = chat.conversations.find((conv: any) => conv._id === conversationId);
-        const groupName = targetConv?.groupName || "Unknown Group";
+        if (leftUserId !== userId) {
+            const updatedConversations = chat.conversations.map((conv: any) => {
+                if (conv._id !== conversationId) return conv;
+                const updatedMembers = conv.members?.filter((m: any) => m.userId !== leftUserId);
+                return { ...conv, members: updatedMembers };
+            });
+            dispatch(setConversations(updatedConversations));
+        }
+        else {
+            console.log("👋 Bạn đã rời khỏi nhóm:", conversationId);
+            // ✅ Truy cập state an toàn, không dùng useSelector
+            const { chat } = store.getState();
+            const targetConv = chat.conversations.find((conv: any) => conv._id === conversationId);
+            const groupName = targetConv?.groupName || "Unknown Group";
 
-        const updated = chat.conversations.filter((conv: any) => conv._id !== conversationId);
-        dispatch(setConversations(updated));
+            const updated = chat.conversations.filter((conv: any) => conv._id !== conversationId);
+            dispatch(setConversations(updated));
 
-        showNotification(`You left the group "${groupName}"`, "info");
+            showNotification(`You left the group "${groupName}"`, "info");
+        }
+    };
+
+    // lắng nghe sự kiện thêm  thành viên
+    const handleMembersUpdated = (data: { conversationId: string; newMembers: any[] }) => {
+        const { conversationId, newMembers } = data;
+        const { chat } = store.getState();
+
+        const updatedConversations = chat.conversations.map((conv: any) => {
+            if (conv._id !== conversationId) return conv;
+
+            const updatedMembers = [...(conv.members || []), ...newMembers];
+
+            // Lọc trùng nếu cần (tuỳ backend đã xử lý chưa)
+            const uniqueMembers = Array.from(
+                new Map(updatedMembers.map(m => [m.userId, m])).values()
+            );
+
+            return {
+                ...conv,
+                members: uniqueMembers,
+            };
+        });
+
+        dispatch(setConversations(updatedConversations));
     };
 
 
@@ -214,6 +245,7 @@ export const setupSocketListeners = ({
     socket.on("messageRevoked", handleMessageRevoked);
     socket.on("messageDeleted", handleMessageDeleted);
     socket.on("memberLeft", handleMemberLeft);
+    socket.on("memberAdded", handleMembersUpdated);
     return () => {
         socket.off("receiveMessage", handleReceiveMessage);
         socket.off("newConversation", handleNewConversation);
@@ -222,6 +254,7 @@ export const setupSocketListeners = ({
         socket.off("messageRevoked", handleMessageRevoked);
         socket.off("messageDeleted", handleMessageDeleted);
         socket.off("memberLeft", handleMemberLeft);
+        socket.off("memberAddedg", handleMembersUpdated);
         // console.log("🛑 Đã huỷ lắng nghe các sự kiện ");
 
     };
