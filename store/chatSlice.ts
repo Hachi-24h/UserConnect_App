@@ -245,3 +245,6 @@ export const fetchConversations = (userId: string, token: string) => async (disp
   }
 };
 
+export const getConversationById = (state: any, conversationId: string) => {
+  return state.chat.conversations.find((c: any) => c._id === conversationId);
+};

@@ -1,9 +1,11 @@
 import socket from './socket';
 
-import { addMessage, deleteMessage, revokeMessage, updateLastMessage } from '../store/chatSlice';
+import { addMessage, deleteMessage, getConversationById, revokeMessage, updateLastMessage } from '../store/chatSlice';
 import { playNotificationSound } from '../Custom/soundPlayer';
 import { setConversations } from '../store/chatSlice';
 import { showNotification } from '../Custom/notification';
+import { useSelector } from 'react-redux';
+import store from '../store/store';
 
 interface Message {
     _id: string;
@@ -89,31 +91,31 @@ export const setupSocketListeners = ({
     };
     // lắng nghe sự kiện tạo nhóm mới
     const handleNewConversation = (conv: any) => {
-  // Join the socket room
-  socket.emit("joinRoom", conv._id);
+        // Join the socket room
+        socket.emit("joinRoom", conv._id);
 
-  // Update Redux state
-  dispatch((dispatchFn: any, getState: any) => {
-    const { chat, user } = getState();
-    const updated = [...chat.conversations, conv];
-    dispatch(setConversations(updated));
+        // Update Redux state
+        dispatch((dispatchFn: any, getState: any) => {
+            const { chat, user } = getState();
+            const updated = [...chat.conversations, conv];
+            dispatch(setConversations(updated));
 
-    // Determine if current user is the creator
-    const isCreator = conv.adminId === user._id;
+            // Determine if current user is the creator
+            const isCreator = conv.adminId === user._id;
 
-    // Set toast message
-    setToastMsg({
-      name: conv.groupName || 'New Group',
-      content: isCreator
-        ? `You created a new group: ${conv.groupName || 'Unnamed'}`
-        : "You have been added to a group",
-      senderAvatar: conv.avatar || '',
-      timestamp: new Date().toISOString(),
-    });
+            // Set toast message
+            setToastMsg({
+                name: conv.groupName || 'New Group',
+                content: isCreator
+                    ? `You created a new group: ${conv.groupName || 'Unnamed'}`
+                    : "You have been added to a group",
+                senderAvatar: conv.avatar || '',
+                timestamp: new Date().toISOString(),
+            });
 
-    setToastVisible(true);
-  });
-};
+            setToastVisible(true);
+        });
+    };
     // lắng nghe sự kiện nhóm bị giải tán
     const handleGroupDisbanded = (data: { conversationId: string; groupName: string }) => {
         const { conversationId, groupName } = data;
@@ -175,6 +177,27 @@ export const setupSocketListeners = ({
         // showNotification("A message has been deleted", "info");
     };
 
+    // lắng nghe sự kiện rời nhóm 
+  
+
+    const handleMemberLeft = (data: { conversationId: string; userId: string }) => {
+        const { conversationId, userId: leftUserId } = data;
+
+        if (leftUserId !== userId) return;
+
+        console.log("👋 Bạn đã rời khỏi nhóm:", conversationId);
+
+        // ✅ Truy cập state an toàn, không dùng useSelector
+        const { chat } = store.getState();
+        const targetConv = chat.conversations.find((conv: any) => conv._id === conversationId);
+        const groupName = targetConv?.groupName || "Unknown Group";
+
+        const updated = chat.conversations.filter((conv: any) => conv._id !== conversationId);
+        dispatch(setConversations(updated));
+
+        showNotification(`You left the group "${groupName}"`, "info");
+    };
+
 
     socket.on("receiveMessage", handleReceiveMessage);
     socket.on("newConversation", handleNewConversation);
@@ -182,6 +205,7 @@ export const setupSocketListeners = ({
     socket.on("memberRemoved", handleMemberRemoved);
     socket.on("messageRevoked", handleMessageRevoked);
     socket.on("messageDeleted", handleMessageDeleted);
+    socket.on("memberLeft", handleMemberLeft);
     return () => {
         socket.off("receiveMessage", handleReceiveMessage);
         socket.off("newConversation", handleNewConversation);
@@ -189,6 +213,7 @@ export const setupSocketListeners = ({
         socket.off("memberRemoved", handleMemberRemoved);
         socket.off("messageRevoked", handleMessageRevoked);
         socket.off("messageDeleted", handleMessageDeleted);
+        socket.off("memberLeft", handleMemberLeft);
         // console.log("🛑 Đã huỷ lắng nghe các sự kiện ");
 
     };
