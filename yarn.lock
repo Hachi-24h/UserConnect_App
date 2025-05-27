@@ -2059,14 +2059,14 @@
   dependencies:
     invariant "^2.2.4"
 
-"@react-native-firebase/app@^21.12.3":
-  version "21.12.3"
-  resolved "https://registry.yarnpkg.com/@react-native-firebase/app/-/app-21.12.3.tgz#9d025fef55bcb093ed2b95638babb74b71e0baa9"
-  integrity sha512-q+FoAJ9yZrXg4hJDXQQputeO/b0yos3iMMV7nnhz3ZizVE9MxfpPCWACveYhs9Suni+c/+b44wPR9P6vS/kM/g==
+"@react-native-firebase/app@22.2.0":
+  version "22.2.0"
+  resolved "https://registry.yarnpkg.com/@react-native-firebase/app/-/app-22.2.0.tgz#8bcc5f82b2c7c09737072df7ed24d0bf042ba842"
+  integrity sha512-zw7KRo1nZwj9+ED6SHgl5/ioRqcA8RwqBuiGWx5Nrr4JrhbLpaihfPuDsGcn0LvEO5knVrhZvQP1fgzLjRsUgw==
   dependencies:
     firebase "11.3.1"
 
-"@react-native-firebase/auth@^22.2.0":
+"@react-native-firebase/auth@22.2.0":
   version "22.2.0"
   resolved "https://registry.yarnpkg.com/@react-native-firebase/auth/-/auth-22.2.0.tgz#1011a0b4c0bda1e5a173d71d444aceaa78e1eb51"
   integrity sha512-RnuZVisa9a/ey9nyeBHUDkMNwoHLRuvDCjGwC/qgj/ygyEAjOTV4zqZ/OHSVOhQO/UwU4L0tYdxwT2EQorhgDA==
