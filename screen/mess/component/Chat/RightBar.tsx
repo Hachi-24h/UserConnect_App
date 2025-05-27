@@ -6,7 +6,7 @@ import MemberList from './component_rightBar/MemberList';
 import MediaSection from './component_rightBar/MediaSection';
 import OptionsSection from './component_rightBar/OptionsSection';
 import color from '../../../../Custom/Color';
-
+import socket from '../../../../socket/socket'; // ✅ IMPORT socket
 
 const Rightbar = ({ route }: any) => {
   const { conversationId } = route.params;
@@ -15,7 +15,6 @@ const Rightbar = ({ route }: any) => {
     state.chat.conversations.find((c: any) => c._id === conversationId)
   );
 
-
   if (!conversation) return <Text style={{ color: 'white' }}>Loading...</Text>;
 
   const isGroup = conversation.isGroup;
@@ -23,7 +22,6 @@ const Rightbar = ({ route }: any) => {
   const name = isGroup ? conversation.groupName : conversation.otherUser?.name;
   const memberCount = conversation.members?.length || 0;
 
-  // Lấy currentUserId từ redux user hoặc auth
   const user = useSelector((state: any) => state.user);
   const currentUserId = user?._id;
 
@@ -36,24 +34,32 @@ const Rightbar = ({ route }: any) => {
         isGroup={isGroup}
         memberCount={memberCount}
       />
-  <View style={{height:1, backgroundColor:color.gray, margin:5,marginBottom:20}}></View>
+
+      <View style={{ height: 1, backgroundColor: color.gray, margin: 5, marginBottom: 20 }} />
+
       {/* ✅ Phần 2: Danh sách thành viên (chỉ nhóm) */}
       {isGroup && (
         <MemberList
           members={conversation.members}
           adminId={conversation.adminId}
+          currentUserId={currentUserId}
+          conversationId={conversationId}
+          socket={socket}
         />
       )}
-  <View style={{height:1, backgroundColor:color.gray, margin:5,marginBottom:20}}></View>
+
+      <View style={{ height: 1, backgroundColor: color.gray, margin: 5, marginBottom: 20 }} />
+
       {/* ✅ Phần 3: Media chia sẻ */}
       <MediaSection conversationId={conversationId} />
 
+      <View style={{ height: 1, backgroundColor: color.gray, margin: 5, marginBottom: 20 }} />
+
       {/* ✅ Phần 4: Tuỳ chọn */}
-      <View style={{height:1, backgroundColor:color.gray, margin:5,marginBottom:20}}></View>
       <OptionsSection
         isGroup={isGroup}
         conversationId={conversationId}
-        currentUserId={currentUserId} // 👈 lấy từ redux user hoặc auth
+        currentUserId={currentUserId}
         adminId={conversation.adminId}
       />
     </ScrollView>
