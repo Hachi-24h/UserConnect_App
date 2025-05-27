@@ -181,37 +181,21 @@ export const fetchConversations = (userId: string, token: string) => async (disp
     for (const conv of rawConversations) {
       unreadMap[conv._id] = conv.unreadCount || 0;
 
-      const otherUser =
-        !conv.isGroup && conv.members?.find((m: any) => m._id !== userId);
       const lastMsg = conv.messages?.[conv.messages.length - 1];
 
       let displayContent = lastMsg?.content || '';
-      if (lastMsg?.type === 'image') displayContent = 'Sent a new picture';
-      else if (lastMsg?.type === 'file') displayContent = 'Sent a new file';
+      if (lastMsg?.type === 'image') displayContent = 'Sent a photo';
+      else if (lastMsg?.type === 'file') displayContent = 'Sent a file';
 
-      const members: Member[] = conv.members.map((m: any) => ({
+      const members: Member[] = conv.members?.map((m: any) => ({
         userId: m.userId,
         name: m.name,
         avatar: m.avatar || '',
-      }));
+      })) || [];
 
-      conversationsFormatted.push({
-        _id: conv._id,
-        isGroup: conv.isGroup,
-        groupName: conv.groupName || '',
-        avatar: conv.avatar || '',
-        updatedAt: lastMsg?.timestamp,
-        lastMessage: displayContent,
-        lastMessageSenderId: lastMsg?.senderId || null,
-        otherUser: otherUser
-          ? {
-              _id: otherUser._id,
-              name: otherUser.name,
-              avatar: otherUser.avatar,
-            }
-          : null,
-        members: conv.isGroup ? members : undefined,
-      });
+      const otherUser = !conv.isGroup
+        ? members.find((m) => m.userId !== userId)
+        : null;
 
       const msgList = (conv.messages || []).map((msg: any) => ({
         _id: msg._id,
@@ -224,10 +208,28 @@ export const fetchConversations = (userId: string, token: string) => async (disp
       }));
 
       if (msgList.length === 0) {
-        dispatch(clearMessages(conv._id)); // ✅ xoá hẳn nếu rỗng
+        dispatch(clearMessages(conv._id)); // Xóa tin nhắn cũ nếu trống
       } else {
-        messagesMap[conv._id] = msgList;   // ✅ chỉ set nếu có tin nhắn
+        messagesMap[conv._id] = msgList;
       }
+
+      conversationsFormatted.push({
+        _id: conv._id,
+        isGroup: conv.isGroup,
+        groupName: conv.groupName || '',
+        avatar: conv.avatar || '',
+        updatedAt: lastMsg?.timestamp,
+        lastMessage: displayContent,
+        lastMessageSenderId: lastMsg?.senderId || null,
+        otherUser: otherUser
+          ? {
+              _id: otherUser.userId,
+              name: otherUser.name,
+              avatar: otherUser.avatar,
+            }
+          : null,
+        members: members,
+      });
     }
 
     dispatch(setUnreadCounts(unreadMap));
@@ -242,3 +244,4 @@ export const fetchConversations = (userId: string, token: string) => async (disp
     console.error("❌ Failed to fetch conversations", err.response?.data || err.message);
   }
 };
+

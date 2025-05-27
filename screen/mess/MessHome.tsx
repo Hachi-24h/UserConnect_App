@@ -15,7 +15,6 @@ type UserItem = {
   username: string;
   lastMessage: string;
   timestamp?: string;
-
   conversationId: string | null;
   lastMessageSenderId?: string;
   isGroup: boolean; // ✅ ok
@@ -54,10 +53,11 @@ const MessHome = ({ navigation }: any) => {
     const result = filteredConvs.map((conv: any) => {
       const isGroup = conv.isGroup;
       const lastMessage = conv.lastMessage || "Tap to start chatting";
-
+      console.log("cuộc trò chuyện  : ", conv);
+      console.log("------------------------------------\n" );
       let displayName = "Không rõ";
       let avatar = 'https://placehold.co/100x100';
-
+      
       if (isGroup) {
         displayName = conv.groupName || "Nhóm không tên";
         avatar = conv.avatar || 'https://placehold.co/100x100';
@@ -99,7 +99,7 @@ const MessHome = ({ navigation }: any) => {
     try {
       const conversationId = user.conversationId;
       const isGroup = user.username?.startsWith("Nhóm") || user.username?.includes("Ông");
-
+      
       if (conversationId) {
         //@ts-ignore
         dispatch(resetUnreadCount(userLoginId, conversationId, token));
