@@ -1,9 +1,9 @@
 // component/MessHomeHeader.tsx
 import React from 'react';
 import { View, TextInput, TouchableOpacity, Image } from 'react-native';
-import styles from '../../../Css/mess/MessHome';
+import styles from '../../../../Css/mess/MessHome';
 import { Add } from 'iconsax-react-native';
-import color from '../../../Custom/Color';
+import color from '../../../../Custom/Color';
 
 export default function MessHomeHeader({ searchTerm, setSearchTerm, onCreateGroup }: any) {
   return (

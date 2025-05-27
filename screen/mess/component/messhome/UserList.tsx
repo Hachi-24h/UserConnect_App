@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, Image } from 'react-native';
-import styles from "../../../Css/mess/MessHome";
+import styles from "../../../../Css/mess/MessHome";
 import { useSelector } from 'react-redux';
-import { getUserDetails } from '../../../utils/auth';
-import {formatMessageTime } from '../../../Custom/timeFormatter';
+import { getUserDetails } from '../../../../utils/auth';
+import {formatMessageTime } from '../../../../Custom/timeFormatter';
 
 type UserItem = {
   _id: string;

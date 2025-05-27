@@ -8,9 +8,9 @@ import { getMessages } from "../../socket/chatApi";
 import { resetUnread } from "../../store/unreadSlice";
 import { addMessage, setMessages, updateLastMessage } from "../../store/chatSlice";
 import { selectMessagesByConversation } from '../../store/chatSelectors';
-import MessageBubble from "./component/MessageBubble";
-import ChatHeader from "./component/ChatHeader";
-import MessageInput from "./component/MessageInput";
+import MessageBubble from "./component/Chat/MessageBubble";
+import ChatHeader from "./component/Chat/ChatHeader";
+import MessageInput from "./component/Chat/MessageInput";
 import { setCurrentConversationId } from "../../store/userDetailSlice";
 
 interface UserChat {

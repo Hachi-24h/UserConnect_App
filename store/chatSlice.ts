@@ -38,6 +38,7 @@ interface Conversation {
     avatar: string;
   } | null;
   members?: Member[];
+  adminId?: string;
 }
 
 interface ChatState {
@@ -219,6 +220,7 @@ export const fetchConversations = (userId: string, token: string) => async (disp
         groupName: conv.groupName || '',
         avatar: conv.avatar || '',
         updatedAt: lastMsg?.timestamp,
+        adminId: conv.adminId || '', // ✅ thêm dòng này
         lastMessage: displayContent,
         lastMessageSenderId: lastMsg?.senderId || null,
         otherUser: otherUser

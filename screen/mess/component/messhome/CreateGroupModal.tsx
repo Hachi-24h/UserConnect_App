@@ -13,12 +13,12 @@ import {
   Keyboard,
   Platform,
 } from 'react-native';
-import styles from '../../../Css/mess/CreateGroupModal';
-import color from '../../../Custom/Color';
+import styles from '../../../../Css/mess/CreateGroupModal';
+import color from '../../../../Custom/Color';
 import { useSelector } from 'react-redux';
 import RNFS from 'react-native-fs';
 import { launchImageLibrary } from 'react-native-image-picker';
-import { showNotification } from '../../../Custom/notification';
+import { showNotification } from '../../../../Custom/notification';
 
 export default function CreateGroupModal({ visible, onClose, currentUser, socket }: any) {
   const followings = useSelector((state: any) => state.followings.dsFollowing);

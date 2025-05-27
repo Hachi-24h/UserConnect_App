@@ -1,11 +1,11 @@
 import React from 'react';
 import { View, Text, Image, Linking, TouchableOpacity } from 'react-native';
 import { useSelector } from 'react-redux';
-import styles from "../../../Css/chat";
-import color from '../../../Custom/Color';
-import { selectMembersByConversationId } from '../../../store/chatSelectors';
+import styles from "../../../../Css/chat";
+import color from '../../../../Custom/Color';
+import { selectMembersByConversationId } from '../../../../store/chatSelectors';
 
-const downloadIcon = require('../../../Icon/download.png');
+const downloadIcon = require('../../../../Icon/download.png');
 
 const getExtension = (url: string): string => {
   const name = decodeURIComponent(url).split('?')[0].split('/').pop() || '';
@@ -14,16 +14,16 @@ const getExtension = (url: string): string => {
 
 const getFileIcon = (ext: string): any => {
   switch (ext) {
-    case 'pdf': return require('../../../Icon/pdf.png');
+    case 'pdf': return require('../../../../Icon/pdf.png');
     case 'ppt':
-    case 'pptx': return require('../../../Icon/ppt.png');
-    case 'txt': return require('../../../Icon/txt.png');
-    case 'zip': return require('../../../Icon/zip.png');
+    case 'pptx': return require('../../../../Icon/ppt.png');
+    case 'txt': return require('../../../../Icon/txt.png');
+    case 'zip': return require('../../../../Icon/zip.png');
     case 'doc':
-    case 'docx': return require('../../../Icon/word.png');
+    case 'docx': return require('../../../../Icon/word.png');
     case 'xls':
-    case 'xlsx': return require('../../../Icon/xls.png');
-    default: return require('../../../Icon/zip.png');
+    case 'xlsx': return require('../../../../Icon/xls.png');
+    default: return require('../../../../Icon/zip.png');
   }
 };
 

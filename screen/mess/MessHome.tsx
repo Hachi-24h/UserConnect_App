@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
-import UserList from './component/UserList';
+import UserList from './component/messhome/UserList';
 import styles from "../../Css/mess/MessHome";
 import Footer from '../other/Footer';
 import { resetUnreadCount } from '../../store/unreadSlice';
 import { getToken } from '../../utils/token';
-import MessHomeHeader from './component/MessHomeHeader';
-import CreateGroupModal from './component/CreateGroupModal';
+import MessHomeHeader from './component/messhome/MessHomeHeader';
+import CreateGroupModal from './component/messhome/CreateGroupModal';
 import socket from '../../socket/socket';
 type UserItem = {
   _id: string;
@@ -53,8 +53,8 @@ const MessHome = ({ navigation }: any) => {
     const result = filteredConvs.map((conv: any) => {
       const isGroup = conv.isGroup;
       const lastMessage = conv.lastMessage || "Tap to start chatting";
-      console.log("cuộc trò chuyện  : ", conv);
-      console.log("------------------------------------\n" );
+      // console.log("cuộc trò chuyện  : ", conv);
+      // console.log("------------------------------------\n" );
       let displayName = "Không rõ";
       let avatar = 'https://placehold.co/100x100';
       
