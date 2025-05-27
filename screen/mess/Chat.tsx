@@ -12,6 +12,7 @@ import MessageBubble from "./component/Chat/MessageBubble";
 import ChatHeader from "./component/Chat/ChatHeader";
 import MessageInput from "./component/Chat/MessageInput";
 import { setCurrentConversationId } from "../../store/userDetailSlice";
+import { getUserDetails } from "../../utils/auth";
 
 interface UserChat {
   isGroup: any;
@@ -84,6 +85,7 @@ const ChatScreen = ({ navigation }: any) => {
     try {
       const res: Message[] = await getMessages(conversationId, currentUser.token);
       dispatch(setMessages({ conversationId, messages: res }));
+     
       scrollToBottom();
     } catch (error) {
       console.error("❌ Lỗi lấy tin nhắn:", error);
@@ -188,7 +190,7 @@ const ChatScreen = ({ navigation }: any) => {
           }
 
           const showAvatar = isGroup && (!prevMsg || prevMsg.senderId !== msg.senderId);
-
+        
           return (
             <MessageBubble
               message={msg}

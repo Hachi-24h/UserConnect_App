@@ -136,25 +136,34 @@ export const setupSocketListeners = ({
     // lắng nghe sự kiện thành viên bị xoá khỏi nhóm
     const handleMemberRemoved = (data: { conversationId: string; userId: string }) => {
         const { conversationId, userId: removedUserId } = data;
+        const { chat, userDetail } = store.getState();
+        if (removedUserId !== userId) // Không phải mình thì bỏ qua
+        {
+            const updatedConversations = chat.conversations.map((conv: any) => {
+                if (conv._id !== conversationId) return conv;
+                const updatedMembers = conv.members?.filter((m: any) => m.userId !== removedUserId);
+                return { ...conv, members: updatedMembers };
+            });
+            dispatch(setConversations(updatedConversations));
+        }
+        else {
 
-        if (removedUserId !== userId) return; // Không phải mình thì bỏ qua
 
-        console.log("🚫 You đã bị kick khỏi nhóm:", conversationId);
+            // Lấy tên nhóm từ Redux trước khi xoá
+            let groupName = "Unknown Group";
 
-        // Lấy tên nhóm từ Redux trước khi xoá
-        let groupName = "Unknown Group";
+            dispatch((dispatchFn: any, getState: any) => {
+                const { chat } = getState();
+                const targetConv = chat.conversations.find((conv: any) => conv._id === conversationId);
+                groupName = targetConv?.groupName || "Unknown Group";
 
-        dispatch((dispatchFn: any, getState: any) => {
-            const { chat } = getState();
-            const targetConv = chat.conversations.find((conv: any) => conv._id === conversationId);
-            groupName = targetConv?.groupName || "Unknown Group";
+                const updated = chat.conversations.filter((conv: any) => conv._id !== conversationId);
+                dispatch(setConversations(updated));
+            });
 
-            const updated = chat.conversations.filter((conv: any) => conv._id !== conversationId);
-            dispatch(setConversations(updated));
-        });
-
-        // ✅ Thông báo
-        showNotification(`You have been removed from the group "${groupName}"`, "error");
+            // ✅ Thông báo
+            showNotification(`You have been removed from the group "${groupName}"`, "error");
+        }
     };
 
     // lắng nghe sự kiện thu hồi tin nhắn
@@ -178,7 +187,6 @@ export const setupSocketListeners = ({
     };
 
     // lắng nghe sự kiện rời nhóm 
-  
 
     const handleMemberLeft = (data: { conversationId: string; userId: string }) => {
         const { conversationId, userId: leftUserId } = data;

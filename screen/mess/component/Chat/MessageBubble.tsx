@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, Image, Linking, TouchableOpacity } from 'react-native';
-import { useSelector } from 'react-redux';
+import { getUserDetails } from '../../../../utils/auth';
+import { getCachedUserInfo, setCachedUserInfo } from '../../../../utils/userCache';
 import styles from "../../../../Css/chat";
 import color from '../../../../Custom/Color';
-import { selectMembersByConversationId } from '../../../../store/chatSelectors';
 
 const downloadIcon = require('../../../../Icon/download.png');
 
@@ -59,23 +59,50 @@ const FileMessage = ({ url }: { url: string }) => {
   );
 };
 
-export default function MessageBubble({ message, isMine, isGroup, showAvatar, conversationId }: any) {
+export default function MessageBubble({
+  message,
+  isMine,
+  isGroup,
+  showAvatar,
+  conversationId
+}: any) {
   const time = new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  const members = useSelector(selectMembersByConversationId(conversationId));
-  const sender = members.find((m: any) => m.userId === message.senderId);
-  const senderAvatar = sender?.avatar || 'https://i.postimg.cc/6pXNwv51/backgrond-mac-dinh.jpg';
-  const senderName = sender?.name || 'Người dùng';
   const isLeftIndent = isGroup && !isMine;
+
+  const [name, setName] = useState<string>(message.name || '');
+  const [avatar, setAvatar] = useState<string>(message.senderAvatar || '');
+
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      if (name && avatar) return;
+
+      const cached = getCachedUserInfo(message.senderId);
+      if (cached) {
+        setName(cached.name);
+        setAvatar(cached.avatar);
+        return;
+      }
+
+      const userInfo = await getUserDetails(message.senderId);
+     
+      if (userInfo) {
+        const userName = userInfo.firstname + ' ' + userInfo.lastname || 'Unknown User';
+        const userAvatar = userInfo.avatar || 'https://i.postimg.cc/6pXNwv51/backgrond-mac-dinh.jpg';
+        setName(userName);
+        setAvatar(userAvatar);
+        setCachedUserInfo(message.senderId, { name: userName, avatar: userAvatar });
+      }
+    };
+
+    fetchUserInfo();
+  }, [message.senderId]);
 
   return (
     <View style={{ paddingVertical: 4, flexDirection: 'row', alignItems: 'flex-start' }}>
       {isLeftIndent && (
         <View style={{ width: 40, marginRight: 8 }}>
-          {showAvatar ? (
-            <Image
-              source={{ uri: senderAvatar }}
-              style={{ width: 32, height: 32, borderRadius: 16 }}
-            />
+          {showAvatar && avatar ? (
+            <Image source={{ uri: avatar }} style={{ width: 32, height: 32, borderRadius: 16 }} />
           ) : null}
         </View>
       )}
@@ -83,14 +110,13 @@ export default function MessageBubble({ message, isMine, isGroup, showAvatar, co
       <View style={{ flex: 1 }}>
         {isLeftIndent && showAvatar && (
           <Text style={{ marginBottom: 2, fontWeight: "bold", color: 'white', fontSize: 12 }}>
-            {senderName}
+            {name}
           </Text>
         )}
 
         <View style={{
           flexDirection: 'column',
           alignItems: isMine ? 'flex-end' : 'flex-start',
-       
         }}>
           <View
             style={[

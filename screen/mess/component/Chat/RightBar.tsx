@@ -1,10 +1,11 @@
 import React from 'react';
-import { ScrollView, Text } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
 import { useSelector } from 'react-redux';
 import ChatHeaderInfo from './component_rightBar/ChatHeaderInfo';
 import MemberList from './component_rightBar/MemberList';
 import MediaSection from './component_rightBar/MediaSection';
 import OptionsSection from './component_rightBar/OptionsSection';
+import color from '../../../../Custom/Color';
 
 
 const Rightbar = ({ route }: any) => {
@@ -13,7 +14,7 @@ const Rightbar = ({ route }: any) => {
   const conversation = useSelector((state: any) =>
     state.chat.conversations.find((c: any) => c._id === conversationId)
   );
-  console.log("Conversation data:", conversation);
+
 
   if (!conversation) return <Text style={{ color: 'white' }}>Loading...</Text>;
 
@@ -35,7 +36,7 @@ const Rightbar = ({ route }: any) => {
         isGroup={isGroup}
         memberCount={memberCount}
       />
-
+  <View style={{height:1, backgroundColor:color.gray, margin:5,marginBottom:20}}></View>
       {/* ✅ Phần 2: Danh sách thành viên (chỉ nhóm) */}
       {isGroup && (
         <MemberList
@@ -43,11 +44,12 @@ const Rightbar = ({ route }: any) => {
           adminId={conversation.adminId}
         />
       )}
-
+  <View style={{height:1, backgroundColor:color.gray, margin:5,marginBottom:20}}></View>
       {/* ✅ Phần 3: Media chia sẻ */}
       <MediaSection conversationId={conversationId} />
 
       {/* ✅ Phần 4: Tuỳ chọn */}
+      <View style={{height:1, backgroundColor:color.gray, margin:5,marginBottom:20}}></View>
       <OptionsSection
         isGroup={isGroup}
         conversationId={conversationId}

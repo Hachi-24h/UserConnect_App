@@ -9,6 +9,7 @@ import {
     TouchableWithoutFeedback,
 } from 'react-native';
 import { ArrowDown2, UserAdd } from 'iconsax-react-native';
+import color from '../../../../../Custom/Color';
 
 export default function MemberList({ members, adminId }: { members: any[]; adminId: string }) {
     const [showModal, setShowModal] = useState(false);
@@ -27,6 +28,7 @@ export default function MemberList({ members, adminId }: { members: any[]; admin
                     flexDirection: 'row',
                     alignItems: 'center',
                     marginBottom: 14,
+
                 }}
             >
                 <Image
@@ -47,7 +49,10 @@ export default function MemberList({ members, adminId }: { members: any[]; admin
     };
 
     return (
-        <View style={{ marginBottom: 28 }}>
+        <View style={{
+            marginBottom: 28,
+
+        }}>
             {/* Header + Add icon */}
             <View
                 style={{
@@ -67,13 +72,15 @@ export default function MemberList({ members, adminId }: { members: any[]; admin
                     <UserAdd size={22} color="#fff" />
                 </TouchableOpacity>
             </View>
+            <View >
+                {/* Hiển thị 2 thành viên đầu */}
+                {members.slice(0, 2).map((m) => renderMember(m))}
+            </View>
 
-            {/* Hiển thị 2 thành viên đầu */}
-            {members.slice(0, 2).map((m) => renderMember(m))}
 
             {/* Nút xem thêm nếu > 2 */}
             {members.length > 2 && (
-              
+
                 <View style={{ alignItems: 'center', marginTop: 6 }}>
                     <TouchableOpacity onPress={() => setShowModal(true)} style={{ flexDirection: 'row', alignItems: 'center' }}>
                         <Text style={{ color: '#00aced', fontSize: 15, marginRight: 4 }}>More</Text>

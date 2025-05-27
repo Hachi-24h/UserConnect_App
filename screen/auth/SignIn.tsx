@@ -2,23 +2,22 @@
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, TextInput, Image, TouchableOpacity, Dimensions,
-  StyleSheet, Alert
+  StyleSheet,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Svg, { Text as SvgText, Defs, LinearGradient as SvgLinearGradient, Stop } from 'react-native-svg';
-import { Colorfilter, Eye, EyeSlash } from "iconsax-react-native";
+import {  Eye, EyeSlash } from "iconsax-react-native";
 import color from '../../Custom/Color';
 import { login } from '../../utils/auth';
 import { showNotification } from '../../Custom/notification';
-import { useSelector } from 'react-redux';
+
 import LoadingModal from '../../Custom/Loading';
 import { getUserDetails } from '../../utils/auth';
 import { useDispatch } from 'react-redux';
 import { setUser } from '../../store/userSlice';
-import axios from 'axios';
+
 import ip from '../../config/IpAddress';
-import { setConversations } from '../../store/chatSlice';
-import { setUnreadCounts } from '../../store/unreadSlice';
+
 
 import { fetchConversations } from '../../store/chatSlice';
 import { fetchFollowings } from '../../store/followingSlice';

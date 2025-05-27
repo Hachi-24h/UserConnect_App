@@ -55,7 +55,7 @@ const AppContent = () => {
     return () => unsubscribe?.();
   }, [navigationRef, conversations, userLoginId]);
 
-  // 🔥 Lắng nghe tin nhắn socket (dùng file riêng)
+ 
   useEffect(() => {
     if (!userLoginId || !token || conversations.length === 0) return;
 
