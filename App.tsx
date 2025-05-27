@@ -10,6 +10,7 @@ import screens from './config/screens';
 import CustomToast from './Custom/CustomToast';
 import { setupSocketListeners } from './socket/socketHandlers'; // ✅ import mới
 import socket from './socket/socket';
+import { View } from 'react-native';
 
 const Stack = createStackNavigator();
 
@@ -45,7 +46,7 @@ const AppContent = () => {
       conversations.forEach((conv: any) => {
         socket.emit("joinRoom", conv._id);
       });
-      console.log("🔁 Đã join tất cả room từ Navigation");
+      // console.log("🔁 Đã join tất cả room từ Navigation");
     }
   };
 
@@ -54,7 +55,7 @@ const AppContent = () => {
     return () => unsubscribe?.();
   }, [navigationRef, conversations, userLoginId]);
 
-  // 🔥 Lắng nghe tin nhắn socket (dùng file riêng)
+ 
   useEffect(() => {
     if (!userLoginId || !token || conversations.length === 0) return;
 
@@ -102,8 +103,10 @@ const AppContent = () => {
 
 const App = () => (
   <Provider store={store}>
-    <AppContent />
-    <FlashMessage position="top" floating={true} />
+    <View style={{ flex: 1 }}>
+      <AppContent />
+      <FlashMessage position="top" floating={true} />
+    </View>
   </Provider>
 );
 

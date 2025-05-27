@@ -32,7 +32,7 @@ const ConnectScreen = ({ navigation }: any) => {
       <Text style={styles.label}>Your ID</Text>
       <TextInput
         style={styles.input}
-        placeholder="Nhập userId của bạn"
+        placeholder="Nhập userId của You"
         value={myId}
         onChangeText={setMyId}
       />

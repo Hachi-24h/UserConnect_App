@@ -2,30 +2,30 @@
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, TextInput, Image, TouchableOpacity, Dimensions,
-  StyleSheet, Alert
+  StyleSheet,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Svg, { Text as SvgText, Defs, LinearGradient as SvgLinearGradient, Stop } from 'react-native-svg';
-import { Colorfilter, Eye, EyeSlash } from "iconsax-react-native";
+import {  Eye, EyeSlash } from "iconsax-react-native";
 import color from '../../Custom/Color';
 import { login } from '../../utils/auth';
 import { showNotification } from '../../Custom/notification';
-import { useSelector } from 'react-redux';
+
 import LoadingModal from '../../Custom/Loading';
 import { getUserDetails } from '../../utils/auth';
 import { useDispatch } from 'react-redux';
 import { setUser } from '../../store/userSlice';
-import axios from 'axios';
+
 import ip from '../../config/IpAddress';
-import { setConversations } from '../../store/chatSlice';
-import { setUnreadCounts } from '../../store/unreadSlice';
+
 
 import { fetchConversations } from '../../store/chatSlice';
+import { fetchFollowings } from '../../store/followingSlice';
 
 const { height, width } = Dimensions.get('window');
 const SignInScreen = ({ navigation }: any) => {
-  const [username, setUsername] = useState('hachi11');
-  const [password, setPassword] = useState('hachi11');
+  const [username, setUsername] = useState('hachi1');
+  const [password, setPassword] = useState('hachi1');
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
@@ -39,7 +39,7 @@ const SignInScreen = ({ navigation }: any) => {
       // login xong sẽ lưu user vào Redux
       const res = await login(username, password);
 
-  
+
       dispatch(setUser({
         _id: res.user._id,
         token: res.token,
@@ -50,9 +50,9 @@ const SignInScreen = ({ navigation }: any) => {
       const detail = await getUserDetails(res.user._id);
       // Lấy danh sách các cuộc trò chuyện
       // @ts-ignore
-    await dispatch(fetchConversations(res.user._id, res.token));
-
-
+      await dispatch(fetchConversations(res.user._id, res.token));
+      // @ts-ignore
+      dispatch(fetchFollowings(res.user._id));
       setLoading(false);
 
       if (detail) {

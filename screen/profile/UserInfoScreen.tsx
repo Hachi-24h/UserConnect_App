@@ -72,7 +72,7 @@ const UserInfoScreen = ({ navigation }: any) => {
       // Thông báo khi lưu thành công
       Alert.alert("Lưu thành công", "Thông tin đã được cập nhật, đăng nhập lại để có hiệu lực.");
 
-      // Load lại dữ liệu (có thể dispatch lại action nếu bạn sử dụng Redux)
+      // Load lại dữ liệu (có thể dispatch lại action nếu You sử dụng Redux)
       dispatch({
         type: "UPDATE_USER_DETAIL",
         payload: {
@@ -190,14 +190,14 @@ const UserInfoScreen = ({ navigation }: any) => {
             multiline
             numberOfLines={4}
             style={[styles.value, { height: 100, textAlignVertical: "top" }]}
-            placeholder="Một chút về bạn..."
+            placeholder="Một chút về You..."
             placeholderTextColor="#999"
           />
 
           <Text style={styles.label}>Điện thoại</Text>
           <Text style={styles.value}>{phoneNumber}</Text>
           <Text style={styles.note}>
-            Số điện thoại chỉ hiển thị với người có lưu số bạn trong danh bạ máy
+            Số điện thoại chỉ hiển thị với người có lưu số You trong danh bạ máy
           </Text>
         </View>
 

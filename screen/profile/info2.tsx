@@ -74,7 +74,7 @@ const ProfileScreen = () => {
         {/* Question */}
         <Text style={styles.questionText}>Hôm nay Phan Thanh Nam có gì vui?</Text>
         <Text style={styles.subtitleText}>
-          Đây là Nhật ký của bạn - Hãy làm đầy Nhật ký với những dấu ấn cuộc đời và kỷ niệm đáng nhớ nhé!
+          Đây là Nhật ký của You - Hãy làm đầy Nhật ký với những dấu ấn cuộc đời và kỷ niệm đáng nhớ nhé!
         </Text>
         
         {/* Post Button */}

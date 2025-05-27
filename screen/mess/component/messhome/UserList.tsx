@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, Image } from 'react-native';
-import styles from "../../../Css/mess/MessHome";
+import styles from "../../../../Css/mess/MessHome";
 import { useSelector } from 'react-redux';
-import { getUserDetails } from '../../../utils/auth';
-import {formatMessageTime } from '../../../Custom/timeFormatter';
+import { getUserDetails } from '../../../../utils/auth';
+import {formatMessageTime } from '../../../../Custom/timeFormatter';
 
 type UserItem = {
   _id: string;
@@ -69,16 +69,16 @@ const UserList: React.FC<UserListProps> = ({ users, onUserPress, unreadCounts })
 
     if (isGroup) {
       if (isMyMessage) {
-        displayMessage = `Bạn: ${item.lastMessage}`;
+        displayMessage = `You: ${item.lastMessage}`;
       } else {
         const senderId = item.lastMessageSenderId || userLoginId;
-        const senderName = groupSenderNames[senderId] || "Ai đó";
+        const senderName = groupSenderNames[senderId] || "  ";
         
         displayMessage = `${senderName.split(" ")[0]}: ${item.lastMessage}`;
       }
     } else {
       displayMessage = isMyMessage
-        ? `Bạn: ${item.lastMessage}`
+        ? `You: ${item.lastMessage}`
         // : `${item.username.split(' ')[0]}: ${item.lastMessage}`;
         : ` ${item.lastMessage}`;
 

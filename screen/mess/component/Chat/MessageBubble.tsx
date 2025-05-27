@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, Image, Linking, TouchableOpacity } from 'react-native';
-import { useSelector } from 'react-redux';
-import styles from "../../../Css/chat";
-import color from '../../../Custom/Color';
-import { selectMembersByConversationId } from '../../../store/chatSelectors';
+import { getUserDetails } from '../../../../utils/auth';
+import { getCachedUserInfo, setCachedUserInfo } from '../../../../utils/userCache';
+import styles from "../../../../Css/chat";
+import color from '../../../../Custom/Color';
 
-const downloadIcon = require('../../../Icon/download.png');
+const downloadIcon = require('../../../../Icon/download.png');
 
 const getExtension = (url: string): string => {
   const name = decodeURIComponent(url).split('?')[0].split('/').pop() || '';
@@ -14,16 +14,16 @@ const getExtension = (url: string): string => {
 
 const getFileIcon = (ext: string): any => {
   switch (ext) {
-    case 'pdf': return require('../../../Icon/pdf.png');
+    case 'pdf': return require('../../../../Icon/pdf.png');
     case 'ppt':
-    case 'pptx': return require('../../../Icon/ppt.png');
-    case 'txt': return require('../../../Icon/txt.png');
-    case 'zip': return require('../../../Icon/zip.png');
+    case 'pptx': return require('../../../../Icon/ppt.png');
+    case 'txt': return require('../../../../Icon/txt.png');
+    case 'zip': return require('../../../../Icon/zip.png');
     case 'doc':
-    case 'docx': return require('../../../Icon/word.png');
+    case 'docx': return require('../../../../Icon/word.png');
     case 'xls':
-    case 'xlsx': return require('../../../Icon/xls.png');
-    default: return require('../../../Icon/zip.png');
+    case 'xlsx': return require('../../../../Icon/xls.png');
+    default: return require('../../../../Icon/zip.png');
   }
 };
 
@@ -59,38 +59,65 @@ const FileMessage = ({ url }: { url: string }) => {
   );
 };
 
-export default function MessageBubble({ message, isMine, isGroup, showAvatar, conversationId }: any) {
+export default function MessageBubble({
+  message,
+  isMine,
+  isGroup,
+  showAvatar,
+  conversationId
+}: any) {
   const time = new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  const members = useSelector(selectMembersByConversationId(conversationId));
-  const sender = members.find((m: any) => m.userId === message.senderId);
-  const senderAvatar = sender?.avatar || 'https://i.postimg.cc/6pXNwv51/backgrond-mac-dinh.jpg';
-  const senderName = sender?.name || 'Người dùng';
   const isLeftIndent = isGroup && !isMine;
+
+  const [name, setName] = useState<string>(message.name || '');
+  const [avatar, setAvatar] = useState<string>(message.senderAvatar || '');
+
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      if (name && avatar) return;
+
+      const cached = getCachedUserInfo(message.senderId);
+      if (cached) {
+        setName(cached.name);
+        setAvatar(cached.avatar);
+        return;
+      }
+
+      const userInfo = await getUserDetails(message.senderId);
+     
+      if (userInfo) {
+        const userName = userInfo.firstname + ' ' + userInfo.lastname || 'Unknown User';
+        const userAvatar = userInfo.avatar || 'https://i.postimg.cc/6pXNwv51/backgrond-mac-dinh.jpg';
+        setName(userName);
+        setAvatar(userAvatar);
+        setCachedUserInfo(message.senderId, { name: userName, avatar: userAvatar });
+      }
+    };
+
+    fetchUserInfo();
+  }, [message.senderId]);
 
   return (
     <View style={{ paddingVertical: 4, flexDirection: 'row', alignItems: 'flex-start' }}>
-      {/* Avatar trái nếu là nhóm và người gửi không phải mình */}
-      {isLeftIndent ? (
+      {isLeftIndent && (
         <View style={{ width: 40, marginRight: 8 }}>
-          {showAvatar && (
-            <Image
-              source={{ uri: senderAvatar }}
-              style={{ width: 32, height: 32, borderRadius: 16 }}
-            />
-          )}
+          {showAvatar && avatar ? (
+            <Image source={{ uri: avatar }} style={{ width: 32, height: 32, borderRadius: 16 }} />
+          ) : null}
         </View>
-      ) : null}
+      )}
 
       <View style={{ flex: 1 }}>
-        {/* Tên người gửi (chỉ trong nhóm và khác người trước) */}
         {isLeftIndent && showAvatar && (
           <Text style={{ marginBottom: 2, fontWeight: "bold", color: 'white', fontSize: 12 }}>
-            {senderName}
+            {name}
           </Text>
         )}
 
-        {/* Bubble + thời gian */}
-        <View style={{ flexDirection: 'column', alignItems: isMine ? 'flex-end' : 'flex-start' }}>
+        <View style={{
+          flexDirection: 'column',
+          alignItems: isMine ? 'flex-end' : 'flex-start',
+        }}>
           <View
             style={[
               styles.messageBubble,

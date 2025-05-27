@@ -1,9 +1,11 @@
 import socket from './socket';
 
-import { addMessage, deleteMessage, revokeMessage, updateLastMessage } from '../store/chatSlice';
+import { addMessage, deleteMessage, getConversationById, revokeMessage, updateLastMessage } from '../store/chatSlice';
 import { playNotificationSound } from '../Custom/soundPlayer';
 import { setConversations } from '../store/chatSlice';
 import { showNotification } from '../Custom/notification';
+import { useSelector } from 'react-redux';
+import store from '../store/store';
 
 interface Message {
     _id: string;
@@ -40,7 +42,7 @@ export const setupSocketListeners = ({
     conversations.forEach(conv => {
         socket.emit("joinRoom", conv._id);
     });
-    console.log("🔁 Đã tham gia tất cả các phòng hội thoại");
+    // console.log("🔁 Đã tham gia tất cả các phòng hội thoại");
 
     // lắng nghe sự kiện nhận tin nhắn
     const handleReceiveMessage = (msg: Message) => {
@@ -89,26 +91,30 @@ export const setupSocketListeners = ({
     };
     // lắng nghe sự kiện tạo nhóm mới
     const handleNewConversation = (conv: any) => {
-        // console.log("📥 Nhận nhóm mới:", conv);
-
-        // 🚪 Tham gia room ngay lập tức
+        // Join the socket room
         socket.emit("joinRoom", conv._id);
 
-        // ✅ Cập nhật Redux: thêm vào danh sách hội thoại
+        // Update Redux state
         dispatch((dispatchFn: any, getState: any) => {
-            const { chat } = getState();
+            const { chat, user } = getState();
             const updated = [...chat.conversations, conv];
             dispatch(setConversations(updated));
-        });
 
-        // (Tuỳ chọn) Thông báo toast
-        setToastMsg({
-            name: conv.groupName || 'New Group',
-            content: "You have been added to a group",
-            senderAvatar: conv.avatar || '',
-            timestamp: new Date().toISOString(),
+            // Determine if current user is the creator
+            const isCreator = conv.adminId === user._id;
+
+            // Set toast message
+            setToastMsg({
+                name: conv.groupName || 'New Group',
+                content: isCreator
+                    ? `You created a new group: ${conv.groupName || 'Unnamed'}`
+                    : "You have been added to a group",
+                senderAvatar: conv.avatar || '',
+                timestamp: new Date().toISOString(),
+            });
+
+            setToastVisible(true);
         });
-        setToastVisible(true);
     };
     // lắng nghe sự kiện nhóm bị giải tán
     const handleGroupDisbanded = (data: { conversationId: string; groupName: string }) => {
@@ -130,25 +136,34 @@ export const setupSocketListeners = ({
     // lắng nghe sự kiện thành viên bị xoá khỏi nhóm
     const handleMemberRemoved = (data: { conversationId: string; userId: string }) => {
         const { conversationId, userId: removedUserId } = data;
+        const { chat, } = store.getState();
+        if (removedUserId !== userId) // Không phải mình thì bỏ qua
+        {
+            const updatedConversations = chat.conversations.map((conv: any) => {
+                if (conv._id !== conversationId) return conv;
+                const updatedMembers = conv.members?.filter((m: any) => m.userId !== removedUserId);
+                return { ...conv, members: updatedMembers };
+            });
+            dispatch(setConversations(updatedConversations));
+        }
+        else {
 
-        if (removedUserId !== userId) return; // Không phải mình thì bỏ qua
 
-        console.log("🚫 Bạn đã bị kick khỏi nhóm:", conversationId);
+            // Lấy tên nhóm từ Redux trước khi xoá
+            let groupName = "Unknown Group";
 
-        // Lấy tên nhóm từ Redux trước khi xoá
-        let groupName = "Unknown Group";
+            dispatch((dispatchFn: any, getState: any) => {
+                const { chat } = getState();
+                const targetConv = chat.conversations.find((conv: any) => conv._id === conversationId);
+                groupName = targetConv?.groupName || "Unknown Group";
 
-        dispatch((dispatchFn: any, getState: any) => {
-            const { chat } = getState();
-            const targetConv = chat.conversations.find((conv: any) => conv._id === conversationId);
-            groupName = targetConv?.groupName || "Unknown Group";
+                const updated = chat.conversations.filter((conv: any) => conv._id !== conversationId);
+                dispatch(setConversations(updated));
+            });
 
-            const updated = chat.conversations.filter((conv: any) => conv._id !== conversationId);
-            dispatch(setConversations(updated));
-        });
-
-        // ✅ Thông báo
-        showNotification(`You have been removed from the group "${groupName}"`, "error");
+            // ✅ Thông báo
+            showNotification(`You have been removed from the group "${groupName}"`, "error");
+        }
     };
 
     // lắng nghe sự kiện thu hồi tin nhắn
@@ -171,6 +186,57 @@ export const setupSocketListeners = ({
         // showNotification("A message has been deleted", "info");
     };
 
+    // lắng nghe sự kiện rời nhóm 
+    const handleMemberLeft = (data: { conversationId: string; userId: string }) => {
+        const { conversationId, userId: leftUserId } = data;
+
+        const { chat } = store.getState();
+        if (leftUserId !== userId) {
+            const updatedConversations = chat.conversations.map((conv: any) => {
+                if (conv._id !== conversationId) return conv;
+                const updatedMembers = conv.members?.filter((m: any) => m.userId !== leftUserId);
+                return { ...conv, members: updatedMembers };
+            });
+            dispatch(setConversations(updatedConversations));
+        }
+        else {
+            console.log("👋 Bạn đã rời khỏi nhóm:", conversationId);
+            // ✅ Truy cập state an toàn, không dùng useSelector
+            const { chat } = store.getState();
+            const targetConv = chat.conversations.find((conv: any) => conv._id === conversationId);
+            const groupName = targetConv?.groupName || "Unknown Group";
+
+            const updated = chat.conversations.filter((conv: any) => conv._id !== conversationId);
+            dispatch(setConversations(updated));
+
+            showNotification(`You left the group "${groupName}"`, "info");
+        }
+    };
+
+    // lắng nghe sự kiện thêm  thành viên
+    const handleMembersUpdated = (data: { conversationId: string; newMembers: any[] }) => {
+        const { conversationId, newMembers } = data;
+        const { chat } = store.getState();
+
+        const updatedConversations = chat.conversations.map((conv: any) => {
+            if (conv._id !== conversationId) return conv;
+
+            const updatedMembers = [...(conv.members || []), ...newMembers];
+
+            // Lọc trùng nếu cần (tuỳ backend đã xử lý chưa)
+            const uniqueMembers = Array.from(
+                new Map(updatedMembers.map(m => [m.userId, m])).values()
+            );
+
+            return {
+                ...conv,
+                members: uniqueMembers,
+            };
+        });
+
+        dispatch(setConversations(updatedConversations));
+    };
+
 
     socket.on("receiveMessage", handleReceiveMessage);
     socket.on("newConversation", handleNewConversation);
@@ -178,6 +244,8 @@ export const setupSocketListeners = ({
     socket.on("memberRemoved", handleMemberRemoved);
     socket.on("messageRevoked", handleMessageRevoked);
     socket.on("messageDeleted", handleMessageDeleted);
+    socket.on("memberLeft", handleMemberLeft);
+    socket.on("memberAdded", handleMembersUpdated);
     return () => {
         socket.off("receiveMessage", handleReceiveMessage);
         socket.off("newConversation", handleNewConversation);
@@ -185,7 +253,9 @@ export const setupSocketListeners = ({
         socket.off("memberRemoved", handleMemberRemoved);
         socket.off("messageRevoked", handleMessageRevoked);
         socket.off("messageDeleted", handleMessageDeleted);
-        console.log("🛑 Đã huỷ lắng nghe các sự kiện ");
+        socket.off("memberLeft", handleMemberLeft);
+        socket.off("memberAddedg", handleMembersUpdated);
+        // console.log("🛑 Đã huỷ lắng nghe các sự kiện ");
 
     };
 

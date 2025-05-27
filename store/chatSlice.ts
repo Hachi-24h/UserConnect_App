@@ -38,6 +38,7 @@ interface Conversation {
     avatar: string;
   } | null;
   members?: Member[];
+  adminId?: string;
 }
 
 interface ChatState {
@@ -66,7 +67,7 @@ const chatSlice = createSlice({
       action: PayloadAction<{ conversationId: string; messages: Message[] }>
     ) => {
       const { conversationId, messages } = action.payload;
-      state.messagesByConversation[conversationId] = messages;
+      state.messagesByConversation[conversationId] = [...messages];
     },
     addMessage: (
       state,
@@ -110,7 +111,7 @@ const chatSlice = createSlice({
       const msgIndex = conv.findIndex(msg => msg._id === messageId);
       if (msgIndex !== -1) {
         conv[msgIndex].content = "Message revoked";
-        conv[msgIndex].isDeleted = true; // nếu bạn dùng flag này
+        conv[msgIndex].isDeleted = true; // nếu You dùng flag này
         conv[msgIndex].type = "text"; // đổi về text để render đúng
       }
     },
@@ -181,39 +182,23 @@ export const fetchConversations = (userId: string, token: string) => async (disp
     for (const conv of rawConversations) {
       unreadMap[conv._id] = conv.unreadCount || 0;
 
-      const otherUser =
-        !conv.isGroup && conv.members?.find((m: any) => m._id !== userId);
       const lastMsg = conv.messages?.[conv.messages.length - 1];
 
       let displayContent = lastMsg?.content || '';
-      if (lastMsg?.type === 'image') displayContent = 'Sent a new picture';
-      else if (lastMsg?.type === 'file') displayContent = 'Sent a new file';
+      if (lastMsg?.type === 'image') displayContent = 'Sent a photo';
+      else if (lastMsg?.type === 'file') displayContent = 'Sent a file';
 
-      const members: Member[] = conv.members.map((m: any) => ({
+      const members: Member[] = conv.members?.map((m: any) => ({
         userId: m.userId,
         name: m.name,
         avatar: m.avatar || '',
-      }));
-      // console.log(` thời gian tin nhắn cuối: của id : ${conv._id} là ${lastMsg?.timestamp}`);
-      conversationsFormatted.push({
-        _id: conv._id,
-        isGroup: conv.isGroup,
-        groupName: conv.groupName || '',
-        avatar: conv.avatar || '',
-        updatedAt: lastMsg?.timestamp,
-        lastMessage: displayContent,
-        lastMessageSenderId: lastMsg?.senderId || null,
-        otherUser: otherUser
-          ? {
-            _id: otherUser._id,
-            name: otherUser.name,
-            avatar: otherUser.avatar,
-          }
-          : null,
-        members: conv.isGroup ? members : undefined,
-      });
+      })) || [];
 
-      messagesMap[conv._id] = (conv.messages || []).map((msg: any) => ({
+      const otherUser = !conv.isGroup
+        ? members.find((m) => m.userId !== userId)
+        : null;
+
+      const msgList = (conv.messages || []).map((msg: any) => ({
         _id: msg._id,
         senderId: msg.senderId,
         content: msg.content,
@@ -222,6 +207,31 @@ export const fetchConversations = (userId: string, token: string) => async (disp
         name: msg.name,
         senderAvatar: msg.senderAvatar,
       }));
+
+      if (msgList.length === 0) {
+        dispatch(clearMessages(conv._id)); // Xóa tin nhắn cũ nếu trống
+      } else {
+        messagesMap[conv._id] = msgList;
+      }
+
+      conversationsFormatted.push({
+        _id: conv._id,
+        isGroup: conv.isGroup,
+        groupName: conv.groupName || '',
+        avatar: conv.avatar || '',
+        updatedAt: lastMsg?.timestamp,
+        adminId: conv.adminId || '', // ✅ thêm dòng này
+        lastMessage: displayContent,
+        lastMessageSenderId: lastMsg?.senderId || null,
+        otherUser: otherUser
+          ? {
+              _id: otherUser.userId,
+              name: otherUser.name,
+              avatar: otherUser.avatar,
+            }
+          : null,
+        members: members,
+      });
     }
 
     dispatch(setUnreadCounts(unreadMap));
@@ -235,4 +245,8 @@ export const fetchConversations = (userId: string, token: string) => async (disp
   } catch (err: any) {
     console.error("❌ Failed to fetch conversations", err.response?.data || err.message);
   }
+};
+
+export const getConversationById = (state: any, conversationId: string) => {
+  return state.chat.conversations.find((c: any) => c._id === conversationId);
 };

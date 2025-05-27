@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, TextInput, TouchableOpacity } from 'react-native';
 import { Send } from "iconsax-react-native";
-import styles from "../../../Css/chat";
-import color from '../../../Custom/Color';
+import styles from "../../../../Css/chat";
+import color from '../../../../Custom/Color';
 
 
 export default function MessageInput({ inputText, setInputText, handleSend }: any) {

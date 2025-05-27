@@ -19,6 +19,7 @@ import ResetPassword from '../screen/auth/ResetPasswordScreen';
 import ChangePassword from '../screen/profile/ChangePasswordScreen';
 import UserInfo from '../screen/profile/UserInfoScreen';
 import ConnectChat from '../screen/mess/ConnectScreen';
+import Rightbar from '../screen/mess/component/Chat/RightBar';
 export default {
 
   wellcome,
@@ -26,6 +27,6 @@ export default {
   SignIn,
   MessHome,Demo,SettingsScreen,
   EditProfile,InfoUser,UserDetailForm,
-  Chat,SettingUser,Contact,SettingInfor,PhoneAuth,ForgotPassword,ResetPassword,ChangePassword,UserInfo,ConnectChat
+  Chat,SettingUser,Contact,SettingInfor,PhoneAuth,ForgotPassword,ResetPassword,ChangePassword,UserInfo,ConnectChat,Rightbar
 
 };

@@ -11,7 +11,7 @@ const styles = StyleSheet.create({
         backgroundColor: color.lightBlue,
 
     },
-    // 1. Style cho phần tìm kiếm
+    // 1. Style cho phần Search
     searchBar: {
         position: "absolute", // Để nó nằm đè lên các phần tử khác
         top: 0, // Đặt nó ở trên cùng
@@ -62,11 +62,11 @@ const styles = StyleSheet.create({
 
     resultList: {
         position: 'absolute', // Danh sách kết quả nằm tuyệt đối
-        top: height * 0.08, // Bắt đầu ngay dưới thanh tìm kiếm
+        top: height * 0.08, // Bắt đầu ngay dưới thanh Search
         left: 0,
         right: 0,
         backgroundColor: color.beige, // Nền trắng để rõ ràng
-        zIndex: 9, // Đặt dưới thanh tìm kiếm nhưng trên các thành phần khác
+        zIndex: 9, // Đặt dưới thanh Search nhưng trên các thành phần khác
         maxHeight: '40%', // Giới hạn chiều cao danh sách
         borderBottomLeftRadius: 8,
         borderBottomRightRadius: 8,

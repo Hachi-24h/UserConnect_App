@@ -41,7 +41,7 @@ const ContactScreen = ({ navigation }: any) => {
             PermissionsAndroid.PERMISSIONS.READ_CONTACTS,
             {
               title: "Cho phép truy cập danh bạ",
-              message: "Ứng dụng cần truy cập danh bạ để tìm bạn bè.",
+              message: "Ứng dụng cần truy cập danh bạ để tìm You bè.",
               buttonPositive: "Đồng ý",
               buttonNegative: "Không",
             }
@@ -56,7 +56,7 @@ const ContactScreen = ({ navigation }: any) => {
       if (!hasPermission) {
         Alert.alert(
           "Yêu cầu quyền truy cập",
-          "Bạn cần bật quyền truy cập danh bạ trong cài đặt để sử dụng chức năng này.",
+          "You cần bật quyền truy cập danh bạ trong cài đặt để sử dụng chức năng này.",
           [
             {
               text: "Huỷ",
@@ -116,10 +116,10 @@ const ContactScreen = ({ navigation }: any) => {
 
   return (
     <View style={styles.container}>
-      {/* Thanh tìm kiếm */}
+      {/* Thanh Search */}
       <View style={styles.searchBar}>
         <TextInput
-          placeholder="Tìm kiếm"
+          placeholder="Search"
           placeholderTextColor={color.textSecondary}
           style={styles.searchInput}
         />
@@ -127,7 +127,7 @@ const ContactScreen = ({ navigation }: any) => {
 
       {/* Tabs */}
       <View style={styles.tabRow}>
-        <Text style={styles.tabActive}>Bạn bè</Text>
+        <Text style={styles.tabActive}>You bè</Text>
         <Text style={styles.tab}>Nhóm</Text>
         <Text style={styles.tab}>OA</Text>
       </View>
@@ -144,11 +144,11 @@ const ContactScreen = ({ navigation }: any) => {
           style={[styles.specialItem, { flexDirection: "row" }]}
         >
           <Call size={22} color={color.textSecondary} />
-          <Text style={styles.specialItem}>Lời mời kết bạn</Text>
+          <Text style={styles.specialItem}>Lời mời kết You</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Danh sách bạn bè */}
+      {/* Danh sách You bè */}
       <FlatList
         data={contacts}
         renderItem={renderItem}

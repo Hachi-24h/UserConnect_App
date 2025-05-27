@@ -8,10 +8,11 @@ import { getMessages } from "../../socket/chatApi";
 import { resetUnread } from "../../store/unreadSlice";
 import { addMessage, setMessages, updateLastMessage } from "../../store/chatSlice";
 import { selectMessagesByConversation } from '../../store/chatSelectors';
-import MessageBubble from "./component/MessageBubble";
-import ChatHeader from "./component/ChatHeader";
-import MessageInput from "./component/MessageInput";
+import MessageBubble from "./component/Chat/MessageBubble";
+import ChatHeader from "./component/Chat/ChatHeader";
+import MessageInput from "./component/Chat/MessageInput";
 import { setCurrentConversationId } from "../../store/userDetailSlice";
+import { getUserDetails } from "../../utils/auth";
 
 interface UserChat {
   isGroup: any;
@@ -56,6 +57,11 @@ const ChatScreen = ({ navigation }: any) => {
   const name = `${userDetailState.firstname} ${userDetailState.lastname}`;
   const avatar = userDetailState.avatar || "https://i.postimg.cc/6pXNwv51/backgrond-mac-dinh.jpg";
 
+  const conversation = useSelector((state: any) =>
+    state.chat.conversations.find((c: any) => c._id === conversationId)
+  );
+  const isGroup = conversation?.isGroup;
+
   useEffect(() => {
     if (conversationId) {
       dispatch(resetUnread(conversationId));
@@ -79,6 +85,7 @@ const ChatScreen = ({ navigation }: any) => {
     try {
       const res: Message[] = await getMessages(conversationId, currentUser.token);
       dispatch(setMessages({ conversationId, messages: res }));
+     
       scrollToBottom();
     } catch (error) {
       console.error("❌ Lỗi lấy tin nhắn:", error);
@@ -170,7 +177,8 @@ const ChatScreen = ({ navigation }: any) => {
 
           const msg: Message = item.data;
           const isMine = msg.senderId?.toString() === currentUser._id?.toString();
-          const isGroup = user?.isGroup;
+          
+          
 
           // ✅ Fix đúng logic avatar (bỏ qua item type === 'date')
           let prevMsg = null;
@@ -182,7 +190,7 @@ const ChatScreen = ({ navigation }: any) => {
           }
 
           const showAvatar = isGroup && (!prevMsg || prevMsg.senderId !== msg.senderId);
-
+        
           return (
             <MessageBubble
               message={msg}
