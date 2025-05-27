@@ -1,5 +1,5 @@
 const chatHistory = [
-    { id: "1", text: "Tớ lục rồi do bạn Nam", sender: "other", type: "text" },
+    { id: "1", text: "Tớ lục rồi do You Nam", sender: "other", type: "text" },
     { id: "2", text: "Đăng đi mình tìm cho", sender: "other", type: "text" },
     { id: "3", text: "Khóc hợp hơn nhở", sender: "other", type: "text" },
     { id: "4", text: "Khóc hợp hơn nhở", sender: "other", type: "text" },

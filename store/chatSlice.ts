@@ -110,7 +110,7 @@ const chatSlice = createSlice({
       const msgIndex = conv.findIndex(msg => msg._id === messageId);
       if (msgIndex !== -1) {
         conv[msgIndex].content = "Message revoked";
-        conv[msgIndex].isDeleted = true; // nếu bạn dùng flag này
+        conv[msgIndex].isDeleted = true; // nếu You dùng flag này
         conv[msgIndex].type = "text"; // đổi về text để render đúng
       }
     },

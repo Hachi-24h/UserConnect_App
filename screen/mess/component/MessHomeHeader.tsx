@@ -9,7 +9,7 @@ export default function MessHomeHeader({ searchTerm, setSearchTerm, onCreateGrou
   return (
     <View style={[styles.searchWrapper, { flexDirection: 'row', alignItems: 'center' }]}>
       <TextInput
-        placeholder="Tìm kiếm"
+        placeholder="Search"
         placeholderTextColor="#aaa"
         style={[styles.searchInput, { flex: 1 }]}
         value={searchTerm}

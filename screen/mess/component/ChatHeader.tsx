@@ -16,7 +16,7 @@ export default function ChatHeader({ user, navigation }: any) {
         <Text style={styles.userName}>
           {user.firstname || user.username} {user.lastname || ''}
         </Text>
-        <Text style={styles.statusText}>Hoạt động gần đây</Text>
+        <Text style={styles.statusText}>Recent Activity</Text>
       </View>
       <View style={styles.headerIcons}>
         <TouchableOpacity><Call size={26} color={color.orange} /></TouchableOpacity>

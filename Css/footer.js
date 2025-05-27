@@ -26,7 +26,7 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   selectedLabel: {
-    color: color.accentBlue, // hoặc color.accentPurple nếu bạn thích tím hơn
+    color: color.accentBlue, // hoặc color.accentPurple nếu You thích tím hơn
     fontWeight: "bold",
     fontSize: 14,
   },

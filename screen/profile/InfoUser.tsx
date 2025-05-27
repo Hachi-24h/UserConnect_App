@@ -86,7 +86,7 @@ const InfoUser = ({ navigation }: any) => {
             Hôm nay {lastname} có gì vui?
           </Text>
           <Text style={styles.cardText}>
-            Đây là Nhật ký của bạn - Hãy làm đầy Nhật ký với những dấu ấn cuộc đời và kỷ niệm đáng nhớ nhé!
+            Đây là Nhật ký của You - Hãy làm đầy Nhật ký với những dấu ấn cuộc đời và kỷ niệm đáng nhớ nhé!
           </Text>
           <TouchableOpacity style={styles.postButton}>
             <Text style={styles.postButtonText}>Đăng lên Nhật ký</Text>

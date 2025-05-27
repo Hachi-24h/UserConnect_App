@@ -1,7 +1,7 @@
 // utils/chatApi.ts
 import axios from 'axios';
 import ip from '../config/IpAddress';
-const BASE_URL = ip.BASE_URL; // Địa chỉ API của bạn
+const BASE_URL = ip.BASE_URL; // Địa chỉ API của You
 const link_api = `${BASE_URL}/chat`;
 // const BASE_URL = 'http://<IP_GATEWAY>:3000/chat'; // ví dụ: 192.168.1.100
 

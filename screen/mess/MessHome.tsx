@@ -53,7 +53,7 @@ const MessHome = ({ navigation }: any) => {
     );
     const result = filteredConvs.map((conv: any) => {
       const isGroup = conv.isGroup;
-      const lastMessage = conv.lastMessage || "Nhấn để bắt đầu trò chuyện";
+      const lastMessage = conv.lastMessage || "Tap to start chatting";
 
       let displayName = "Không rõ";
       let avatar = 'https://placehold.co/100x100';

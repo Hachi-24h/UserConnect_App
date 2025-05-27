@@ -40,7 +40,7 @@ export const setupSocketListeners = ({
     conversations.forEach(conv => {
         socket.emit("joinRoom", conv._id);
     });
-    console.log("🔁 Đã tham gia tất cả các phòng hội thoại");
+    // console.log("🔁 Đã tham gia tất cả các phòng hội thoại");
 
     // lắng nghe sự kiện nhận tin nhắn
     const handleReceiveMessage = (msg: Message) => {
@@ -89,27 +89,31 @@ export const setupSocketListeners = ({
     };
     // lắng nghe sự kiện tạo nhóm mới
     const handleNewConversation = (conv: any) => {
-        // console.log("📥 Nhận nhóm mới:", conv);
+  // Join the socket room
+  socket.emit("joinRoom", conv._id);
 
-        // 🚪 Tham gia room ngay lập tức
-        socket.emit("joinRoom", conv._id);
+  // Update Redux state
+  dispatch((dispatchFn: any, getState: any) => {
+    const { chat, user } = getState();
+    const updated = [...chat.conversations, conv];
+    dispatch(setConversations(updated));
 
-        // ✅ Cập nhật Redux: thêm vào danh sách hội thoại
-        dispatch((dispatchFn: any, getState: any) => {
-            const { chat } = getState();
-            const updated = [...chat.conversations, conv];
-            dispatch(setConversations(updated));
-        });
+    // Determine if current user is the creator
+    const isCreator = conv.adminId === user._id;
 
-        // (Tuỳ chọn) Thông báo toast
-        setToastMsg({
-            name: conv.groupName || 'New Group',
-            content: "You have been added to a group",
-            senderAvatar: conv.avatar || '',
-            timestamp: new Date().toISOString(),
-        });
-        setToastVisible(true);
-    };
+    // Set toast message
+    setToastMsg({
+      name: conv.groupName || 'New Group',
+      content: isCreator
+        ? `You created a new group: ${conv.groupName || 'Unnamed'}`
+        : "You have been added to a group",
+      senderAvatar: conv.avatar || '',
+      timestamp: new Date().toISOString(),
+    });
+
+    setToastVisible(true);
+  });
+};
     // lắng nghe sự kiện nhóm bị giải tán
     const handleGroupDisbanded = (data: { conversationId: string; groupName: string }) => {
         const { conversationId, groupName } = data;
@@ -133,7 +137,7 @@ export const setupSocketListeners = ({
 
         if (removedUserId !== userId) return; // Không phải mình thì bỏ qua
 
-        console.log("🚫 Bạn đã bị kick khỏi nhóm:", conversationId);
+        console.log("🚫 You đã bị kick khỏi nhóm:", conversationId);
 
         // Lấy tên nhóm từ Redux trước khi xoá
         let groupName = "Unknown Group";
@@ -185,7 +189,7 @@ export const setupSocketListeners = ({
         socket.off("memberRemoved", handleMemberRemoved);
         socket.off("messageRevoked", handleMessageRevoked);
         socket.off("messageDeleted", handleMessageDeleted);
-        console.log("🛑 Đã huỷ lắng nghe các sự kiện ");
+        // console.log("🛑 Đã huỷ lắng nghe các sự kiện ");
 
     };
 

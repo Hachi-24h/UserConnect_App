@@ -7,7 +7,7 @@ export const getAllContacts = async () => {
       PermissionsAndroid.PERMISSIONS.READ_CONTACTS,
       {
         title: 'Cho phép truy cập danh bạ',
-        message: 'Ứng dụng cần truy cập danh bạ để tìm bạn bè',
+        message: 'Ứng dụng cần truy cập danh bạ để tìm You bè',
         buttonPositive: 'OK',
       }
     );

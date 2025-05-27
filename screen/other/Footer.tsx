@@ -16,7 +16,7 @@ const Footer: React.FC<FooterProps> = ({ navigation }:any) => {
   // Hàm xử lý khi người dùng nhấn vào icon
   const handleIconPress = (iconName: string) => {
     setSelectedIcon(iconName);
-    // Nếu bạn muốn điều hướng, bạn có thể mở lại đoạn code dưới đây:
+    // Nếu You muốn điều hướng, You có thể mở lại đoạn code dưới đây:
     navigation.navigate(iconName); 
   };
 
