@@ -215,13 +215,6 @@ export default function MessageBubble({
                   style={{ width: 200, height: 200, borderRadius: 10 }}
                   resizeMode="cover"
                 />
-              ) : message.type === 'video' ? (
-                <Video
-                  source={{ uri: message.content }}
-                  style={{ width: 240, height: 200, borderRadius: 10 }}
-                  controls
-                  resizeMode="contain"
-                />
               ) : message.type === 'file' ? (
                 <FileMessage url={message.content} />
               ) : (

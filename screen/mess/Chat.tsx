@@ -50,7 +50,7 @@ const ChatScreen = ({ navigation }: any) => {
   const currentUser = useSelector((state: RootState) => state.user);
   const conversationId = user.conversationId;
   const messages = useSelector(selectMessagesByConversation(conversationId));
-  const userDetailState = useSelector((state: any) => state.userDetail);
+  const userDetailState = useSelector((state: any) => state.userDetail.info);
   const flatListRef = useRef<FlatList>(null);
 
   const [inputText, setInputText] = useState("");
@@ -85,7 +85,7 @@ const ChatScreen = ({ navigation }: any) => {
     try {
       const res: Message[] = await getMessages(conversationId, currentUser.token);
       dispatch(setMessages({ conversationId, messages: res }));
-     
+
       scrollToBottom();
     } catch (error) {
       console.error("❌ Lỗi lấy tin nhắn:", error);
@@ -108,22 +108,22 @@ const ChatScreen = ({ navigation }: any) => {
   //   }, 100);
   // };
 
-  const handleSend = () => {
-    if (!inputText.trim()) return;
-    const msg: Message = {
-      conversationId,
-      senderId: currentUser._id,
-      receiverId: user.userChatId,
-      content: inputText,
-      timestamp: new Date().toISOString(),
-      type: "text",
-      name,
-      senderAvatar: avatar,
-    };
-    socket.emit("sendMessage", msg); // Gửi đi
-    setInputText("");
-    scrollToBottom(); // Giữ lại scroll
-  };
+  // const handleSend = () => {
+  //   if (!inputText.trim()) return;
+  //   const msg: Message = {
+  //     conversationId,
+  //     senderId: currentUser._id,
+  //     receiverId: user.userChatId,
+  //     content: inputText,
+  //     timestamp: new Date().toISOString(),
+  //     type: "text",
+  //     name,
+  //     senderAvatar: avatar,
+  //   };
+  //   socket.emit("sendMessage", msg); // Gửi đi
+  //   setInputText("");
+  //   scrollToBottom(); // Giữ lại scroll
+  // };
 
   useEffect(() => {
     if (messages && messages.length > 0) {
@@ -177,8 +177,8 @@ const ChatScreen = ({ navigation }: any) => {
 
           const msg: Message = item.data;
           const isMine = msg.senderId?.toString() === currentUser._id?.toString();
-          
-          
+
+
 
           // ✅ Fix đúng logic avatar (bỏ qua item type === 'date')
           let prevMsg = null;
@@ -190,7 +190,7 @@ const ChatScreen = ({ navigation }: any) => {
           }
 
           const showAvatar = isGroup && (!prevMsg || prevMsg.senderId !== msg.senderId);
-        
+
           return (
             <MessageBubble
               message={msg}
@@ -209,7 +209,15 @@ const ChatScreen = ({ navigation }: any) => {
         })}
       />
 
-      <MessageInput inputText={inputText} setInputText={setInputText} handleSend={handleSend} />
+      <MessageInput
+        inputText={inputText}
+        setInputText={setInputText}
+        conversationId={conversationId}
+        senderId={currentUser._id}
+        name={name}
+        avatar={avatar}
+      />
+
     </View>
   );
 };
