@@ -91,19 +91,20 @@ export const setupSocketListeners = ({
     };
     // lắng nghe sự kiện tạo nhóm mới
     const handleNewConversation = (conv: any) => {
-        // Join the socket room
         socket.emit("joinRoom", conv._id);
 
-        // Update Redux state
         dispatch((dispatchFn: any, getState: any) => {
             const { chat, user } = getState();
+
+            // ✅ Kiểm tra nếu nhóm đã tồn tại thì không thêm nữa
+            const alreadyExists = chat.conversations.some((c: any) => c._id === conv._id);
+            if (alreadyExists) return;
+
             const updated = [...chat.conversations, conv];
             dispatch(setConversations(updated));
 
-            // Determine if current user is the creator
             const isCreator = conv.adminId === user._id;
 
-            // Set toast message
             setToastMsg({
                 name: conv.groupName || 'New Group',
                 content: isCreator
@@ -116,6 +117,7 @@ export const setupSocketListeners = ({
             setToastVisible(true);
         });
     };
+
     // lắng nghe sự kiện nhóm bị giải tán
     const handleGroupDisbanded = (data: { conversationId: string; groupName: string }) => {
         const { conversationId, groupName } = data;

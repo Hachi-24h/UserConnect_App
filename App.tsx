@@ -11,6 +11,7 @@ import CustomToast from './Custom/CustomToast';
 import { setupSocketListeners } from './socket/socketHandlers'; // ✅ import mới
 import socket from './socket/socket';
 import { View } from 'react-native';
+import { navigationRef } from './config/navigationRef';
 
 const Stack = createStackNavigator();
 
@@ -21,7 +22,7 @@ const defaultOptions = {
 
 const AppContent = () => {
   const [initialScreen] = useState("SignIn");
-  const navigationRef = useNavigationContainerRef();
+
   const dispatch = useDispatch();
 
   const user = useSelector((state: any) => state.user);
