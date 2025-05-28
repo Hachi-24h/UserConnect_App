@@ -233,10 +233,11 @@ export const setupSocketListeners = ({
                 members: uniqueMembers,
             };
         });
-
+ 
         dispatch(setConversations(updatedConversations));
     };
 
+    // Lắng nghe khi có tin nhắn được ghim
 
     socket.on("receiveMessage", handleReceiveMessage);
     socket.on("newConversation", handleNewConversation);
@@ -246,6 +247,7 @@ export const setupSocketListeners = ({
     socket.on("messageDeleted", handleMessageDeleted);
     socket.on("memberLeft", handleMemberLeft);
     socket.on("memberAdded", handleMembersUpdated);
+
     return () => {
         socket.off("receiveMessage", handleReceiveMessage);
         socket.off("newConversation", handleNewConversation);
