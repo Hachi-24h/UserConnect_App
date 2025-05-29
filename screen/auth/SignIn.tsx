@@ -69,7 +69,7 @@ const SignInScreen = ({ navigation }: any) => {
 
 
   return (
-    <LinearGradient colors={["#3D5167", "#999999"]} style={styles.container}>
+    <LinearGradient colors={["#131C2F", "#131C2F"]} style={styles.container}>
       <View style={styles.formContainer}>
         <Svg height="50" width="250">
           <Defs>

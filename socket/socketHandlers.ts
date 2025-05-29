@@ -46,6 +46,7 @@ export const setupSocketListeners = ({
 
     // lắng nghe sự kiện nhận tin nhắn
     const handleReceiveMessage = (msg: Message) => {
+        console.log("tin nhắn nhận được :", msg);
         const isSender = msg.senderId === userId;
         const isActive = msg.conversationId === currentConversationId;
 

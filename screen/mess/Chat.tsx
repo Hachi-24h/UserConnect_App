@@ -50,7 +50,8 @@ const ChatScreen = ({ navigation }: any) => {
   const currentUser = useSelector((state: RootState) => state.user);
   const conversationId = user.conversationId;
   const messages = useSelector(selectMessagesByConversation(conversationId));
-  const userDetailState = useSelector((state: any) => state.userDetail);
+  const userDetailState = useSelector((state: any) => state.userDetail.info);
+  // console.log("🚀 ~ file: Chat.tsx:20 ~ userDetailState:", userDetailState);
   const flatListRef = useRef<FlatList>(null);
 
   const [inputText, setInputText] = useState("");
