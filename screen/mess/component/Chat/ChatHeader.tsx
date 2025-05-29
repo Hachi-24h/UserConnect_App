@@ -12,7 +12,7 @@ export default function ChatHeader({ user, navigation, pinnedMessages = [], onUn
     return parts.length > 1 ? parts[1] : url.split('/').pop() || 'file';
   };
   const getFileIcon = (ext: string): any => {
-    console.log("getFileIcon called with ext:", ext);
+
     switch (ext) {
       case 'pdf':
         return require('../../../../Icon/pdf.png');
@@ -94,27 +94,54 @@ export default function ChatHeader({ user, navigation, pinnedMessages = [], onUn
                   marginTop: 6,
                   padding: 10,
                   flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  alignItems: 'center'
-                }}>
-                <View style={{ flexDirection: 'row', paddingRight: 10 }}>
-                  <Text style={{ color: '#ffa726', fontWeight: '600', fontStyle: 'italic' }}>{msg.name || 'Người gửi'}:</Text>
+                  alignItems: 'center',
+                }}
+              >
+                {/* Nội dung bên trái */}
+                <View style={{ flex: 1, paddingRight: 12 }}>
+                  <Text
+                    style={{ color: '#ffa726', fontWeight: '600', fontStyle: 'italic' }}
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                  >
+                    {msg.name || 'Người gửi'}:
+                  </Text>
+
                   {msg.type === 'file' ? (
                     <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
                       <Image
                         source={getFileIcon(msg.content?.split('.').pop() || '')}
                         style={{ width: 20, height: 20, marginRight: 6 }}
                       />
-                      <Text numberOfLines={1} style={{ color: '#fff', fontStyle: 'italic' }}>{getFileName(msg.content) || 'Tập tin đính kèm'}</Text>
+                      <Text
+                        numberOfLines={1}
+                        ellipsizeMode="tail"
+                        style={{ color: '#fff', fontStyle: 'italic' }}
+                      >
+                        {getFileName(msg.content) || 'Tập tin đính kèm'}
+                      </Text>
                     </View>
+                  ) : msg.type === 'image' ? (
+                    <Text style={{ color: '#fff', fontStyle: 'italic' }}>Pinned a photo </Text>
+                  ) : msg.type === 'audio' ? (
+                    <Text style={{ color: '#fff', fontStyle: 'italic' }}>Pinned a sound</Text>
                   ) : (
-                    <Text style={{ color: '#fff', fontStyle: 'italic' }}>{msg.content}</Text>
+                    <Text
+                      style={{ color: '#fff', fontStyle: 'italic' }}
+                      numberOfLines={1}
+                      ellipsizeMode="tail"
+                    >
+                      {msg.content}
+                    </Text>
                   )}
                 </View>
+
+                {/* Nút xóa bên phải */}
                 <TouchableOpacity onPress={() => onUnpinMessage && onUnpinMessage(msg._id)}>
                   <Trash size={18} color="#ccc" />
                 </TouchableOpacity>
               </TouchableOpacity>
+
             ))
           ) : (
             <TouchableOpacity
@@ -122,11 +149,21 @@ export default function ChatHeader({ user, navigation, pinnedMessages = [], onUn
               style={{ marginTop: 4 }}>
               {pinnedMessages[0].type === 'file' ? (
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  
+
                   <Text style={{ color: '#ccc', fontStyle: 'italic' }}>{pinnedMessages[0]?.fileName || 'Tập tin đính kèm'}</Text>
                 </View>
+              ) : pinnedMessages[0].type === 'image' ? (
+                <Text style={{ color: '#ccc', fontStyle: 'italic' }}>Pinned a picture</Text>
+              ) : pinnedMessages[0].type === 'audio' ? (
+                <Text style={{ color: '#ccc', fontStyle: 'italic' }}>Pinned a sound</Text>
               ) : (
-                <Text style={{ color: '#ccc', fontStyle: 'italic' }}>{pinnedMessages[0]?.content}</Text>
+                <Text
+                  style={{ color: '#ccc', fontStyle: 'italic' }}
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                >
+                  {pinnedMessages[0]?.content}
+                </Text>
               )}
             </TouchableOpacity>
           )}

@@ -170,7 +170,7 @@ const ChatScreen = ({ navigation }: any) => {
   const scrollToMessageById = (id: string) => {
     const index = messageIndexMap.get(id);
     if (index !== undefined && flatListRef.current) {
-      const middleIndex = Math.max(0, index - 2); // lùi lại 3 dòng để căn giữa gần đúng
+      const middleIndex = Math.max(0, index - 4); // lùi lại 4 dòng để căn giữa gần đúng
       flatListRef.current.scrollToIndex({
         index: middleIndex,
         animated: true,

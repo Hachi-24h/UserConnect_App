@@ -249,6 +249,11 @@ export const setupSocketListeners = ({
         dispatch(updateMessagePinStatus({ conversationId, messageId, isPinned: false }));
     };
 
+    // lắng nghe sự kiện ghim tin nhắn
+    const handleMessagePinned = (data: { conversationId: string; messageId: string }) => {
+        const { conversationId, messageId } = data;
+        dispatch(updateMessagePinStatus({ conversationId, messageId, isPinned: true }));
+    };
 
     socket.on("receiveMessage", handleReceiveMessage);
     socket.on("newConversation", handleNewConversation);
@@ -259,6 +264,7 @@ export const setupSocketListeners = ({
     socket.on("memberLeft", handleMemberLeft);
     socket.on("memberAdded", handleMembersUpdated);
     socket.on("messageUnpinned", handleMessageUnpinned);
+    socket.on("messagePinned", handleMessagePinned);
     return () => {
         socket.off("receiveMessage", handleReceiveMessage);
         socket.off("newConversation", handleNewConversation);
@@ -269,6 +275,7 @@ export const setupSocketListeners = ({
         socket.off("memberLeft", handleMemberLeft);
         socket.off("memberAddedg", handleMembersUpdated);
         socket.off("messageUnpinned", handleMessageUnpinned);
+        socket.off("messagePinned", handleMessagePinned);
         // console.log("🛑 Đã huỷ lắng nghe các sự kiện ");
 
     };
