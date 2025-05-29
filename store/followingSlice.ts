@@ -3,7 +3,9 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 import ip from '../config/IpAddress';
 const BASE_URL = ip.BASE_URL
-// Async thunk để fetch danh sách following
+
+
+
 export const fetchFollowings = createAsyncThunk(
   'followings/fetchFollowings',
   async (userId: string) => {

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Modal, View, Text, TouchableOpacity, Image } from 'react-native';
 import Sound from 'react-native-sound';
-import color from '../../../../Custom/Color';
+import color from '../../../../../Custom/Color';
 
 Sound.setCategory('Playback');
 

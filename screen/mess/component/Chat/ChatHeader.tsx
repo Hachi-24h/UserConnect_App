@@ -1,15 +1,16 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { ArrowLeft2, InfoCircle, SearchNormal1, Video } from 'iconsax-react-native';
 import styles from '../../../../Css/mess/chat';
 import color from '../../../../Custom/Color';
 import PinnedMessages from './component_ChatHeader/PinnedMessages';
-import CallManager from './CallManager';
+import CallManager from './component_ChatHeader/CallManager';
+import MessageSearchModal from './component_ChatHeader/MessageSearchModal';
 
-export default function ChatHeader({ user, navigation, pinnedMessages, onScrollToMessage, otherUserIds,currentUserDetail, }: any) {
+export default function ChatHeader({ user, navigation, pinnedMessages, onScrollToMessage, otherUserIds, currentUserDetail, setHighlightedMsgId, }: any) {
   // Tạo ref nhận callback gọi video từ CallManager
   const callManagerRef = useRef<() => void | null>(() => { });
-
+  const [showSearchModal, setShowSearchModal] = useState(false);
   // Nút gọi video trong ChatHeader sẽ gọi handleVideoCall từ CallManager
   const onCallPress = () => {
     if (callManagerRef.current) {
@@ -35,7 +36,7 @@ export default function ChatHeader({ user, navigation, pinnedMessages, onScrollT
         </View>
 
         <View style={styles.headerIcons}>
-          <TouchableOpacity onPress={() => console.log('Tìm kiếm')}>
+          <TouchableOpacity onPress={() => setShowSearchModal(true)}>
             <SearchNormal1 size={26} color={color.orange} />
           </TouchableOpacity>
 
@@ -63,13 +64,27 @@ export default function ChatHeader({ user, navigation, pinnedMessages, onScrollT
       />
 
       {/* Gọi CallManager, truyền ref để nhận callback */}
-     <CallManager
+      <CallManager
         otherUserIds={otherUserIds}
         calleeName={user.firstname || user.username}
         currentUserDetail={currentUserDetail}   // truyền user detail
         onCallRef={callManagerRef}
         navigation={navigation}  // truyền navigation nếu cần
       />
+      {showSearchModal && (
+        <MessageSearchModal
+          conversationId={user.conversationId}
+          onClose={() => {
+            setShowSearchModal(false);
+            setHighlightedMsgId(null); // hoặc '' nếu mặc định bạn xài chuỗi
+          }} 
+          onScrollToMessage={(msgId: string) => {
+            onScrollToMessage?.(msgId);
+          }}
+          setHighlightedMsgId={setHighlightedMsgId} // ✅ THÊM DÒNG NÀY
+        />
+      )}
+
     </View>
   );
 }

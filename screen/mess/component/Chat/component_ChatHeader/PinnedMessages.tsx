@@ -124,7 +124,7 @@ export default function PinnedMessages({
             style={{ marginTop: 4 }}
           >
             {pinnedMessages[0].type === 'file' ? (
-              <Text style={{ color: '#ccc', fontStyle: 'italic' }}>{pinnedMessages[0]?.fileName}</Text>
+              <Text style={{ color: '#ccc', fontStyle: 'italic' }}>Pinned a file</Text>
             ) : pinnedMessages[0].type === 'image' ? (
               <Text style={{ color: '#ccc', fontStyle: 'italic' }}>Pinned a picture</Text>
             ) : pinnedMessages[0].type === 'audio' ? (

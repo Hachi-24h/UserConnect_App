@@ -20,7 +20,7 @@ import ChangePassword from '../screen/profile/ChangePasswordScreen';
 import UserInfo from '../screen/profile/UserInfoScreen';
 import ConnectChat from '../screen/mess/ConnectScreen';
 import Rightbar from '../screen/mess/component/Chat/RightBar';
-import VideoCall from '../screen/mess/component/Chat/VideoCallScreen';
+import VideoCall from '../screen/mess/component/Chat/component_ChatHeader/VideoCallScreen';
 export default {
 
   wellcome,

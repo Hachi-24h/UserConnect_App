@@ -1,7 +1,7 @@
 // CallManager.tsx
 import React, { useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import socketCall from '../../../../socket/socketCall';
+import socketCall from '../../../../../socket/socketCall';
 import CallModal from './CallModal';
 import IncomingCallModal from './IncomingCallModal';
 
