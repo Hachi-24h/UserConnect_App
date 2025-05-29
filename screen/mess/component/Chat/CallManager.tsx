@@ -47,7 +47,7 @@ export default function CallManager({ otherUserIds, calleeName, currentUserDetai
         });
 
         socketCall.on('callAccepted', (data: { fromUserId: string }) => {
-            if (isCalling) {
+          
                 setIsCalling(false);
 
                 // Mở màn hình VideoCall cho người gọi khi người nhận bấm Accept
@@ -56,7 +56,7 @@ export default function CallManager({ otherUserIds, calleeName, currentUserDetai
                     otherUserId: data.fromUserId,
                     socketCall,
                 });
-            }
+            
         });
 
         socketCall.on('callEnded', () => {
@@ -83,7 +83,7 @@ export default function CallManager({ otherUserIds, calleeName, currentUserDetai
                 fromUserId: currentUserDetail._id,
                 fromName: `${currentUserDetail.firstname || ''} ${currentUserDetail.lastname || ''}`.trim() || currentUserDetail.username || 'No Name',
                 fromAvatar: currentUserDetail.avatar,
-                toUserId: currentUser._id, // id
+                toUserId: id, // id
             });
         });
         console.log('📞 Đang gọi video đến các ID:', otherUserIds);

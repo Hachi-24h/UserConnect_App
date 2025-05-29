@@ -68,8 +68,12 @@ const UserInfoScreen = ({ navigation }: any) => {
   );
 
   // Upload image to Cloudinary
-  const uploadToCloudinary = async imageUri => {
+  const uploadToCloudinary = async (imageUri: string | undefined) => {
     const formData = new FormData();
+
+    if (!imageUri) {
+      throw new Error('No image URI provided');
+    }
 
     // Get filename from URI
     const uriParts = imageUri.split('.');
@@ -107,7 +111,7 @@ const UserInfoScreen = ({ navigation }: any) => {
     }
   };
 
-  const pickImage = async (setFunc, type) => {
+  const pickImage = async (setFunc: { (value: any): void; (value: any): void; (arg0: any): void; }, type: string) => {
     try {
       const result = await launchImageLibrary({
         mediaType: 'photo',
@@ -187,10 +191,10 @@ const UserInfoScreen = ({ navigation }: any) => {
     }
   };
 
-  const handleDateConfirm = date => {
+  const handleDateConfirm = (date: React.SetStateAction<Date>) => {
     setDatePickerOpen(false);
     // Format to YYYY-MM-DD for backend
-    const formattedDate = date.toISOString().split('T')[0];
+    const formattedDate = date.toString().split('T')[0];
     setDob(formattedDate);
     setSelectedDate(date);
   };
