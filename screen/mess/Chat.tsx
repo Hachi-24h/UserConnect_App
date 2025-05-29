@@ -57,10 +57,33 @@ const ChatScreen = ({ navigation }: any) => {
   const [inputText, setInputText] = useState("");
   const name = `${userDetailState.firstname} ${userDetailState.lastname}`;
   const avatar = userDetailState.avatar || "https://i.postimg.cc/6pXNwv51/backgrond-mac-dinh.jpg";
-
+  const [otherUserIds, setOtherUserIds] = useState<string[]>([]);
   const conversation = useSelector((state: any) =>
     state.chat.conversations.find((c: any) => c._id === conversationId)
   );
+  const currentUserId = currentUser._id;
+  console.log("🚀 ~ file: Chat.tsx:30 ~ currentUserId:", currentUserId);
+  useEffect(() => {
+    if (conversation && currentUserId) {
+      const ids: string[] = [];
+
+      if (conversation.isGroup && conversation.members) {
+        conversation.members.forEach((m: any) => {
+          if (m.userId !== currentUserId && !ids.includes(m.userId)) {
+            ids.push(m.userId);
+          }
+        });
+      } else if (conversation.otherUser && conversation.otherUser._id !== currentUserId) {
+        if (!ids.includes(conversation.otherUser._id)) {
+          ids.push(conversation.otherUser._id);
+        }
+      }
+
+      setOtherUserIds(ids);
+      
+    }
+  }, [conversation, currentUserId]);
+  console.log("danh sách id nhắn:", otherUserIds); 
   const isGroup = conversation?.isGroup;
 
   useEffect(() => {
@@ -86,7 +109,7 @@ const ChatScreen = ({ navigation }: any) => {
     try {
       const res: Message[] = await getMessages(conversationId, currentUser.token);
       dispatch(setMessages({ conversationId, messages: res }));
-     
+
       scrollToBottom();
     } catch (error) {
       console.error("❌ Lỗi lấy tin nhắn:", error);
@@ -109,22 +132,22 @@ const ChatScreen = ({ navigation }: any) => {
   //   }, 100);
   // };
 
-  const handleSend = () => {
-    if (!inputText.trim()) return;
-    const msg: Message = {
-      conversationId,
-      senderId: currentUser._id,
-      receiverId: user.userChatId,
-      content: inputText,
-      timestamp: new Date().toISOString(),
-      type: "text",
-      name,
-      senderAvatar: avatar,
-    };
-    socket.emit("sendMessage", msg); // Gửi đi
-    setInputText("");
-    scrollToBottom(); // Giữ lại scroll
-  };
+  // const handleSend = () => {
+  //   if (!inputText.trim()) return;
+  //   const msg: Message = {
+  //     conversationId,
+  //     senderId: currentUser._id,
+  //     receiverId: user.userChatId,
+  //     content: inputText,
+  //     timestamp: new Date().toISOString(),
+  //     type: "text",
+  //     name,
+  //     senderAvatar: avatar,
+  //   };
+  //   socket.emit("sendMessage", msg); // Gửi đi
+  //   setInputText("");
+  //   scrollToBottom(); // Giữ lại scroll
+  // };
 
   useEffect(() => {
     if (messages && messages.length > 0) {
@@ -178,8 +201,8 @@ const ChatScreen = ({ navigation }: any) => {
 
           const msg: Message = item.data;
           const isMine = msg.senderId?.toString() === currentUser._id?.toString();
-          
-          
+
+
 
           // ✅ Fix đúng logic avatar (bỏ qua item type === 'date')
           let prevMsg = null;
@@ -191,7 +214,7 @@ const ChatScreen = ({ navigation }: any) => {
           }
 
           const showAvatar = isGroup && (!prevMsg || prevMsg.senderId !== msg.senderId);
-        
+
           return (
             <MessageBubble
               message={msg}
@@ -210,7 +233,15 @@ const ChatScreen = ({ navigation }: any) => {
         })}
       />
 
-      <MessageInput inputText={inputText} setInputText={setInputText} handleSend={handleSend} />
+      <MessageInput
+        inputText={inputText}
+        setInputText={setInputText}
+        conversationId={conversationId}
+        senderId={currentUser._id}
+        name={name}
+        avatar={avatar}
+      />
+
     </View>
   );
 };
