@@ -6,115 +6,140 @@ import IncomingCallModal from './IncomingCallModal';
 import { useSelector } from 'react-redux';
 
 interface IncomingCallData {
-  fromUserId: string;
-  fromName: string;
+    fromUserId: string;
+    fromName: string;
+    fromAvatar?: string;
+    toUserId: string;
 }
 
 interface CallManagerProps {
-  otherUserIds: string[];
-  calleeName: string;
-  // Expose callback gọi video ra ngoài
-  onCallRef?: React.MutableRefObject<() => void | null>;
+    otherUserIds: string[];
+    calleeName: string;
+    currentUserDetail: {
+        _id: string;
+        firstname?: string;
+        lastname?: string;
+        username?: string;
+        avatar?: string;
+    };
+    navigation: any;  // Thêm navigation để điều hướng
+    onCallRef?: React.MutableRefObject<() => void | null>;
 }
 
-export default function CallManager({ otherUserIds, calleeName, onCallRef }: CallManagerProps) {
-  const [isCalling, setIsCalling] = useState(false);
-  const [incomingCall, setIncomingCall] = useState<null | IncomingCallData>(null);
-  const currentUser = useSelector((state: any) => state.user);
+export default function CallManager({ otherUserIds, calleeName, currentUserDetail, navigation, onCallRef }: CallManagerProps) {
+    const [isCalling, setIsCalling] = useState(false);
+    const [incomingCall, setIncomingCall] = useState<null | IncomingCallData>(null);
+    const currentUser = useSelector((state: any) => state.user);
 
-  useEffect(() => {
-    socketCall.connect();
-    socketCall.emit('join', { userId: currentUser._id });
+    useEffect(() => {
+        socketCall.connect();
+        socketCall.emit('join', { userId: currentUser._id });
 
-    socketCall.on('incomingCall', (data: IncomingCallData & { toUserId: string }) => {
-      if (data.toUserId === currentUser._id) {
-        console.log('📞 Cuộc gọi đến:', data);
-        setIncomingCall(data);
-      }
-    });
+        socketCall.on('incomingCall', (data: IncomingCallData) => {
+            if (data.toUserId === currentUser._id) {
+                console.log('📞 Cuộc gọi đến:', data);
+                setIncomingCall(data);
+            }
+        });
 
-    socketCall.on('callDeclined', () => {
-      setIsCalling(false);
-    });
+        socketCall.on('callDeclined', () => {
+            setIsCalling(false);
+        });
 
-    socketCall.on('callAccepted', () => {
-      setIsCalling(false);
-      // TODO: mở giao diện gọi video nếu cần
-    });
+        socketCall.on('callAccepted', (data: { fromUserId: string }) => {
+            if (isCalling) {
+                setIsCalling(false);
 
-    socketCall.on('callEnded', () => {
-      setIncomingCall(null);
-    });
+                // Mở màn hình VideoCall cho người gọi khi người nhận bấm Accept
+                navigation.navigate('VideoCall', {
+                    currentUserId: currentUser._id,
+                    otherUserId: data.fromUserId,
+                    socketCall,
+                });
+            }
+        });
 
-    return () => {
-      socketCall.off('incomingCall');
-      socketCall.off('callDeclined');
-      socketCall.off('callAccepted');
-      socketCall.off('callEnded');
-    };
-  }, [currentUser._id]);
+        socketCall.on('callEnded', () => {
+            setIncomingCall(null);
+            setIsCalling(false);
+        });
 
-  const handleVideoCall = useCallback(() => {
-    if (otherUserIds.length === 0) {
-      console.warn('Không có người nhận cuộc gọi');
-      return;
-    }
-    setIsCalling(true);
-    otherUserIds.forEach((id) => {
-      socketCall.emit('incomingCall', {
-        fromUserId: currentUser._id,
-        fromName: currentUser.firstname || currentUser.username,
-        toUserId: id,
-      });
-    });
-    console.log('📞 Đang gọi video đến các ID:', otherUserIds);
-  }, [currentUser._id, currentUser.firstname, currentUser.username, otherUserIds]);
+        return () => {
+            socketCall.off('incomingCall');
+            socketCall.off('callDeclined');
+            socketCall.off('callAccepted');
+            socketCall.off('callEnded');
+        };
+    }, [currentUser._id, isCalling, navigation, socketCall]);
 
-  // Nếu truyền ref ra ngoài để ChatHeader có thể gọi handleVideoCall
-  useEffect(() => {
-    if (onCallRef) {
-      onCallRef.current = handleVideoCall;
-      return () => {
-        if (onCallRef.current === handleVideoCall) {
-          onCallRef.current = () => {};
+    const handleVideoCall = useCallback(() => {
+        if (otherUserIds.length === 0) {
+            console.warn('Không có người nhận cuộc gọi');
+            return;
         }
-      };
-    }
-  }, [handleVideoCall, onCallRef]);
+        setIsCalling(true);
+        otherUserIds.forEach((id) => {
+            socketCall.emit('incomingCall', {
+                fromUserId: currentUserDetail._id,
+                fromName: `${currentUserDetail.firstname || ''} ${currentUserDetail.lastname || ''}`.trim() || currentUserDetail.username || 'No Name',
+                fromAvatar: currentUserDetail.avatar,
+                toUserId: currentUser._id, // id
+            });
+        });
+        console.log('📞 Đang gọi video đến các ID:', otherUserIds);
+    }, [currentUserDetail, otherUserIds]);
 
-  const handleAccept = () => {
-    if (!incomingCall) return;
-    socketCall.emit('callAccepted', { toUserId: incomingCall.fromUserId });
-    setIncomingCall(null);
-    // TODO: mở giao diện gọi video nếu cần
-  };
+    useEffect(() => {
+        if (onCallRef) {
+            onCallRef.current = handleVideoCall;
+            return () => {
+                if (onCallRef.current === handleVideoCall) {
+                    onCallRef.current = () => { };
+                }
+            };
+        }
+    }, [handleVideoCall, onCallRef]);
 
-  const handleDecline = () => {
-    if (!incomingCall) return;
-    socketCall.emit('declineCall', {
-      toUserId: incomingCall.fromUserId,
-      fromUserId: currentUser._id,
-      fromName: currentUser.firstname || currentUser.username,
-    });
-    setIncomingCall(null);
-  };
+    const handleAccept = () => {
+        if (!incomingCall) return;
+        socketCall.emit('callAccepted', { toUserId: incomingCall.fromUserId, fromUserId: currentUser._id });
+        setIncomingCall(null);
 
-  const handleCancelCall = () => {
-    otherUserIds.forEach((id) => {
-      socketCall.emit('endCall', { toUserId: id });
-    });
-    setIsCalling(false);
-  };
+        // Mở màn hình VideoCall cho người nhận
+        navigation.navigate('VideoCall', {
+            currentUserId: currentUser._id,
+            otherUserId: incomingCall.fromUserId,
+            socketCall,
+        });
+    };
 
-  return (
-    <>
-      <CallModal visible={isCalling} calleeName={calleeName} onCancel={handleCancelCall} />
-      <IncomingCallModal
-        visible={!!incomingCall}
-        callerName={incomingCall?.fromName}
-        onAccept={handleAccept}
-        onDecline={handleDecline}
-      />
-    </>
-  );
+    const handleDecline = () => {
+        if (!incomingCall) return;
+        socketCall.emit('callDeclined', {
+            toUserId: incomingCall.fromUserId,
+            fromUserId: currentUser._id,
+            fromName: currentUser.firstname || currentUser.username,
+        });
+        setIncomingCall(null);
+    };
+
+    const handleCancelCall = () => {
+        otherUserIds.forEach((id) => {
+            socketCall.emit('endCall', { toUserId: id });
+        });
+        setIsCalling(false);
+    };
+
+    return (
+        <>
+            <CallModal visible={isCalling} calleeName={calleeName} onCancel={handleCancelCall} />
+            <IncomingCallModal
+                visible={!!incomingCall}
+                callerName={incomingCall?.fromName}
+                callerAvatar={incomingCall?.fromAvatar}
+                onAccept={handleAccept}
+                onDecline={handleDecline}
+            />
+        </>
+    );
 }

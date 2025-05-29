@@ -6,7 +6,7 @@ import color from '../../../../Custom/Color';
 import PinnedMessages from './component_ChatHeader/PinnedMessages';
 import CallManager from './CallManager';
 
-export default function ChatHeader({ user, navigation, pinnedMessages, onScrollToMessage, otherUserIds }: any) {
+export default function ChatHeader({ user, navigation, pinnedMessages, onScrollToMessage, otherUserIds,currentUserDetail, }: any) {
   // Tạo ref nhận callback gọi video từ CallManager
   const callManagerRef = useRef<() => void | null>(() => { });
 
@@ -63,7 +63,13 @@ export default function ChatHeader({ user, navigation, pinnedMessages, onScrollT
       />
 
       {/* Gọi CallManager, truyền ref để nhận callback */}
-      <CallManager otherUserIds={otherUserIds} calleeName={user.firstname || user.username} onCallRef={callManagerRef} />
+     <CallManager
+        otherUserIds={otherUserIds}
+        calleeName={user.firstname || user.username}
+        currentUserDetail={currentUserDetail}   // truyền user detail
+        onCallRef={callManagerRef}
+        navigation={navigation}  // truyền navigation nếu cần
+      />
     </View>
   );
 }

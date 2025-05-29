@@ -187,6 +187,7 @@ const ChatScreen = ({ navigation }: any) => {
         pinnedMessages={pinnedMessages}
         onScrollToMessage={scrollToMessageById}
         otherUserIds={otherUserIds}
+        currentUserDetail={userDetailState}
       />
 
       <FlatList
