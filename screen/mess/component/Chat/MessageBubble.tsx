@@ -12,7 +12,7 @@ import {
 import styles from '../../../../Css/mess/chat';
 import color from '../../../../Custom/Color';
 import socket from '../../../../socket/socket';
-import { getUserDetails } from '../../../../utils/auth';
+import { getUserDetails_user } from '../../../../utils/auth';
 import {
   getCachedUserInfo,
   setCachedUserInfo,
@@ -136,7 +136,7 @@ export default function MessageBubble({
         return;
       }
 
-      const userInfo = await getUserDetails(message.senderId);
+      const userInfo = await getUserDetails_user(message.senderId)
 
       if (userInfo) {
         const userName =

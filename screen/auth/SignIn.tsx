@@ -47,6 +47,8 @@ const SignInScreen = ({ navigation }: any) => {
       }));
 
       // gọi trực tiếp lại hàm getUserDetails và lấy kết quả (đồng bộ)
+      console.log("✅ Đăng nhập thành công", res.user._id);
+      
       const detail = await getUserDetails(res.user._id);
       // Lấy danh sách các cuộc trò chuyện
       // @ts-ignore
