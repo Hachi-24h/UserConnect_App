@@ -24,8 +24,8 @@ import { fetchFollowings } from '../../store/followingSlice';
 
 const { height, width } = Dimensions.get('window');
 const SignInScreen = ({ navigation }: any) => {
-  const [username, setUsername] = useState('hachi1');
-  const [password, setPassword] = useState('hachi1');
+  const [username, setUsername] = useState('hachi11');
+  const [password, setPassword] = useState('hachi11');
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
@@ -47,6 +47,8 @@ const SignInScreen = ({ navigation }: any) => {
       }));
 
       // gọi trực tiếp lại hàm getUserDetails và lấy kết quả (đồng bộ)
+      console.log("✅ Đăng nhập thành công", res.user._id);
+      
       const detail = await getUserDetails(res.user._id);
       // Lấy danh sách các cuộc trò chuyện
       // @ts-ignore

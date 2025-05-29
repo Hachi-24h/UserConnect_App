@@ -11,11 +11,14 @@ import clientUserDetail from './clientUserDetail';
 
 
 export const getUserDetails = async (id: string) => {
+  console.log("🚀 ~ file: auth.ts:6 ~ getUserDetails ~ id:", id);
   try {
     const res = await clientUserDetail.get(`/users/${id}`);
     if (res.status === 200) {
       store.dispatch(setUserDetail(res.data));
+      // console.log("✅ Lấy thông tin người dùng thành công:", res.data);
       return res.data; // ✅ return để dùng sau login
+      
     } else {
       return null;
     }
@@ -24,6 +27,24 @@ export const getUserDetails = async (id: string) => {
     return null;
   }
 };
+
+export const getUserDetails_user = async (id: string) => {
+ console.log("🚀 ~ file: auth.ts:6 ~ getUserDetails_user ~ id:", id);
+  try {
+    const res = await clientUserDetail.get(`/users/${id}`);
+    if (res.status === 200) {
+    
+      return res.data; // ✅ return để dùng sau login
+      
+    } else {
+      return null;
+    }
+  } catch (err: any) {
+    // console.error("❌ Lỗi lấy user detail:", err?.response?.data || err.message);
+    return null;
+  }
+};
+
 
 
 // đăng nhập

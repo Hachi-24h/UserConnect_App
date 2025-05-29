@@ -1,5 +1,5 @@
 import { StyleSheet, Dimensions } from "react-native";
-import color from "../Custom/Color";
+import color from "../../Custom/Color";
 
 const { width, height } = Dimensions.get("window");
 
@@ -40,20 +40,20 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: width * 0.05,
   },
-  separator:{
+  separator: {
     flex: 1,
-    width: width ,
-   
+    width: width,
+
     marginVertical: height * 0.01,
   },
   messagesList: {
-    flexGrow:1,
+    flexGrow: 1,
     paddingHorizontal: width * 0.05,
     marginTop: height * 0.01,
-   
+
     paddingBottom: height * 0.1, // Đảm bảo có khoảng trống cho input
 
-    
+
   },
   messageBubble: {
     maxWidth: "75%",
@@ -81,24 +81,24 @@ const styles = StyleSheet.create({
     backgroundColor: color.darkgray,
     borderTopWidth: 1,
     borderTopColor: color.gray,
-    
+
 
 
   },
   input: {
-    
+
     fontSize: width * 0.045,
     color: color.white,
     marginHorizontal: width * 0.02,
-    
+
     borderWidth: 1,
     borderColor: color.gray,
-    borderRadius: width * 0.05, 
+    borderRadius: width * 0.05,
     paddingLeft: width * 0.05,
     width: "70%",
-    
+
   },
-  emojiButton:{
+  emojiButton: {
     width: width * 0.05,
     height: width * 0.05,
     justifyContent: "center",
@@ -106,9 +106,9 @@ const styles = StyleSheet.create({
     borderRadius: width * 0.05,
     backgroundColor: color.darkgray,
     marginHorizontal: width * 0.02,
-    
+
   },
-  
+
   // ✅ Fix lỗi viền xanh quanh ảnh
   mediaContainer: {
     alignSelf: "flex-start",
@@ -133,6 +133,10 @@ const styles = StyleSheet.create({
     borderRadius: width * 0.02,
     borderWidth: 0, // Đảm bảo không có viền
     overflow: "hidden",
+  },
+  headerIcons: {
+    flexDirection: "row",
+    gap: width * 0.05, // giữ khoảng cách
   },
 });
 

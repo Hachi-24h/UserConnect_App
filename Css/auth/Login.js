@@ -1,6 +1,6 @@
 // LoginStyles.js
 import { StyleSheet, Dimensions } from 'react-native';
-import color from '../Custom/Color';
+import color from '../../Custom/Color';
 const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({

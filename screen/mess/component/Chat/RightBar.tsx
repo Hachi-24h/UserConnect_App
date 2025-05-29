@@ -9,7 +9,7 @@ import color from '../../../../Custom/Color';
 import socket from '../../../../socket/socket';
 import { useNavigation } from '@react-navigation/native';
 
-const RightBar = ({ route ,navigation}: any) => {
+const RightBar = ({ route, navigation }: any) => {
   const { conversationId } = route.params;
 
 
@@ -21,12 +21,13 @@ const RightBar = ({ route ,navigation}: any) => {
   const user = useSelector((state: any) => state.user);
   const currentUserId = user?._id;
 
+
   useEffect(() => {
     if (!conversation) {
       navigation.navigate("MessHome");
     }
-  }, [conversation, navigation]);
-
+  }, [conversation]);
+  if (!conversation) return null;
   const isGroup = conversation.isGroup;
   const avatar = isGroup ? conversation.avatar : conversation.otherUser?.avatar;
   const name = isGroup ? conversation.groupName : conversation.otherUser?.name;

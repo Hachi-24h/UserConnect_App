@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { View, Text, FlatList } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
 import { RouteProp, useRoute } from "@react-navigation/native";
-import styles from "../../Css/chat";
+import styles from "../../Css/mess/chat";
 import socket from "../../socket/socket";
 import { getMessages } from "../../socket/chatApi";
 import { resetUnread } from "../../store/unreadSlice";
@@ -53,6 +53,7 @@ const ChatScreen = ({ navigation }: any) => {
   const userDetailState = useSelector((state: any) => state.userDetail.info);
   // console.log("🚀 ~ file: Chat.tsx:20 ~ userDetailState:", userDetailState);
   const flatListRef = useRef<FlatList>(null);
+  const [highlightedMsgId, setHighlightedMsgId] = useState<string | null>(null);
 
   const [inputText, setInputText] = useState("");
   const name = `${userDetailState.firstname} ${userDetailState.lastname}`;
@@ -91,7 +92,7 @@ const ChatScreen = ({ navigation }: any) => {
     getPinnedMessagesByConversation(state, conversationId)
   );
 
-  
+
 
   useEffect(() => {
     if (conversationId) {
@@ -168,16 +169,22 @@ const ChatScreen = ({ navigation }: any) => {
     }
   });
   const scrollToMessageById = (id: string) => {
+    setHighlightedMsgId(id); // 👈 đánh dấu tin nhắn được chọn
     const index = messageIndexMap.get(id);
     if (index !== undefined && flatListRef.current) {
-      const middleIndex = Math.max(0, index - 4); // lùi lại 4 dòng để căn giữa gần đúng
+      const middleIndex = Math.max(0, index - 5); // lùi để đưa gần giữa
       flatListRef.current.scrollToIndex({
         index: middleIndex,
         animated: true,
-        viewPosition: 0.5, // 0.5 sẽ đưa tin nhắn ra giữa màn hình
+        viewPosition: 0.5,
       });
     }
   };
+  useEffect(() => {
+    return () => {
+      setHighlightedMsgId(null);
+    };
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -186,6 +193,9 @@ const ChatScreen = ({ navigation }: any) => {
         navigation={navigation}
         pinnedMessages={pinnedMessages}
         onScrollToMessage={scrollToMessageById}
+        setHighlightedMsgId={setHighlightedMsgId} // ✅ Thêm dòng này
+        otherUserIds={otherUserIds}
+        currentUserDetail={userDetailState}
       />
 
       <FlatList
@@ -231,6 +241,7 @@ const ChatScreen = ({ navigation }: any) => {
               isGroup={isGroup}
               showAvatar={showAvatar}
               conversationId={conversationId}
+              highlightedMsgId={highlightedMsgId}
             />
           );
         }}

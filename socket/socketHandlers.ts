@@ -1,6 +1,6 @@
 import socket from './socket';
 
-import { addMessage, deleteMessage, getConversationById, revokeMessage, updateLastMessage, updateMessagePinStatus } from '../store/chatSlice';
+import { addMessage, deleteMessage, fetchConversations, getConversationById, revokeMessage, updateLastMessage, updateMessagePinStatus } from '../store/chatSlice';
 import { playNotificationSound } from '../Custom/soundPlayer';
 import { setConversations } from '../store/chatSlice';
 import { showNotification } from '../Custom/notification';
@@ -92,6 +92,13 @@ export const setupSocketListeners = ({
             timestamp: msg.timestamp,
             senderId: msg.senderId,
         }));
+        const { chat } = store.getState();
+        const found = chat.conversations.find((c: any) => c._id === msg.conversationId);
+        if (!found) {
+            console.warn("📥 Tin nhắn đến từ cuộc trò chuyện chưa có. Refetch danh sách...");
+            dispatch(fetchConversations(userId, token));
+        }
+
     };
     // lắng nghe sự kiện tạo nhóm mới
     const handleNewConversation = (conv: any) => {
@@ -100,27 +107,45 @@ export const setupSocketListeners = ({
         dispatch((dispatchFn: any, getState: any) => {
             const { chat, user } = getState();
 
-            // ✅ Kiểm tra nếu nhóm đã tồn tại thì không thêm nữa
             const alreadyExists = chat.conversations.some((c: any) => c._id === conv._id);
             if (alreadyExists) return;
 
-            const updated = [...chat.conversations, conv];
-            dispatch(setConversations(updated));
-
+            const isGroup = conv.isGroup;
             const isCreator = conv.adminId === user._id;
 
-            setToastMsg({
-                name: conv.groupName || 'New Group',
-                content: isCreator
-                    ? `You created a new group: ${conv.groupName || 'Unnamed'}`
-                    : "You have been added to a group",
-                senderAvatar: conv.avatar || '',
-                timestamp: new Date().toISOString(),
-            });
+            let newConv = { ...conv };
 
-            setToastVisible(true);
+            // ✅ Nếu là chat riêng, thêm trường otherUser để UI dùng
+            if (!isGroup) {
+                const other = conv.members.find((m: any) => m.userId !== user._id);
+                newConv = {
+                    ...conv,
+                    otherUser: {
+                        _id: other.userId,
+                        name: other.name,
+                        avatar: other.avatar || '',
+                    }
+                };
+            }
+
+            dispatch(setConversations([...chat.conversations, newConv]));
+
+            // ✅ Toast
+            if (isGroup) {
+                setToastMsg({
+                    name: conv.groupName || 'New Group',
+                    content: isCreator
+                        ? `You created a new group: ${conv.groupName || 'Unnamed'}`
+                        : "You have been added to a group",
+                    senderAvatar: conv.avatar || '',
+                    timestamp: new Date().toISOString(),
+                });
+
+                setToastVisible(true);
+            }
         });
     };
+
 
     // lắng nghe sự kiện nhóm bị giải tán
     const handleGroupDisbanded = (data: { conversationId: string; groupName: string }) => {

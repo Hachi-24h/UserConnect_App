@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, Image } from 'react-native';
 import styles from "../../../../Css/mess/MessHome";
 import { useSelector } from 'react-redux';
-import { getUserDetails } from '../../../../utils/auth';
+import { getUserDetails_user } from '../../../../utils/auth';
 import {formatMessageTime } from '../../../../Custom/timeFormatter';
 
 type UserItem = {
@@ -40,7 +40,7 @@ const UserList: React.FC<UserListProps> = ({ users, onUserPress, unreadCounts })
         senderId !== userLoginId &&
         !groupSenderNames[senderId]
       ) {
-        getUserDetails(senderId).then((user) => {
+        getUserDetails_user(senderId).then((user) => {
           if (user?.lastname || user?.firstname) {
             const name = `${user.lastname || ""} ${user.firstname || ""}`.trim();
             setGroupSenderNames((prev) => ({

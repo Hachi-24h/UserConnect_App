@@ -1,24 +1,34 @@
 import React from 'react';
-import { 
-  View, 
-  Text, 
-  Image, 
-  StyleSheet, 
-  TouchableOpacity, 
-  Dimensions, 
+import {
+  Dimensions,
+  Image,
   SafeAreaView,
-  StatusBar
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-
+import { useSelector } from 'react-redux';
 
 // Get the screen dimensions
 const { width, height } = Dimensions.get('window');
 
 const ProfileScreen = () => {
+  // Get user data from Redux store
+  const userDetail = useSelector((state: any) => state.userDetail.info);
+
+  // Create full name from firstname and lastname
+  const fullName = userDetail
+    ? `${userDetail.firstname || ''} ${userDetail.lastname || ''}`.trim()
+    : 'User';
+  const subtitle = userDetail?.bio || '';
+  const avatarUri = userDetail?.avatar || 'https://via.placeholder.com/150';
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />
-      
+
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton}>
@@ -33,50 +43,48 @@ const ProfileScreen = () => {
           </TouchableOpacity>
         </View>
       </View>
-      
+
       {/* Profile Content */}
       <View style={styles.profileContent}>
         {/* Profile Image */}
         <View style={styles.profileImageContainer}>
-          <Image 
-            source={{ uri: 'https://via.placeholder.com/150' }} 
-            style={styles.profileImage} 
-          />
+          <Image source={{ uri: avatarUri }} style={styles.profileImage} />
         </View>
-        
+
         {/* Profile Info */}
-        <Text style={styles.profileName}>Phan Thanh Nam</Text>
-        <Text style={styles.profileSubtitle}>Tuyết</Text>
-        
+        <Text style={styles.profileName}>{fullName}</Text>
+        <Text style={styles.profileSubtitle}>{subtitle}</Text>
+
         {/* Action Buttons */}
         <View style={styles.actionButtons}>
           <TouchableOpacity style={styles.actionButton}>
             <Text style={styles.actionButtonIcon}>👤</Text>
             <Text style={styles.actionButtonText}>Cài zStyle</Text>
           </TouchableOpacity>
-          
+
           <TouchableOpacity style={styles.actionButton}>
             <Text style={styles.actionButtonIcon}>🖼️</Text>
             <Text style={styles.actionButtonText}>Ảnh của tôi</Text>
           </TouchableOpacity>
-          
+
           <TouchableOpacity style={styles.actionButton}>
             <Text style={styles.actionButtonIcon}>📁</Text>
             <Text style={styles.actionButtonText}>Kho khoảnh</Text>
           </TouchableOpacity>
         </View>
-        
+
         {/* Illustration */}
         <View style={styles.illustration}>
           <Text style={styles.illustrationText}>📱</Text>
         </View>
-        
+
         {/* Question */}
-        <Text style={styles.questionText}>Hôm nay Phan Thanh Nam có gì vui?</Text>
+        <Text style={styles.questionText}>Hôm nay {fullName} có gì vui?</Text>
         <Text style={styles.subtitleText}>
-          Đây là Nhật ký của You - Hãy làm đầy Nhật ký với những dấu ấn cuộc đời và kỷ niệm đáng nhớ nhé!
+          Đây là Nhật ký của You - Hãy làm đầy Nhật ký với những dấu ấn cuộc đời
+          và kỷ niệm đáng nhớ nhé!
         </Text>
-        
+
         {/* Post Button */}
         <TouchableOpacity style={styles.postButton}>
           <Text style={styles.postButtonText}>Đăng lên Nhật ký</Text>

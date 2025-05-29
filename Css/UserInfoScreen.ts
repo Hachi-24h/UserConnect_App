@@ -1,98 +1,113 @@
-import { StyleSheet, Dimensions } from "react-native";
-import color from "../Custom/Color"; // Assuming you have a color file as mentioned in your code
+import { Dimensions, StyleSheet } from 'react-native';
+import color from '../Custom/Color';
 
-
-
-const { width, height } = Dimensions.get("window");
+const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5", // Light gray background
+    backgroundColor: color.darkBackground,
   },
   header: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 15,
-    paddingHorizontal: 10,
-    backgroundColor: "transparent",
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: color.gray,
+    paddingVertical: height * 0.017,
+    paddingHorizontal: width * 0.05,
     zIndex: 1,
   },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: color.white, // White text for the header title
-    marginLeft: 20,
+    color: color.white,
+    fontSize: width * 0.045,
+    fontWeight: 'bold',
+    marginLeft: width * 0.04,
   },
   coverImage: {
     width: width,
-    height: height * 0.25, // Background image height
-    resizeMode: "cover",
+    height: height * 0.25,
+    resizeMode: 'cover',
   },
   avatarContainer: {
-    alignItems: "center",
-    marginTop: -50, // Pull the avatar up to overlap the cover image
+    alignItems: 'center',
+    marginTop: -50,
   },
   avatar: {
     width: 100,
     height: 100,
-    borderRadius: 50, // Circular avatar
+    borderRadius: 50,
     borderWidth: 3,
-    borderColor: color.white, // White border around the avatar
+    borderColor: color.white,
   },
   name: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: color.black, // Black text for the name
+    fontSize: width * 0.045,
+    fontWeight: 'bold',
+    color: color.white,
     marginTop: 10,
+    textAlign: 'center',
   },
   infoSection: {
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    backgroundColor: color.white, // White background for the info section
-    marginHorizontal: 0, // Remove horizontal margin to stretch full width
-    marginTop: 15,
-    borderRadius: 0, // Remove border radius for a flat edge
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
+    marginTop: height * 0.02,
+    marginHorizontal: width * 0.05,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)', // Subtle background
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)', // Faded border
+    padding: width * 0.05,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
     shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 3, // For Android shadow
+    shadowRadius: 3.84,
+    elevation: 3,
   },
   label: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#666", // Gray color for labels
-    marginTop: 15,
+    fontSize: width * 0.04,
+    color: color.white,
+    marginBottom: height * 0.008,
   },
   value: {
-    fontSize: 16,
-    color: color.black, // Black text for input values
-    paddingVertical: 5,
+    fontSize: width * 0.04,
+    color: color.white,
+    paddingVertical: height * 0.012,
     borderBottomWidth: 1,
-    borderBottomColor: "#ddd", // Light gray border for inputs
+    borderBottomColor: 'rgba(255, 255, 255, 0.3)', // More subtle border
   },
   note: {
-    fontSize: 12,
-    color: "#999", // Lighter gray for the note text
-    marginTop: 5,
+    fontSize: width * 0.035,
+    color: 'rgba(255, 255, 255, 0.7)', // Slightly transparent for subtlety
+    marginTop: -height * 0.01,
+    marginBottom: height * 0.015,
+  },
+  divider: {
+    height: 1, // Thinner divider
+    backgroundColor: 'rgba(255, 255, 255, 0.15)', // Faded divider
+    marginVertical: height * 0.02,
   },
   button: {
-    backgroundColor: "#ddd", // Gray button background
-    paddingVertical: 12,
-    marginHorizontal: 0, // Remove horizontal margin to stretch full width
-    marginTop: 20,
-    borderRadius: 0, // Remove border radius for a flat edge
-    alignItems: "center",
+    backgroundColor: color.primary,
+    paddingVertical: height * 0.018,
+    marginHorizontal: width * 0.05,
+    marginTop: height * 0.02,
+    borderRadius: width * 0.02,
+    alignItems: 'center',
   },
   buttonText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: color.black, // Black text for the button
+    fontSize: width * 0.04,
+    fontWeight: '600',
+    color: color.white,
+  },
+  sectionTitle: {
+    color: color.white,
+    fontWeight: 'bold',
+    fontSize: width * 0.038,
+    marginBottom: height * 0.01,
+  },
+  fieldRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: height * 0.02,
   },
 });
 

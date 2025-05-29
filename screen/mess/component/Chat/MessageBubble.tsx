@@ -9,15 +9,16 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
-import styles from '../../../../Css/chat';
+import styles from '../../../../Css/mess/chat';
 import color from '../../../../Custom/Color';
 import socket from '../../../../socket/socket';
-import { getUserDetails } from '../../../../utils/auth';
+import { getUserDetails_user } from '../../../../utils/auth';
 import {
   getCachedUserInfo,
   setCachedUserInfo,
 } from '../../../../utils/userCache';
 import AudioPlayer from './component_MessageBubble/AudioPlayer';
+import MessageOptionsModal from './component_MessageBubble/MessageOptionsModal';
 // import Video from 'react-native-video';
 
 const downloadIcon = require('../../../../Icon/download.png');
@@ -96,6 +97,7 @@ export default function MessageBubble({
   isGroup,
   showAvatar,
   conversationId,
+  highlightedMsgId,
 }: any) {
   const time = new Date(message.timestamp).toLocaleTimeString([], {
     hour: '2-digit',
@@ -107,21 +109,9 @@ export default function MessageBubble({
   const [avatar, setAvatar] = useState<string>(message.senderAvatar || '');
   const [showOptions, setShowOptions] = useState(false);
   const [pressPosition, setPressPosition] = useState({ x: 0, y: 0 });
-  const { width } = useWindowDimensions();
 
-  const handleOption = (action: 'delete' | 'revoke') => {
-    setShowOptions(false);
-    const payload = {
-      messageId: message._id,
-      conversationId,
-      senderId: message.senderId,
-    };
-    if (action === 'delete') {
-      socket.emit('deleteMessage', payload);
-    } else if (action === 'revoke') {
-      socket.emit('revokeMessage', payload);
-    }
-  };
+
+
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -136,7 +126,7 @@ export default function MessageBubble({
         return;
       }
 
-      const userInfo = await getUserDetails(message.senderId);
+      const userInfo = await getUserDetails_user(message.senderId)
 
       if (userInfo) {
         const userName =
@@ -203,7 +193,12 @@ export default function MessageBubble({
                 styles.messageBubble,
                 isMine ? styles.myMessage : styles.otherMessage,
                 {
-                  backgroundColor: isMine ? color.accentBlue : color.gray,
+                  backgroundColor:
+                    message._id === highlightedMsgId
+                      ? '#f1c40f' // Màu vàng nổi bật khi tìm được
+                      : isMine
+                        ? color.accentBlue
+                        : color.gray,
                   borderRadius: 10,
                   maxWidth: '80%',
                   paddingVertical: 6,
@@ -242,47 +237,16 @@ export default function MessageBubble({
         </View>
 
         {/* 👇 Modal định vị theo tọa độ nhấn giữ */}
-        <Modal visible={showOptions} transparent animationType="fade">
-          <Pressable style={{ flex: 1 }} onPress={() => setShowOptions(false)}>
-            <View
-              style={{
-                position: 'absolute',
-                top: pressPosition.y,
-                left: Math.min(
-                  Math.max(pressPosition.x - 160, 10),
-                  width - 180,
-                ),
-                backgroundColor: '#1e2b38',
-                borderRadius: 8,
-                paddingVertical: 6,
-                paddingHorizontal: 10,
-                elevation: 5,
-              }}>
-              {isMine && (
-                <>
-                  <Text
-                    style={optionStyle}
-                    onPress={() => handleOption('delete')}>
-                    Delete Message
-                  </Text>
-                  <Text
-                    style={optionStyle}
-                    onPress={() => handleOption('revoke')}>
-                    Revoke Message
-                  </Text>
-                </>
-              )}
-            </View>
-          </Pressable>
-        </Modal>
+        <MessageOptionsModal
+          isVisible={showOptions}
+          position={pressPosition}
+          isMine={isMine}
+          onClose={() => setShowOptions(false)}
+          messageId={message._id}
+          conversationId={conversationId}
+          socket={socket}
+        />
       </View>
     </TouchableOpacity>
   );
 }
-
-const optionStyle = {
-  color: 'white',
-  paddingVertical: 8,
-  paddingHorizontal: 10,
-  fontSize: 14,
-};
