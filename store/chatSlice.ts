@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import axios from 'axios';
 import ip from '../config/IpAddress';
 import { setUnreadCounts } from './unreadSlice';
-
+import { createSelector } from 'reselect';
 const BASE_URL = ip.BASE_URL;
 
 // ================= Types =================
@@ -198,15 +198,20 @@ export const fetchConversations = (userId: string, token: string) => async (disp
         ? members.find((m) => m.userId !== userId)
         : null;
 
-      const msgList = (conv.messages || []).map((msg: any) => ({
-        _id: msg._id,
-        senderId: msg.senderId,
-        content: msg.content,
-        timestamp: msg.timestamp,
-        type: msg.type,
-        name: msg.name,
-        senderAvatar: msg.senderAvatar,
-      }));
+      const msgList = (conv.messages || []).map((msg: any) => (
+
+        {
+
+          _id: msg._id,
+          senderId: msg.senderId,
+          content: msg.content,
+          timestamp: msg.timestamp,
+          type: msg.type,
+          name: msg.name,
+          senderAvatar: msg.senderAvatar,
+          isDeleted: msg.isDeleted || false, // ✅ thêm dòng này
+          isPinned: msg.isPinned || false, // ✅ thêm dòng này
+        }));
 
       if (msgList.length === 0) {
         dispatch(clearMessages(conv._id)); // Xóa tin nhắn cũ nếu trống
@@ -225,10 +230,10 @@ export const fetchConversations = (userId: string, token: string) => async (disp
         lastMessageSenderId: lastMsg?.senderId || null,
         otherUser: otherUser
           ? {
-              _id: otherUser.userId,
-              name: otherUser.name,
-              avatar: otherUser.avatar,
-            }
+            _id: otherUser.userId,
+            name: otherUser.name,
+            avatar: otherUser.avatar,
+          }
           : null,
         members: members,
       });
@@ -250,3 +255,18 @@ export const fetchConversations = (userId: string, token: string) => async (disp
 export const getConversationById = (state: any, conversationId: string) => {
   return state.chat.conversations.find((c: any) => c._id === conversationId);
 };
+
+export const getPinnedMessagesByConversation = createSelector(
+  [(state: any) => state.chat.messagesByConversation, (_: any, conversationId: string) => conversationId],
+  (messagesByConversation, conversationId) => {
+    const messages = messagesByConversation[conversationId] || [];
+    return messages.filter((msg: any) => msg.isPinned);
+  }
+);
+
+export const getMessagesByConversation = createSelector(
+  [(state: any) => state.chat.messagesByConversation, (_: any, conversationId: string) => conversationId],
+  (messagesByConversation, conversationId) => {
+    return messagesByConversation[conversationId] || [];
+  }
+);

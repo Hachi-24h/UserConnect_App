@@ -6,13 +6,13 @@ import styles from "../../Css/chat";
 import socket from "../../socket/socket";
 import { getMessages } from "../../socket/chatApi";
 import { resetUnread } from "../../store/unreadSlice";
-import { addMessage, setMessages, updateLastMessage } from "../../store/chatSlice";
+import { getMessagesByConversation, getPinnedMessagesByConversation, setMessages, } from "../../store/chatSlice";
 import { selectMessagesByConversation } from '../../store/chatSelectors';
 import MessageBubble from "./component/Chat/MessageBubble";
 import ChatHeader from "./component/Chat/ChatHeader";
 import MessageInput from "./component/Chat/MessageInput";
 import { setCurrentConversationId } from "../../store/userDetailSlice";
-import { getUserDetails } from "../../utils/auth";
+
 
 interface UserChat {
   isGroup: any;
@@ -80,11 +80,18 @@ const ChatScreen = ({ navigation }: any) => {
       }
 
       setOtherUserIds(ids);
-      
+
     }
   }, [conversation, currentUserId]);
   // console.log("danh sách id nhắn:", otherUserIds); 
   const isGroup = conversation?.isGroup;
+
+
+  const pinnedMessages = useSelector((state) =>
+    getPinnedMessagesByConversation(state, conversationId)
+  );
+
+  
 
   useEffect(() => {
     if (conversationId) {
@@ -126,28 +133,7 @@ const ChatScreen = ({ navigation }: any) => {
     }
   };
 
-  // const scrollToBottom = () => {
-  //   setTimeout(() => {
-  //     flatListRef.current?.scrollToEnd({ animated: true });
-  //   }, 100);
-  // };
 
-  // const handleSend = () => {
-  //   if (!inputText.trim()) return;
-  //   const msg: Message = {
-  //     conversationId,
-  //     senderId: currentUser._id,
-  //     receiverId: user.userChatId,
-  //     content: inputText,
-  //     timestamp: new Date().toISOString(),
-  //     type: "text",
-  //     name,
-  //     senderAvatar: avatar,
-  //   };
-  //   socket.emit("sendMessage", msg); // Gửi đi
-  //   setInputText("");
-  //   scrollToBottom(); // Giữ lại scroll
-  // };
 
   useEffect(() => {
     if (messages && messages.length > 0) {
@@ -175,9 +161,32 @@ const ChatScreen = ({ navigation }: any) => {
 
   const messageListWithDates = buildMessageListWithDates(messages);
 
+  const messageIndexMap = new Map<string, number>();
+  messageListWithDates.forEach((item, index) => {
+    if (item.type === 'message' && item.data?._id) {
+      messageIndexMap.set(item.data._id, index);
+    }
+  });
+  const scrollToMessageById = (id: string) => {
+    const index = messageIndexMap.get(id);
+    if (index !== undefined && flatListRef.current) {
+      const middleIndex = Math.max(0, index - 2); // lùi lại 3 dòng để căn giữa gần đúng
+      flatListRef.current.scrollToIndex({
+        index: middleIndex,
+        animated: true,
+        viewPosition: 0.5, // 0.5 sẽ đưa tin nhắn ra giữa màn hình
+      });
+    }
+  };
+
   return (
     <View style={styles.container}>
-      <ChatHeader user={user} navigation={navigation} />
+      <ChatHeader
+        user={user}
+        navigation={navigation}
+        pinnedMessages={pinnedMessages}
+        onScrollToMessage={scrollToMessageById}
+      />
 
       <FlatList
         ref={flatListRef}
