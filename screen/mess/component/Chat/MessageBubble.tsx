@@ -9,7 +9,7 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
-import styles from '../../../../Css/chat';
+import styles from '../../../../Css/mess/chat';
 import color from '../../../../Custom/Color';
 import socket from '../../../../socket/socket';
 import { getUserDetails } from '../../../../utils/auth';

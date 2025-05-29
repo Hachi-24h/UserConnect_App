@@ -12,7 +12,7 @@ import { Send, Gallery, Document, CloseCircle } from "iconsax-react-native";
 import DocumentPicker from 'react-native-document-picker';
 import { launchImageLibrary } from 'react-native-image-picker';
 import RNFS from 'react-native-fs';
-import styles from "../../../../Css/chat";
+import styles from "../../../../Css/mess/chat";
 import color from '../../../../Custom/Color';
 import socket from '../../../../socket/socket';
 

@@ -1,6 +1,6 @@
 // src/screens/SignUpStyle.ts
 import { StyleSheet, Dimensions } from 'react-native';
-import color from '../Custom/Color';
+import color from '../../Custom/Color';
 
 const { height, width } = Dimensions.get('window');
 

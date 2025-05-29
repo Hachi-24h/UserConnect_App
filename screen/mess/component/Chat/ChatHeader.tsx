@@ -1,14 +1,14 @@
 import React, { useRef } from 'react';
 import { View, Text, Image, TouchableOpacity } from 'react-native';
-import { ArrowLeft2, InfoCircle, Video } from 'iconsax-react-native';
-import styles from '../../../../Css/chat';
+import { ArrowLeft2, InfoCircle, SearchNormal1, Video } from 'iconsax-react-native';
+import styles from '../../../../Css/mess/chat';
 import color from '../../../../Custom/Color';
 import PinnedMessages from './component_ChatHeader/PinnedMessages';
 import CallManager from './CallManager';
 
 export default function ChatHeader({ user, navigation, pinnedMessages, onScrollToMessage, otherUserIds }: any) {
   // Tạo ref nhận callback gọi video từ CallManager
-  const callManagerRef = useRef<() => void | null>(() => {});
+  const callManagerRef = useRef<() => void | null>(() => { });
 
   // Nút gọi video trong ChatHeader sẽ gọi handleVideoCall từ CallManager
   const onCallPress = () => {
@@ -35,9 +35,14 @@ export default function ChatHeader({ user, navigation, pinnedMessages, onScrollT
         </View>
 
         <View style={styles.headerIcons}>
+          <TouchableOpacity onPress={() => console.log('Tìm kiếm')}>
+            <SearchNormal1 size={26} color={color.orange} />
+          </TouchableOpacity>
+
           <TouchableOpacity onPress={onCallPress}>
             <Video size={26} color={color.orange} />
           </TouchableOpacity>
+
           <TouchableOpacity
             onPress={() =>
               navigation.navigate('Rightbar', {

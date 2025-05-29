@@ -33,7 +33,8 @@ const formatDate = (dob: string): string => {
 };
 
 const UserInfoScreen = ({ navigation }: any) => {
-  const userDetail = useSelector((state: any) => state.userDetail.info); // userDetail.info = { userId, avatar, backgroundAvatar, ... }
+  const userDetail = useSelector((state: any) => state.userDetail.info); 
+  
   const name_user = useSelector((state: any) => state.user); // user._id = userId
   const dispatch = useDispatch();
 

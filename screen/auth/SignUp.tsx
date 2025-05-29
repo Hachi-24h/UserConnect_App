@@ -5,7 +5,7 @@ import {
 import LinearGradient from 'react-native-linear-gradient';
 import { Eye, EyeSlash } from 'iconsax-react-native';
 import Svg, { Text as SvgText, Defs, LinearGradient as SvgLinearGradient, Stop } from 'react-native-svg';
-import styles from '../../Css/SignUp';
+import styles from '../../Css/auth/SignUp';
 import color from '../../Custom/Color';
 import { showNotification } from '../../Custom/notification';
 import { validateRegisterForm, checkUserExists, registerUserWithPhone } from '../../utils/auth';

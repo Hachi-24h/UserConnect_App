@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { View, Text, FlatList } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
 import { RouteProp, useRoute } from "@react-navigation/native";
-import styles from "../../Css/chat";
+import styles from "../../Css/mess/chat";
 import socket from "../../socket/socket";
 import { getMessages } from "../../socket/chatApi";
 import { resetUnread } from "../../store/unreadSlice";
