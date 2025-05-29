@@ -15,10 +15,11 @@ import {
 } from 'react-native';
 
 import axios from 'axios';
-import { Call, Video } from 'iconsax-react-native';
 import Contacts from 'react-native-contacts';
 import color from '../../Custom/Color';
 import Footer from '../other/Footer';
+import { UserAdd, Message } from 'iconsax-react-native';
+import { useSelector } from 'react-redux';
 
 const { width, height } = Dimensions.get('window');
 
@@ -30,6 +31,7 @@ interface ContactItem {
 
 interface UserFromBackend {
   _id: string;
+  userId?: string;
   firstname: string;
   lastname: string;
   phoneNumber: string;
@@ -49,7 +51,8 @@ const ContactScreen = ({ navigation }: any) => {
   const [users, setUsers] = useState<UserFromBackend[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [selectedTab, setSelectedTab] = useState<TabType>('all');
-
+  const followings = useSelector((state: any) => state.followings.dsFollowing);
+  
   useEffect(() => {
     const fetchContacts = async () => {
       let hasPermission = true;
@@ -61,10 +64,10 @@ const ContactScreen = ({ navigation }: any) => {
           const granted = await PermissionsAndroid.request(
             PermissionsAndroid.PERMISSIONS.READ_CONTACTS,
             {
-              title: 'Cho phép truy cập danh bạ',
-              message: 'Ứng dụng cần truy cập danh bạ để tìm You bè.',
-              buttonPositive: 'Đồng ý',
-              buttonNegative: 'Không',
+              title: 'Allow contact access',
+              message: 'This app needs access to your contacts to find friends.',
+              buttonPositive: 'Allow',
+              buttonNegative: 'Deny',
             },
           );
           if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
@@ -74,11 +77,11 @@ const ContactScreen = ({ navigation }: any) => {
       }
       if (!hasPermission) {
         Alert.alert(
-          'Yêu cầu quyền truy cập',
-          'You cần bật quyền truy cập danh bạ trong cài đặt để sử dụng chức năng này.',
+          'Permission required',
+          'Please enable contact access in settings to use this feature.',
           [
-            { text: 'Huỷ', style: 'cancel' },
-            { text: 'Mở cài đặt', onPress: () => Linking.openSettings() },
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Open Settings', onPress: () => Linking.openSettings() },
           ],
         );
         return;
@@ -94,16 +97,14 @@ const ContactScreen = ({ navigation }: any) => {
           }));
         setContacts(filtered);
       } catch (err) {
-        console.error('Lỗi lấy danh bạ:', err);
+        console.error('Error fetching contacts:', err);
       }
     };
     fetchContacts();
   }, []);
 
   useEffect(() => {
-    if (contacts.length === 0) {
-      return;
-    }
+    if (contacts.length === 0) return;
 
     const fetchUsersByPhoneNumbers = async (phoneNumbers: string[]) => {
       try {
@@ -114,10 +115,10 @@ const ContactScreen = ({ navigation }: any) => {
         if (res.status === 200) {
           setUsers(res.data);
         } else {
-          console.log('Lỗi khi lấy user:', res.status, res.statusText);
+          console.log('Error fetching users:', res.status, res.statusText);
         }
       } catch (error) {
-        console.error('Lỗi gọi API lấy user:', error);
+        console.error('API error fetching users:', error);
       }
     };
 
@@ -125,7 +126,7 @@ const ContactScreen = ({ navigation }: any) => {
     fetchUsersByPhoneNumbers(phoneNumbers);
   }, [contacts]);
 
-  // Gộp danh sách
+  // Merge contacts with backend users
   const combinedList: CombinedItem[] = [];
 
   users.forEach(user => combinedList.push({ ...user, isRegistered: true }));
@@ -134,34 +135,29 @@ const ContactScreen = ({ navigation }: any) => {
     const contactPhoneNormalized = contact.phone
       .replace(/\s+/g, '')
       .replace(/^(\+84|0)/, '');
-    const isReg = users.some(u => {
+    const isRegistered = users.some(u => {
       const userPhoneNormalized = u.phoneNumber
         .replace(/\s+/g, '')
         .replace(/^(\+84|0)/, '');
       return userPhoneNormalized === contactPhoneNormalized;
     });
-    if (!isReg) {
+    if (!isRegistered) {
       combinedList.push({ ...contact, isRegistered: false });
     }
   });
 
   const searchLower = searchTerm.toLowerCase();
 
-  // Lọc danh sách theo tab và search
   const filteredList = combinedList.filter(item => {
     const matchesTab =
       selectedTab === 'all' ||
       (selectedTab === 'registered' && item.isRegistered) ||
       (selectedTab === 'notRegistered' && !item.isRegistered);
 
-    if (!matchesTab) {
-      return false;
-    }
+    if (!matchesTab) return false;
 
     if (item.isRegistered) {
-      const fullName = `${(item as UserFromBackend).firstname} ${
-        (item as UserFromBackend).lastname
-      }`.toLowerCase();
+      const fullName = `${(item as UserFromBackend).firstname} ${(item as UserFromBackend).lastname}`.toLowerCase();
       const phone = (item as UserFromBackend).phoneNumber;
       return fullName.includes(searchLower) || phone.includes(searchTerm);
     } else {
@@ -174,20 +170,25 @@ const ContactScreen = ({ navigation }: any) => {
   const renderUserItem = ({ item }: { item: CombinedItem }) => {
     const registered = item.isRegistered;
     const name = registered
-      ? `${(item as UserFromBackend).firstname} ${
-          (item as UserFromBackend).lastname
-        }`
+      ? `${(item as UserFromBackend).firstname} ${(item as UserFromBackend).lastname}`
       : (item as ContactItem).name;
     const phone = registered
       ? (item as UserFromBackend).phoneNumber
       : (item as ContactItem).phone;
     const avatarUri = registered
-      ? (item as UserFromBackend).avatar ||
-        'https://i.postimg.cc/7Y7ypVD2/avatar-mac-dinh.jpg'
+      ? (item as UserFromBackend).avatar || 'https://i.postimg.cc/7Y7ypVD2/avatar-mac-dinh.jpg'
       : 'https://i.postimg.cc/7Y7ypVD2/avatar-mac-dinh.jpg';
 
     return (
-      <View style={styles.contactItem}>
+      <TouchableOpacity
+        onPress={() => {
+          if (registered) {
+            navigation.navigate('FriendProfile', {
+              user: item, // Truyền dữ liệu user
+            });
+          }
+        }}
+        style={styles.contactItem}>
         <View style={styles.contactLeft}>
           <Image source={{ uri: avatarUri }} style={styles.avatar} />
           <View style={{ marginLeft: width * 0.03 }}>
@@ -197,37 +198,62 @@ const ContactScreen = ({ navigation }: any) => {
         </View>
         <View style={styles.contactActions}>
           {registered ? (
-            <>
-              <TouchableOpacity>
-                <Call size={22} color={color.textSecondary} />
-              </TouchableOpacity>
-              <TouchableOpacity style={{ marginLeft: width * 0.04 }}>
-                <Video size={22} color={color.textSecondary} />
-              </TouchableOpacity>
-            </>
+            (() => {
+              const isFollowed =
+                item.isRegistered &&
+                followings.some((f: UserFromBackend) => f._id === (item as UserFromBackend).userId);
+              if (isFollowed) {
+                return (
+                  <TouchableOpacity
+                    onPress={() => {
+                      alert(`Message ${name}`);
+                    }}>
+                    <Message size={22} color={color.textSecondary} />
+                  </TouchableOpacity>
+                );
+              }
+              else {
+                // Hiện cả Follow và Nhắn tin nếu chưa follow
+                return (
+                  <>
+                    <TouchableOpacity
+                      onPress={() => {
+                        alert(`Follow ${name}`);
+                      }}>
+                      <UserAdd size={22} color={color.textSecondary} />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={{ marginLeft: width * 0.04 }}
+                      onPress={() => {
+                        alert(`Message ${name}`);
+                      }}>
+                      <Message size={22} color={color.textSecondary} />
+                    </TouchableOpacity>
+                  </>
+                );
+              }
+            })()
           ) : (
             <TouchableOpacity
               style={styles.inviteButton}
               onPress={() => {
-                alert(`Gửi lời mời cho ${name} (${phone})`);
+                alert(`Invite ${name} (${phone})`);
               }}>
-              <Text style={styles.inviteText}>Mời</Text>
+              <Text style={styles.inviteText}>Invite</Text>
             </TouchableOpacity>
           )}
         </View>
-      </View>
+      </TouchableOpacity>
     );
   };
 
-  // Render tab menu ngang
   const TabButton = ({ title, value }: { title: string; value: TabType }) => {
     const active = selectedTab === value;
     return (
       <TouchableOpacity
         onPress={() => setSelectedTab(value)}
         style={[styles.tabButton, active && styles.tabButtonActive]}>
-        <Text
-          style={[styles.tabButtonText, active && styles.tabButtonTextActive]}>
+        <Text style={[styles.tabButtonText, active && styles.tabButtonTextActive]}>
           {title}
         </Text>
       </TouchableOpacity>
@@ -236,7 +262,6 @@ const ContactScreen = ({ navigation }: any) => {
 
   return (
     <View style={styles.container}>
-      {/* Thanh Search */}
       <View style={styles.searchBar}>
         <TextInput
           placeholder="Search"
@@ -252,14 +277,12 @@ const ContactScreen = ({ navigation }: any) => {
         />
       </View>
 
-      {/* Menu tab ngang */}
       <View style={styles.tabRow}>
-        <TabButton title="Tất cả" value="all" />
-        <TabButton title="Đã có tài khoản" value="registered" />
-        <TabButton title="Chưa có tài khoản" value="notRegistered" />
+        <TabButton title="All" value="all" />
+        <TabButton title="Registered" value="registered" />
+        <TabButton title="Not Registered" value="notRegistered" />
       </View>
 
-      {/* Danh sách */}
       <FlatList
         data={filteredList}
         renderItem={renderUserItem}
@@ -269,7 +292,7 @@ const ContactScreen = ({ navigation }: any) => {
             : (item as ContactItem).id
         }
         ListEmptyComponent={
-          <Text style={styles.emptyText}>Không tìm thấy kết quả.</Text>
+          <Text style={styles.emptyText}>No results found.</Text>
         }
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: height * 0.015 }}
