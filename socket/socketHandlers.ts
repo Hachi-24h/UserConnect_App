@@ -1,6 +1,6 @@
 import socket from './socket';
 
-import { addMessage, deleteMessage, getConversationById, revokeMessage, updateLastMessage } from '../store/chatSlice';
+import { addMessage, deleteMessage, getConversationById, revokeMessage, updateLastMessage, updateMessagePinStatus } from '../store/chatSlice';
 import { playNotificationSound } from '../Custom/soundPlayer';
 import { setConversations } from '../store/chatSlice';
 import { showNotification } from '../Custom/notification';
@@ -46,7 +46,7 @@ export const setupSocketListeners = ({
 
     // lắng nghe sự kiện nhận tin nhắn
     const handleReceiveMessage = (msg: Message) => {
-        console.log("tin nhắn: ",msg);
+        console.log("tin nhắn: ", msg);
         const isSender = msg.senderId === userId;
         const isActive = msg.conversationId === currentConversationId;
 
@@ -239,11 +239,16 @@ export const setupSocketListeners = ({
                 members: uniqueMembers,
             };
         });
- 
+
         dispatch(setConversations(updatedConversations));
     };
 
-    // Lắng nghe khi có tin nhắn được ghim
+    // Lắng nghe khi có xóa tin nhắn được ghim
+    const handleMessageUnpinned = (data: { conversationId: string; messageId: string }) => {
+        const { conversationId, messageId } = data;
+        dispatch(updateMessagePinStatus({ conversationId, messageId, isPinned: false }));
+    };
+
 
     socket.on("receiveMessage", handleReceiveMessage);
     socket.on("newConversation", handleNewConversation);
@@ -253,7 +258,7 @@ export const setupSocketListeners = ({
     socket.on("messageDeleted", handleMessageDeleted);
     socket.on("memberLeft", handleMemberLeft);
     socket.on("memberAdded", handleMembersUpdated);
-
+    socket.on("messageUnpinned", handleMessageUnpinned);
     return () => {
         socket.off("receiveMessage", handleReceiveMessage);
         socket.off("newConversation", handleNewConversation);
@@ -263,6 +268,7 @@ export const setupSocketListeners = ({
         socket.off("messageDeleted", handleMessageDeleted);
         socket.off("memberLeft", handleMemberLeft);
         socket.off("memberAddedg", handleMembersUpdated);
+        socket.off("messageUnpinned", handleMessageUnpinned);
         // console.log("🛑 Đã huỷ lắng nghe các sự kiện ");
 
     };

@@ -149,6 +149,18 @@ const chatSlice = createSlice({
         }
       }
     },
+    updateMessagePinStatus: (
+      state,
+      action: PayloadAction<{ conversationId: string; messageId: string; isPinned: boolean }>
+    ) => {
+      const { conversationId, messageId, isPinned } = action.payload;
+      const messages = state.messagesByConversation[conversationId];
+      if (!messages) return;
+      const msgIndex = messages.findIndex(msg => msg._id === messageId);
+      if (msgIndex !== -1) {
+        messages[msgIndex].isPinned = isPinned;
+      }
+    },
   },
 });
 
@@ -159,7 +171,7 @@ export const {
   updateLastMessage,
   clearMessages,
   clearConversations, revokeMessage
-  , deleteMessage,
+  , deleteMessage,updateMessagePinStatus
 } = chatSlice.actions;
 
 export default chatSlice.reducer;
