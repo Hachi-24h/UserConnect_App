@@ -20,13 +20,16 @@ import ChangePassword from '../screen/profile/ChangePasswordScreen';
 import UserInfo from '../screen/profile/UserInfoScreen';
 import ConnectChat from '../screen/mess/ConnectScreen';
 import Rightbar from '../screen/mess/component/Chat/RightBar';
+import VideoCall from '../screen/mess/component/Chat/VideoCallScreen';
 export default {
 
   wellcome,
   SignUp,
   SignIn,
-  MessHome,Demo,SettingsScreen,
-  EditProfile,InfoUser,UserDetailForm,
-  Chat,SettingUser,Contact,SettingInfor,PhoneAuth,ForgotPassword,ResetPassword,ChangePassword,UserInfo,ConnectChat,Rightbar
+  MessHome, Demo, SettingsScreen,
+  EditProfile, InfoUser, UserDetailForm,
+  Chat, SettingUser, Contact, SettingInfor, PhoneAuth, ForgotPassword, ResetPassword, ChangePassword, UserInfo, ConnectChat, Rightbar
+  ,VideoCall
+
 
 };

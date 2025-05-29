@@ -9,33 +9,33 @@ interface IncomingCallData {
     fromUserId: string;
     fromName: string;
     fromAvatar?: string;
+    toUserId: string;
 }
 
 interface CallManagerProps {
     otherUserIds: string[];
     calleeName: string;
-     currentUserDetail: {
-    _id: string;
-    firstname?: string;
-    lastname?: string;
-    username?: string;
-    avatar?: string;
-  };
-    // Expose callback gọi video ra ngoài
+    currentUserDetail: {
+        _id: string;
+        firstname?: string;
+        lastname?: string;
+        username?: string;
+        avatar?: string;
+    };
+    navigation: any;  // Thêm navigation để điều hướng
     onCallRef?: React.MutableRefObject<() => void | null>;
-    
 }
 
-export default function CallManager({ otherUserIds, calleeName,  currentUserDetail,onCallRef }: CallManagerProps) {
+export default function CallManager({ otherUserIds, calleeName, currentUserDetail, navigation, onCallRef }: CallManagerProps) {
     const [isCalling, setIsCalling] = useState(false);
     const [incomingCall, setIncomingCall] = useState<null | IncomingCallData>(null);
     const currentUser = useSelector((state: any) => state.user);
-    
+
     useEffect(() => {
         socketCall.connect();
         socketCall.emit('join', { userId: currentUser._id });
 
-        socketCall.on('incomingCall', (data: IncomingCallData & { toUserId: string }) => {
+        socketCall.on('incomingCall', (data: IncomingCallData) => {
             if (data.toUserId === currentUser._id) {
                 console.log('📞 Cuộc gọi đến:', data);
                 setIncomingCall(data);
@@ -46,13 +46,22 @@ export default function CallManager({ otherUserIds, calleeName,  currentUserDeta
             setIsCalling(false);
         });
 
-        socketCall.on('callAccepted', () => {
-            setIsCalling(false);
-            // TODO: mở giao diện gọi video nếu cần
+        socketCall.on('callAccepted', (data: { fromUserId: string }) => {
+            if (isCalling) {
+                setIsCalling(false);
+
+                // Mở màn hình VideoCall cho người gọi khi người nhận bấm Accept
+                navigation.navigate('VideoCall', {
+                    currentUserId: currentUser._id,
+                    otherUserId: data.fromUserId,
+                    socketCall,
+                });
+            }
         });
 
         socketCall.on('callEnded', () => {
             setIncomingCall(null);
+            setIsCalling(false);
         });
 
         return () => {
@@ -61,28 +70,25 @@ export default function CallManager({ otherUserIds, calleeName,  currentUserDeta
             socketCall.off('callAccepted');
             socketCall.off('callEnded');
         };
-    }, [currentUser._id]);
+    }, [currentUser._id, isCalling, navigation, socketCall]);
 
+    const handleVideoCall = useCallback(() => {
+        if (otherUserIds.length === 0) {
+            console.warn('Không có người nhận cuộc gọi');
+            return;
+        }
+        setIsCalling(true);
+        otherUserIds.forEach((id) => {
+            socketCall.emit('incomingCall', {
+                fromUserId: currentUserDetail._id,
+                fromName: `${currentUserDetail.firstname || ''} ${currentUserDetail.lastname || ''}`.trim() || currentUserDetail.username || 'No Name',
+                fromAvatar: currentUserDetail.avatar,
+                toUserId: currentUser._id, // id
+            });
+        });
+        console.log('📞 Đang gọi video đến các ID:', otherUserIds);
+    }, [currentUserDetail, otherUserIds]);
 
-    // tu goi chính mình: currentUser._id
-  const handleVideoCall = useCallback(() => {
-    if (otherUserIds.length === 0) {
-      console.warn('Không có người nhận cuộc gọi');
-      return;
-    }
-    setIsCalling(true);
-    otherUserIds.forEach((id) => {
-      socketCall.emit('incomingCall', {
-        fromUserId: currentUserDetail._id,
-        fromName: `${currentUserDetail.firstname || ''} ${currentUserDetail.lastname || ''}`.trim() || currentUserDetail.username || 'No Name',
-        fromAvatar: currentUserDetail.avatar,
-        toUserId: currentUser._id,
-      });
-    });
-    console.log('📞 Đang gọi video đến các ID:', otherUserIds);
-  }, [currentUserDetail, otherUserIds]);
-
-    // Nếu truyền ref ra ngoài để ChatHeader có thể gọi handleVideoCall
     useEffect(() => {
         if (onCallRef) {
             onCallRef.current = handleVideoCall;
@@ -96,14 +102,20 @@ export default function CallManager({ otherUserIds, calleeName,  currentUserDeta
 
     const handleAccept = () => {
         if (!incomingCall) return;
-        socketCall.emit('callAccepted', { toUserId: incomingCall.fromUserId });
+        socketCall.emit('callAccepted', { toUserId: incomingCall.fromUserId, fromUserId: currentUser._id });
         setIncomingCall(null);
-        // TODO: mở giao diện gọi video nếu cần
+
+        // Mở màn hình VideoCall cho người nhận
+        navigation.navigate('VideoCall', {
+            currentUserId: currentUser._id,
+            otherUserId: incomingCall.fromUserId,
+            socketCall,
+        });
     };
 
     const handleDecline = () => {
         if (!incomingCall) return;
-        socketCall.emit('declineCall', {
+        socketCall.emit('callDeclined', {
             toUserId: incomingCall.fromUserId,
             fromUserId: currentUser._id,
             fromName: currentUser.firstname || currentUser.username,

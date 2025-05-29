@@ -63,6 +63,7 @@ export default function ChatHeader({ user, navigation, pinnedMessages, onScrollT
         calleeName={user.firstname || user.username}
         currentUserDetail={currentUserDetail}   // truyền user detail
         onCallRef={callManagerRef}
+        navigation={navigation}  // truyền navigation nếu cần
       />
     </View>
   );
