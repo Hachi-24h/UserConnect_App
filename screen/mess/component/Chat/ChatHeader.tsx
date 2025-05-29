@@ -3,6 +3,7 @@ import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { ArrowLeft2, Call, Video, InfoCircle, Trash, DocumentText, ArrowUp2, ArrowDown2 } from "iconsax-react-native";
 import styles from "../../../../Css/chat";
 import color from '../../../../Custom/Color';
+import socket from '../../../../socket/socket';
 
 export default function ChatHeader({ user, navigation, pinnedMessages = [], onUnpinMessage, onScrollToMessage }: any) {
   const [showAllPinned, setShowAllPinned] = useState(false);
@@ -33,6 +34,16 @@ export default function ChatHeader({ user, navigation, pinnedMessages = [], onUn
         return require('../../../../Icon/zip.png');
     }
   };
+
+  const handleUnpin = (messageId: string) => {
+    if (!messageId || !user?.conversationId) return;
+    // console.log("Unpinning message:", messageId, "from conversation:", user.conversationId);
+    socket.emit("unpinMessage", {
+      messageId,
+      conversationId: user.conversationId,
+    });
+  };
+
   return (
     <View>
       <View style={styles.header}>
@@ -137,7 +148,8 @@ export default function ChatHeader({ user, navigation, pinnedMessages = [], onUn
                 </View>
 
                 {/* Nút xóa bên phải */}
-                <TouchableOpacity onPress={() => onUnpinMessage && onUnpinMessage(msg._id)}>
+                {/* <TouchableOpacity onPress={() => onUnpinMessage && onUnpinMessage(msg._id)}> */}
+                <TouchableOpacity onPress={() => handleUnpin(msg._id)}>
                   <Trash size={18} color="#ccc" />
                 </TouchableOpacity>
               </TouchableOpacity>
