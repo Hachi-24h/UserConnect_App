@@ -56,6 +56,9 @@ export const setupSocketListeners = ({
         } else if (msg.type === "file") {
             displayContent = "Sent a new file";
         }
+        else if (msg.type === "audio") {
+            displayContent = "Sent a new audio";
+        }
 
         // ✅ Chỉ thông báo nếu KHÔNG phải là người gửi & không đang ở phòng đó
         if (!isSender && !isActive) {

@@ -62,7 +62,7 @@ const ChatScreen = ({ navigation }: any) => {
     state.chat.conversations.find((c: any) => c._id === conversationId)
   );
   const currentUserId = currentUser._id;
-  console.log("🚀 ~ file: Chat.tsx:30 ~ currentUserId:", currentUserId);
+  // console.log("🚀 ~ file: Chat.tsx:30 ~ currentUserId:", currentUserId);
   useEffect(() => {
     if (conversation && currentUserId) {
       const ids: string[] = [];
@@ -83,7 +83,7 @@ const ChatScreen = ({ navigation }: any) => {
       
     }
   }, [conversation, currentUserId]);
-  console.log("danh sách id nhắn:", otherUserIds); 
+  // console.log("danh sách id nhắn:", otherUserIds); 
   const isGroup = conversation?.isGroup;
 
   useEffect(() => {

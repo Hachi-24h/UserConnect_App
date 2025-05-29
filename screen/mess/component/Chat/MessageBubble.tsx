@@ -17,6 +17,7 @@ import {
   getCachedUserInfo,
   setCachedUserInfo,
 } from '../../../../utils/userCache';
+import AudioPlayer from './component_MessageBubble/AudioPlayer';
 // import Video from 'react-native-video';
 
 const downloadIcon = require('../../../../Icon/download.png');
@@ -209,19 +210,22 @@ export default function MessageBubble({
                   paddingHorizontal: 10,
                 },
               ]}>
-              {message.type === 'image' ? (
-                <Image
-                  source={{ uri: message.content }}
-                  style={{ width: 200, height: 200, borderRadius: 10 }}
-                  resizeMode="cover"
-                />
-              ) : message.type === 'file' ? (
-                <FileMessage url={message.content} />
-              ) : (
-                <Text style={{ color: isMine ? 'white' : 'black' }}>
-                  {message.content}
-                </Text>
-              )}
+              {
+                message.type === 'audio' ? (
+                  <AudioPlayer uri={message.content} />
+                ) : message.type === 'image' ? (
+                  <Image
+                    source={{ uri: message.content }}
+                    style={{ width: 200, height: 200, borderRadius: 10 }}
+                    resizeMode="cover"
+                  />
+                ) : message.type === 'file' ? (
+                  <FileMessage url={message.content} />
+                ) : (
+                  <Text style={{ color: isMine ? 'white' : 'black' }}>
+                    {message.content}
+                  </Text>
+                )}
             </View>
 
             <Text
