@@ -61,7 +61,7 @@ export default function CallManager({
       navigation.navigate('VideoCall', {
         currentUserId: currentUser._id,
         otherUserId: data.fromUserId,
-        socketCall,
+        
       });
     });
 
@@ -125,7 +125,7 @@ export default function CallManager({
     navigation.navigate('VideoCall', {
       currentUserId: currentUser._id,
       otherUserId: incomingCall.fromUserId,
-      socketCall,
+      
     });
   };
 

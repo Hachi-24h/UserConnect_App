@@ -4,7 +4,7 @@ import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { RTCView, mediaDevices, RTCPeerConnection, MediaStream, RTCSessionDescription, RTCIceCandidate } from 'react-native-webrtc';
 import { Microphone, Video, CallSlash } from 'iconsax-react-native';
 import type { StackScreenProps } from '@react-navigation/stack';
-
+import socketCall from '../../../../../socket/socketCall';
 // Định nghĩa kiểu param cho stack navigator của bạn
 type RootStackParamList = {
     VideoCall: {
@@ -23,9 +23,9 @@ const configuration = {
     iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
 };
 
-export default function VideoCallScreen({ route, navigation }: VideoCallScreenProps) {
+export default function VideoCallScreen({ route, navigation }: any) {
     // Lấy params từ route
-    const { currentUserId, otherUserId, socketCall } = route.params;
+    const { currentUserId, otherUserId } = route.params;
 
     // State giữ local stream và remote stream
     const [localStream, setLocalStream] = useState<MediaStream | null>(null);

@@ -12,6 +12,7 @@ import { setupSocketListeners } from './socket/socketHandlers'; // ✅ import m�
 import socket from './socket/socket';
 import { View } from 'react-native';
 import { navigationRef } from './config/navigationRef';
+import VideoCallScreen from './screen/mess/component/Chat/component_ChatHeader/VideoCallScreen'; // đúng đường dẫn
 
 const Stack = createStackNavigator();
 
@@ -56,7 +57,7 @@ const AppContent = () => {
     return () => unsubscribe?.();
   }, [navigationRef, conversations, userLoginId]);
 
- 
+
   useEffect(() => {
     if (!userLoginId || !token || conversations.length === 0) return;
 
@@ -83,6 +84,7 @@ const AppContent = () => {
         initialRouteName={initialScreen}
         screenOptions={{ gestureEnabled: true }}
       >
+        {/* Render tất cả screens ngoại trừ VideoCall */}
         {Object.entries(screens).map(([screenName, ScreenComponent]) => (
           <Stack.Screen
             key={screenName}
@@ -91,6 +93,13 @@ const AppContent = () => {
             options={{ ...defaultOptions, title: screenName }}
           />
         ))}
+
+        {/* ✅ Khai báo riêng VideoCall ở đây */}
+        <Stack.Screen
+          name="VideoCall"
+          component={VideoCallScreen}
+          options={{ ...defaultOptions, title: 'VideoCall' }}
+        />
       </Stack.Navigator>
 
       <CustomToast
