@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { useSelector } from 'react-redux';
 import ChatHeaderInfo from './component_rightBar/ChatHeaderInfo';
 import MemberList from './component_rightBar/MemberList';
@@ -7,7 +7,7 @@ import MediaSection from './component_rightBar/MediaSection';
 import OptionsSection from './component_rightBar/OptionsSection';
 import color from '../../../../Custom/Color';
 import socket from '../../../../socket/socket';
-import { useNavigation } from '@react-navigation/native';
+import { ArrowLeft2 } from 'iconsax-react-native';
 
 const RightBar = ({ route, navigation }: any) => {
   const { conversationId } = route.params;
@@ -35,6 +35,9 @@ const RightBar = ({ route, navigation }: any) => {
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: '#111', padding: 16 }}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginBottom: 12, flexDirection: 'row', alignItems: 'center' }}>
+        <ArrowLeft2 color="white" size={24} style={{ marginRight: 6 }} />
+      </TouchableOpacity>
       {/* Thông tin đầu */}
       <ChatHeaderInfo
         avatar={avatar}

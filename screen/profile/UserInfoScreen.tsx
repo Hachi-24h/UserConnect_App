@@ -16,7 +16,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import styles from '../../Css/UserInfoScreen';
 import color from '../../Custom/Color';
 import { setUserDetail } from '../../store/userDetailSlice';
-import Footer from '../other/Footer';
 import { updateUserInfo } from '../../utils/user';
 
 const { width, height } = Dimensions.get('window');
@@ -320,7 +319,6 @@ const UserInfoScreen = ({ navigation }: any) => {
           </Text>
         </TouchableOpacity>
       </ScrollView>
-      <Footer navigation={navigation} />
     </View>
   );
 };

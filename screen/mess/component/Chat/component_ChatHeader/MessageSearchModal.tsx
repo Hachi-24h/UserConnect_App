@@ -77,7 +77,7 @@ export default function MessageSearchModal({
             <View style={styles.overlay}>
                 <View style={styles.searchBar}>
                     <TextInput
-                        placeholder="Tìm tin nhắn..."
+                        placeholder="Search ..."
                         style={styles.searchInput}
                         value={query}
                         onChangeText={(text) => setQuery(text)}
@@ -118,7 +118,7 @@ export default function MessageSearchModal({
 
 const styles = StyleSheet.create({
     overlay: {
-        backgroundColor: 'rgba(223, 36, 36, 0.4)',
+        // backgroundColor: 'rgba(255, 255, 255, 0.4)',
         justifyContent: 'flex-start',
         padding: 10,
 

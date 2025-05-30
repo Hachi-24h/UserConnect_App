@@ -21,12 +21,13 @@ import color from '../../Custom/Color';
 import Footer from '../other/Footer';
 import { UserAdd, Message } from 'iconsax-react-native';
 import { useSelector } from 'react-redux';
-import { RootState } from '../../store/types/redux';
+// import { RootState } from '../../store/types/redux';
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import { fetchFollowings } from '../../store/followingSlice';
 import { showNotification } from '../../Custom/notification';
+import { RootState } from '../../store/store';
 
 const { width, height } = Dimensions.get('window');
 
@@ -59,7 +60,7 @@ const ContactScreen = ({ navigation }: any) => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [selectedTab, setSelectedTab] = useState<TabType>('all');
   const followings = useSelector((state: any) => state.followings.dsFollowing);
-  const currentUser  = useSelector((state: RootState) => state.user);
+  const currentUser = useSelector((state: RootState) => state.user) as { _id: string } | null;
   const dispatch = useDispatch();
   useEffect(() => {
     const fetchContacts = async () => {
@@ -115,7 +116,7 @@ const ContactScreen = ({ navigation }: any) => {
     useCallback(() => {
       //@ts-ignore
       dispatch(fetchFollowings(currentUser._id)); // Cập nhật lại followings khi quay lại màn hình
-    }, [currentUser._id])
+    }, [currentUser?._id])
   );
   useEffect(() => {
     if (contacts.length === 0) return;
@@ -126,7 +127,7 @@ const ContactScreen = ({ navigation }: any) => {
           'https://pulse-gateway.up.railway.app/users/by-phone-numbers',
           {
             phoneNumbers,
-            currentUserId: currentUser ._id
+            currentUserId: currentUser?._id, // Thêm ID người dùng hiện tại để tránh lấy chính mình
           }
         );
         if (res.status === 200) {
@@ -226,31 +227,18 @@ const ContactScreen = ({ navigation }: any) => {
                 followings.some((f: UserFromBackend) => f._id === (item as UserFromBackend).userId);
               if (isFollowed) {
                 return (
-                  <TouchableOpacity
-                    onPress={() => {
-                      // Alert(`Message ${name}`);
-                      showNotification(`Message ${name}`, `success`); 
-                    }}>
+                  <TouchableOpacity onPress={() => { }}>
                     <Message size={22} color={color.textSecondary} />
                   </TouchableOpacity>
                 );
               } else {
                 return (
                   <>
-                    <TouchableOpacity
-                      onPress={() => {
-                        // Alert(`Follow ${name}`);
-                      showNotification(`Follow ${name}`, `success`); 
-
-                      }}>
+                    <TouchableOpacity onPress={() => { }}>
                       <UserAdd size={22} color={color.textSecondary} />
                     </TouchableOpacity>
-                    <TouchableOpacity
-                      style={styles.messageButton}
-                      onPress={() => {
-                        // alert(`Message ${name}`);
-                      showNotification(`Message ${name}`, `success`); 
-                      }}>
+
+                    <TouchableOpacity style={styles.messageButton} onPress={() => { }}>
                       <Message size={22} color={color.textSecondary} />
                     </TouchableOpacity>
                   </>
@@ -262,7 +250,7 @@ const ContactScreen = ({ navigation }: any) => {
               style={styles.inviteButton}
               onPress={() => {
                 // alert(`Invite ${name} (${phone})`);
-                showNotification(`Invite ${name} (${phone})`, `success`); 
+                showNotification(`Invite ${name} (${phone})`, `success`);
               }}>
               <Text style={styles.inviteText}>Invite</Text>
             </TouchableOpacity>
@@ -347,7 +335,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#3a3a3a',
   },
-  
+
   tabRow: {
     width: width * 0.9,
     alignSelf: 'center',
@@ -357,23 +345,23 @@ const styles = StyleSheet.create({
     marginTop: height * 0.01,
     backgroundColor: '#1e1e1e',
     borderRadius: width * 0.04,
-  },  
-  
+  },
+
   tabButton: {
     paddingVertical: height * 0.01,
     paddingHorizontal: width * 0.04,
     borderRadius: width * 0.03,
   },
-  
+
   tabButtonActive: {
     backgroundColor: '#2c2c2c',
   },
-  
+
   tabButtonText: {
     fontSize: width * 0.04,
     color: '#aaa',
   },
-  
+
   tabButtonTextActive: {
     color: '#fff',
     fontWeight: 'bold',
@@ -394,42 +382,42 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 4,
   },
-  
+
   contactLeft: { flexDirection: 'row', alignItems: 'center' },
-  
+
   contactInfo: {
     marginLeft: width * 0.03,
   },
-  
+
   avatar: {
     width: width * 0.14,
     height: width * 0.14,
     borderRadius: (width * 0.14) / 2,
     backgroundColor: '#aaa',
   },
-  
+
   contactName: {
     color: color.textPrimary,
     fontSize: width * 0.045,
     fontWeight: 'bold',
   },
-  
+
   contactPhone: {
     fontSize: width * 0.038,
     color: color.textSecondary,
     marginTop: 4,
   },
-  
+
   contactActions: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: width * 0.03,
   },
-  
+
   messageButton: {
     marginLeft: width * 0.04,
   },
-  
+
   inviteButton: {
     backgroundColor: '#00C853',
     paddingVertical: height * 0.007,
@@ -442,13 +430,13 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 2,
   },
-  
+
   inviteText: {
     color: '#fff',
     fontWeight: '600',
     fontSize: width * 0.04,
   },
-  
+
   emptyText: {
     textAlign: 'center',
     fontSize: width * 0.038,

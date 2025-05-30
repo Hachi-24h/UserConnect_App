@@ -50,7 +50,7 @@ const MemberModal: React.FC<MemberModalProps> = ({
                   marginBottom: 18,
                 }}
               >
-                Tất cả thành viên
+                All members
               </Text>
 
               <ScrollView showsVerticalScrollIndicator={false}>
@@ -61,7 +61,7 @@ const MemberModal: React.FC<MemberModalProps> = ({
                 onPress={() => setShowModal(false)}
                 style={{ marginTop: 20, alignSelf: 'flex-end' }}
               >
-                <Text style={{ color: '#00aced', fontSize: 16 }}>Đóng</Text>
+                <Text style={{ color: '#00aced', fontSize: 16 }}>Close</Text>
               </TouchableOpacity>
             </View>
           </TouchableWithoutFeedback>
