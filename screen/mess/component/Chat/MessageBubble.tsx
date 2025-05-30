@@ -243,6 +243,7 @@ export default function MessageBubble({
           isMine={isMine}
           onClose={() => setShowOptions(false)}
           messageId={message._id}
+          senderId={message.senderId}
           conversationId={conversationId}
           socket={socket}
         />

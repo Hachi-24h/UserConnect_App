@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Modal, Pressable, Text, View, useWindowDimensions, Alert } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { deleteMessage, getPinnedMessagesByConversation, revokeMessage } from '../../../../../store/chatSlice';
@@ -12,6 +12,7 @@ export default function MessageOptionsModal({
     onClose,
     messageId,
     conversationId,
+    senderId,
     socket,
 }: {
     isVisible: boolean;
@@ -20,6 +21,7 @@ export default function MessageOptionsModal({
     onClose: () => void;
     messageId: string;
     conversationId: string;
+    senderId:string;
     socket: any;
 }) {
     const { width } = useWindowDimensions();
@@ -27,34 +29,21 @@ export default function MessageOptionsModal({
     const pinnedMessages = useSelector((state: any) =>
         getPinnedMessagesByConversation(state, conversationId)
     );
-    const handleDelete = () => {
-        Alert.alert("Confirm", "Do you want to delete this message?", [
-            { text: "Cancel", style: "cancel" },
-            {
-                text: "Delete",
-                style: "destructive",
-                onPress: () => {
-                    dispatch(deleteMessage({ conversationId, messageId }));
-                    socket.emit("deleteMessage", { conversationId, messageId });
-                    onClose();
-                }
-            }
-        ]);
-    };
-
-    const handleRevoke = () => {
-        Alert.alert("Confirm", "Do you want to revoke this message?", [
-            { text: "Cancel", style: "cancel" },
-            {
-                text: "Revoke",
-                onPress: () => {
-                    dispatch(revokeMessage({ conversationId, messageId }));
-                    socket.emit("revokeMessage", { conversationId, messageId });
-                    onClose();
-                }
-            }
-        ]);
-    };
+    const [showOptions, setShowOptions] = useState(false);
+    
+    const handleOption = (action: 'delete' | 'revoke') => {
+        setShowOptions(false);
+        const payload = {
+          messageId:messageId,
+          conversationId,
+          senderId: senderId,
+        };
+        if (action === 'delete') {
+          socket.emit('deleteMessage', payload);
+        } else if (action === 'revoke') {
+          socket.emit('revokeMessage', payload);
+        }
+      };
 
 
     const handlePin = () => {
@@ -92,10 +81,10 @@ export default function MessageOptionsModal({
                     {/* ✅ Chỉ người gửi được delete/revoke */}
                     {isMine && (
                         <>
-                            <Text style={optionStyle} onPress={handleDelete}>
+                            <Text style={optionStyle} onPress={() => handleOption('delete')}>
                                 Delete Message
                             </Text>
-                            <Text style={optionStyle} onPress={handleRevoke}>
+                            <Text style={optionStyle} onPress={() => handleOption('revoke')}>
                                 Revoke Message
                             </Text>
                         </>

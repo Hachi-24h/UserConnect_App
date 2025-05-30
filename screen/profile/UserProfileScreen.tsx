@@ -15,6 +15,7 @@ import { followUser, fetchFollowings, unfollowUser } from '../../store/following
 import { AppDispatch, RootState } from '../../store/types/redux';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { getPrivateConversationWithUser } from '../../store/chatSlice';
+// import { AppDispatch, RootState } from '../../store/store';
 
 const { width } = Dimensions.get('window');
 
