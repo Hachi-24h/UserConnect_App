@@ -6,6 +6,7 @@ const { height, width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     width: width,
@@ -13,19 +14,26 @@ const styles = StyleSheet.create({
   },
   formContainer: {
     width: width * 0.9,
-    padding: 20,
-    backgroundColor: 'rgba(34, 27, 37, 0.5)',
-    borderRadius: 20,
+    padding: 24,
+    backgroundColor: 'rgba(17, 24, 39, 0.9)', // Match SignIn background
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(75, 85, 99, 0.3)', // Match SignIn border
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
   },
   input: {
     width: '100%',
     padding: 15,
-    backgroundColor: 'rgba(27, 28, 37, 0.5)',
-    borderRadius: 26,
-    marginBottom: 15,
-    color: color.white,
-    paddingLeft: width * 0.05,
+    backgroundColor: 'rgba(31, 41, 55, 0.8)', // Match SignIn input background
+    borderRadius: 12,
+    marginBottom: 16,
+    color: '#ffffff', // Match SignIn text color
+    fontSize: 16,
   },
   passwordContainer: {
     flexDirection: 'row',
@@ -42,22 +50,25 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   signUpButton: {
-    backgroundColor: color.BrightRedOrange,
-    paddingVertical: 15,
-    width: '100%',
-    alignItems: 'center',
-    borderRadius: 10,
-    marginBottom: 15,
-  },
-  googleButton: {
-    flexDirection: 'row',
-    backgroundColor: color.white,
-    paddingVertical: 15,
+    paddingVertical: 14,
     width: '100%',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 10,
-    marginBottom: 15,
+    borderRadius: 50,
+    marginBottom: 16,
+    backgroundColor: '#4CAF50', // Match SignIn button color
+  },
+  googleButton: {
+    flexDirection: 'row',
+    backgroundColor: '#1f2937', // Match SignIn Google button background
+    paddingVertical: 14,
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 50,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(75, 85, 99, 0.5)', // Match SignIn Google button border
   },
   googleIcon: {
     width: 20,
@@ -65,38 +76,34 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   buttonText: {
-    color: color.white,
+    color: '#ffffff', // Match SignIn button text color
     fontWeight: 'bold',
-    fontSize: width * 0.04,
+    fontSize: 16,
   },
   buttonText2: {
-    color: color.black,
-    fontWeight: 'bold',
-    fontSize: width * 0.04,
+    color: '#ffffff', // Match SignIn Google button text color
+    fontWeight: '500',
+    fontSize: 16,
   },
   footerText: {
-    color: '#aaa',
-    marginTop: 10,
+    color: '#9ca3af', // Match SignIn footer text color
+    fontSize: 14,
   },
   signInText: {
-    color: color.white,
+    color: '#4CAF50', // Match SignIn footer link color
     fontWeight: 'bold',
+    fontSize: 14,
   },
-  eyeIcon:{
-    width: width * 0.05,
-    height: width * 0.05,
-    top: height * 0.269,
+  eyeIcon: {
     position: 'absolute',
-    right: width * 0.1,
+    right: width * 0.05,
+    top: height * 0.03,
   },
-  eyeIcon2:{
-    width: width * 0.05,
-    height: width * 0.05,
-    top: height * 0.35,
+  eyeIcon2: {
     position: 'absolute',
-    right: width * 0.1,
+    right: width * 0.05,
+    top: height * 0.03,
   },
-  
   modalContainer: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.6)',
