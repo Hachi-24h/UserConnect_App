@@ -1,7 +1,6 @@
 import { ArrowLeft2, Calendar } from 'iconsax-react-native';
 import React, { useState } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   Dimensions,
   Image,
@@ -16,19 +15,19 @@ import { launchImageLibrary } from 'react-native-image-picker';
 import { useDispatch, useSelector } from 'react-redux';
 import styles from '../../Css/UserInfoScreen';
 import color from '../../Custom/Color';
-import { updateUserInfo } from '../../utils/user';
 import { setUserDetail } from '../../store/userDetailSlice';
 import Footer from '../other/Footer';
+import { updateUserInfo } from '../../utils/user';
 
 const { width, height } = Dimensions.get('window');
 
 const formatDate = (dob: string): string => {
-  if (!dob || dob === 'Chưa cập nhật') {
-    return 'Chưa cập nhật';
+  if (!dob || dob === 'Not updated') {
+    return 'Not updated';
   }
   const date = new Date(dob);
   if (isNaN(date.getTime())) {
-    return 'Chưa cập nhật';
+    return 'Not updated';
   }
   const day = date.getDate().toString().padStart(2, '0');
   const month = (date.getMonth() + 1).toString().padStart(2, '0');
@@ -43,18 +42,22 @@ const UserInfoScreen = ({ navigation }: any) => {
 
   const [editMode, setEditMode] = useState(false);
   const [avatar, setAvatar] = useState(userDetail?.avatar);
-  const [backgroundAvatar, setBackgroundAvatar] = useState(userDetail?.backgroundAvatar);
+  const [backgroundAvatar, setBackgroundAvatar] = useState(
+    userDetail?.backgroundAvatar,
+  );
   const [firstname, setFirstname] = useState(userDetail?.firstname || '');
   const [lastname, setLastname] = useState(userDetail?.lastname || '');
   const [gender, setGender] = useState(userDetail?.gender || '');
   const [dob, setDob] = useState(userDetail?.DOB || '');
-  const [phoneNumber] = useState(userDetail?.phoneNumber || 'Chưa cập nhật');
+  const [phoneNumber] = useState(userDetail?.phoneNumber || 'Not updated');
   const [email, setEmail] = useState(userDetail?.email || '');
   const [address, setAddress] = useState(userDetail?.address || '');
   const [bio, setBio] = useState(userDetail?.bio || '');
   const [isUploading, setIsUploading] = useState(false);
   const [datePickerOpen, setDatePickerOpen] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(dob ? new Date(dob) : new Date());
+  const [selectedDate, setSelectedDate] = useState(
+    dob ? new Date(dob) : new Date(),
+  );
 
   const pickImage = async (setFunc: (value: string) => void, type: string) => {
     try {
@@ -73,7 +76,7 @@ const UserInfoScreen = ({ navigation }: any) => {
       }
     } catch (error) {
       console.error('Error picking image:', error);
-      Alert.alert('Lỗi', 'Không thể chọn ảnh. Vui lòng thử lại.');
+      Alert.alert('Error', 'Unable to select image. Please try again.');
     }
   };
 
@@ -94,7 +97,7 @@ const UserInfoScreen = ({ navigation }: any) => {
       };
 
       const res = await updateUserInfo(userId, data);
-      Alert.alert('Lưu thành công', 'Thông tin đã được cập nhật!');
+      Alert.alert('Saved successfully', 'Information has been updated!');
 
       // dispatch({
       //   type: 'UPDATE_USER_DETAIL',
@@ -111,23 +114,25 @@ const UserInfoScreen = ({ navigation }: any) => {
       //     bio,
       //   },
       // });
-      dispatch(setUserDetail({
-        ...userDetail,
-        avatar,
-        backgroundAvatar,
-        firstname,
-        lastname,
-        gender,
-        DOB: dob,
-        phoneNumber,
-        email,
-        address,
-        bio,
-      }));
+      dispatch(
+        setUserDetail({
+          ...userDetail,
+          avatar,
+          backgroundAvatar,
+          firstname,
+          lastname,
+          gender,
+          DOB: dob,
+          phoneNumber,
+          email,
+          address,
+          bio,
+        }),
+      );
       setEditMode(false);
     } catch (error) {
-      console.log('❌ Lỗi khi cập nhật:', error);
-      Alert.alert('Lỗi', 'Có lỗi xảy ra khi cập nhật thông tin.');
+      console.log('❌ Error updating:', error);
+      Alert.alert('Error', 'An error occurred while updating information.');
     }
   };
 
@@ -144,7 +149,7 @@ const UserInfoScreen = ({ navigation }: any) => {
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <ArrowLeft2 size={24} color={color.white} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Thông tin cá nhân</Text>
+        <Text style={styles.headerTitle}>Personal Information</Text>
       </View>
 
       <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
@@ -160,7 +165,9 @@ const UserInfoScreen = ({ navigation }: any) => {
             onPress={() => pickImage(setAvatar, 'avatar')}>
             <Image
               source={{
-                uri: avatar || 'https://i.postimg.cc/6pXNwv51/backgrond-mac-dinh.jpg',
+                uri:
+                  avatar ||
+                  'https://i.postimg.cc/6pXNwv51/backgrond-mac-dinh.jpg',
               }}
               style={styles.avatar}
             />
@@ -170,43 +177,43 @@ const UserInfoScreen = ({ navigation }: any) => {
 
         <View style={styles.infoSection}>
           <View style={styles.fieldRow}>
-            <Text style={[styles.label, { width: '30%' }]}>Họ</Text>
+            <Text style={[styles.label, { width: '30%' }]}>First Name</Text>
             <TextInput
               editable={editMode}
               value={firstname}
               onChangeText={setFirstname}
               style={[styles.value, { flex: 1 }]}
-              placeholder="Họ"
+              placeholder="First name"
               placeholderTextColor="rgba(255,255,255,0.5)"
             />
           </View>
 
           <View style={styles.fieldRow}>
-            <Text style={[styles.label, { width: '30%' }]}>Tên</Text>
+            <Text style={[styles.label, { width: '30%' }]}>Last Name</Text>
             <TextInput
               editable={editMode}
               value={lastname}
               onChangeText={setLastname}
               style={[styles.value, { flex: 1 }]}
-              placeholder="Tên"
+              placeholder="Last name"
               placeholderTextColor="rgba(255,255,255,0.5)"
             />
           </View>
 
           <View style={styles.fieldRow}>
-            <Text style={[styles.label, { width: '30%' }]}>Giới tính</Text>
+            <Text style={[styles.label, { width: '30%' }]}>Gender</Text>
             <TextInput
               editable={editMode}
               value={gender}
               onChangeText={setGender}
               style={[styles.value, { flex: 1 }]}
-              placeholder="Nam/Nữ/Khác"
+              placeholder="Male/Female/Other"
               placeholderTextColor="rgba(255,255,255,0.5)"
             />
           </View>
 
           <View style={styles.fieldRow}>
-            <Text style={[styles.label, { width: '30%' }]}>Ngày sinh</Text>
+            <Text style={[styles.label, { width: '30%' }]}>Birth Date</Text>
             {editMode ? (
               <TouchableOpacity
                 style={[
@@ -236,9 +243,9 @@ const UserInfoScreen = ({ navigation }: any) => {
             minimumDate={new Date(1900, 0, 1)}
             onConfirm={handleDateConfirm}
             onCancel={() => setDatePickerOpen(false)}
-            title="Chọn ngày sinh"
-            confirmText="Xác nhận"
-            cancelText="Hủy"
+            title="Select birth date"
+            confirmText="Confirm"
+            cancelText="Cancel"
           />
 
           <View style={styles.fieldRow}>
@@ -254,38 +261,44 @@ const UserInfoScreen = ({ navigation }: any) => {
           </View>
 
           <View style={styles.fieldRow}>
-            <Text style={[styles.label, { width: '30%' }]}>Địa chỉ</Text>
+            <Text style={[styles.label, { width: '30%' }]}>Address</Text>
             <TextInput
               editable={editMode}
               value={address}
               onChangeText={setAddress}
               style={[styles.value, { flex: 1 }]}
-              placeholder="Số nhà, đường..."
+              placeholder="House number, street..."
               placeholderTextColor="rgba(255,255,255,0.5)"
             />
           </View>
 
           <View style={[styles.fieldRow, { alignItems: 'flex-start' }]}>
-            <Text style={[styles.label, { width: '30%', marginTop: 10 }]}>Giới thiệu</Text>
+            <Text style={[styles.label, { width: '30%', marginTop: 10 }]}>
+              Bio
+            </Text>
             <TextInput
               editable={editMode}
               value={bio}
               onChangeText={setBio}
               multiline
               numberOfLines={4}
-              style={[styles.value, { flex: 1, height: 100, textAlignVertical: 'top' }]}
-              placeholder="Một chút về bạn..."
+              style={[
+                styles.value,
+                { flex: 1, height: 100, textAlignVertical: 'top' },
+              ]}
+              placeholder="A bit about yourself..."
               placeholderTextColor="rgba(255,255,255,0.5)"
             />
           </View>
 
           <View style={styles.fieldRow}>
-            <Text style={[styles.label, { width: '30%' }]}>Điện thoại</Text>
+            <Text style={[styles.label, { width: '30%' }]}>Phone</Text>
             <Text style={[styles.value, { flex: 1 }]}>{phoneNumber}</Text>
           </View>
 
           <Text style={styles.note}>
-            Số điện thoại chỉ hiển thị với người có lưu số bạn trong danh bạ máy
+            Phone number is only visible to people who have saved your number in
+            their contacts
           </Text>
         </View>
 
@@ -303,7 +316,7 @@ const UserInfoScreen = ({ navigation }: any) => {
           ]}
           onPress={editMode ? handleSave : () => setEditMode(true)}>
           <Text style={[styles.buttonText, { fontSize: width * 0.035 }]}>
-            {editMode ? 'Lưu thay đổi' : 'Chỉnh sửa thông tin'}
+            {editMode ? 'Save Changes' : 'Edit Information'}
           </Text>
         </TouchableOpacity>
       </ScrollView>

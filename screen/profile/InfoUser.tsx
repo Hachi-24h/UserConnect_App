@@ -35,7 +35,7 @@ const InfoUser = ({ navigation }: any) => {
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scroll}>
-        {/* Ảnh bìa và icon */}
+        {/* Cover photo and icons */}
         <View style={styles.coverContainer}>
           <Image source={{ uri: backgroundAvatar }} style={styles.coverPhoto} />
           <TouchableOpacity
@@ -55,10 +55,10 @@ const InfoUser = ({ navigation }: any) => {
           </View>
         </View>
 
-        {/* Avatar tròn */}
+        {/* Round avatar */}
         <Image source={{ uri: avatar }} style={styles.avatar} />
 
-        {/* Thông tin người dùng */}
+        {/* User information */}
         <Text style={styles.name}>{fullName}</Text>
         <Text style={styles.subText}>{bio}</Text>
 
@@ -72,7 +72,7 @@ const InfoUser = ({ navigation }: any) => {
               source={require('../../Icon/idear.png')}
               style={styles.actionIcon}
             />
-            <Text style={styles.actionText}>Cài zStyle</Text>
+            <Text style={styles.actionText}>Set zStyle</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.actionButton}>
@@ -80,7 +80,7 @@ const InfoUser = ({ navigation }: any) => {
               source={require('../../Icon/image.png')}
               style={styles.actionIcon}
             />
-            <Text style={styles.actionText}>Ảnh của tôi</Text>
+            <Text style={styles.actionText}>My Photos</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.actionButton}>
@@ -88,25 +88,25 @@ const InfoUser = ({ navigation }: any) => {
               source={require('../../Icon/post.png')}
               style={styles.actionIcon}
             />
-            <Text style={styles.actionText}>Kho khoảnh khắc</Text>
+            <Text style={styles.actionText}>Moments Collection</Text>
           </TouchableOpacity>
         </ScrollView>
 
-        {/* Gợi ý Nhật ký */}
+        {/* Journal Suggestion */}
         <View style={styles.card}>
           <Image
             source={require('../../Picture/wellcome.png')}
             style={styles.cardImage}
           />
           <Text style={styles.cardTitle}>
-            Hôm nay {firstname || lastname} có gì vui?
+            What's fun today, {firstname || lastname}?
           </Text>
           <Text style={styles.cardText}>
-            Đây là Nhật ký của You - Hãy làm đầy Nhật ký với những dấu ấn cuộc
-            đời và kỷ niệm đáng nhớ nhé!
+            This is your Journal - Fill it with life's impressions and memorable
+            moments!
           </Text>
           <TouchableOpacity style={styles.postButton}>
-            <Text style={styles.postButtonText}>Đăng lên Nhật ký</Text>
+            <Text style={styles.postButtonText}>Post to Journal</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
