@@ -13,15 +13,19 @@ import { ArrowLeft2 } from 'iconsax-react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import { followUser, fetchFollowings, unfollowUser } from '../../store/followingSlice';
 import { AppDispatch, RootState } from '../../store/types/redux';
+import { StackNavigationProp } from '@react-navigation/stack';
 
 const { width } = Dimensions.get('window');
 
 export default function FriendProfile() {
-  const navigation = useNavigation();
+  // const navigation = useNavigation();
   const route = useRoute();
   const { user }: any = route.params;
   const id_user_login = useSelector((state: RootState) => state.user._id);
-
+  const conversationId = user.conversationId;
+  const conversation = useSelector((state: any) =>
+      state.chat.conversations.find((c: any) => c._id === conversationId)
+    );
   const iduserFollow = user?.userId;
   console.log("id user đang xem :", iduserFollow)
   const dispatch = useDispatch<AppDispatch>();
@@ -35,8 +39,23 @@ export default function FriendProfile() {
   const followings = useSelector((state: RootState) => state.followings.dsFollowing);
   // console.log("danh sách user follow :", followings)
   const loading = useSelector((state: RootState) => state.followings.loading);
-
   const [isFollowed, setIsFollowed] = useState(followings.some((f: { _id: any; }) => f._id === iduserFollow))
+
+  type NavigationProp = StackNavigationProp<RootStackParamList, 'Chat'>;
+  const navigation = useNavigation<NavigationProp>();
+  type RootStackParamList = {
+    Chat: {
+      user: {
+        isGroup: boolean;
+        avatar: string;
+        conversationId: string;
+        firstname: string;
+        lastname: string;
+        username: string;
+        userChatId: string;
+      };
+    };
+  };
 
 
   console.log("kiểm tra follow chưa :", isFollowed)
@@ -47,46 +66,58 @@ export default function FriendProfile() {
   const handleFollowToggle = () => {
     const followingId = iduserFollow;
     const followerId = id_user_login;
-    if (!user || !id_user_login) return;
-    if (!followingId || !followerId) return;
+    if (!user || !id_user_login || !followingId || !followerId) return;
 
     const payload = { followerId, followingId };
 
     if (isFollowed) {
-      dispatch(unfollowUser(payload))
-        .unwrap()
-        .then(() => {
-          Alert.alert('Thành công', 'Unfollow thành công ');
-          console.log("Unfollow thành công")
-          setIsFollowed(false);
-        })
-        .catch((err: { response: { status: number; }; }) => {
-          console.error('❌ Follow failed:', err);
-          if (err.response?.status === 404) {
-            Alert.alert('Thông báo', 'Bạn đã bỏ theo dõi người này từ trước.');
-          } else {
-            Alert.alert('Lỗi', 'Không thể bỏ theo dõi người này.');
-          }
-        });
-    }
-    else {
+      Alert.alert(
+        'Unfollow Confirmation',
+        `Are you sure you want to unfollow ${fullName}?`,
+        [
+          {
+            text: 'Cancel',
+            style: 'cancel',
+          },
+          {
+            text: 'Unfollow',
+            onPress: () => {
+              dispatch(unfollowUser(payload))
+                .unwrap()
+                .then(() => {
+                  Alert.alert('Success', 'Unfollowed successfully.');
+                  setIsFollowed(false);
+                })
+                .catch((err: { response: { status: number } }) => {
+                  console.error('❌ Unfollow failed:', err);
+                  if (err.response?.status === 404) {
+                    Alert.alert('Notice', 'You have already unfollowed this user.');
+                  } else {
+                    Alert.alert('Error', 'Unable to unfollow this user.');
+                  }
+                });
+            },
+            style: 'destructive',
+          },
+        ]
+      );
+    } else {
       dispatch(followUser(payload))
         .unwrap()
         .then(() => {
-          Alert.alert('Thành công', 'follow thành công ');
+          Alert.alert('Success', 'Followed successfully.');
           setIsFollowed(true);
         })
-        .catch((err: { response: { status: number; }; }) => {
+        .catch((err: { response: { status: number } }) => {
           console.error('❌ Follow failed:', err);
           if (err.response?.status === 409) {
-            Alert.alert('Thông báo', 'Bạn đã theo dõi người này từ trước.');
+            Alert.alert('Notice', 'You are already following this user.');
           } else {
-            Alert.alert('Lỗi', 'Không thể theo dõi người này.');
+            Alert.alert('Error', 'Unable to follow this user.');
           }
         });
     }
   };
-
 
   return (
     <View style={styles.container}>
@@ -118,9 +149,25 @@ export default function FriendProfile() {
 
         {/* Buttons */}
         <View style={styles.buttonGroup}>
-          <TouchableOpacity style={styles.button}>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => {
+              navigation.navigate('Chat', {
+                user: {
+                  isGroup: false, // true nếu là nhóm
+                  avatar: user.avatar,
+                  conversationId: user.conversationId,
+                  firstname: user.firstname,
+                  lastname: user.lastname,
+                  username: user.username,
+                  userChatId: user._id,
+                }
+              });
+            }}
+          >
             <Text style={styles.buttonText}>Message</Text>
           </TouchableOpacity>
+
           <TouchableOpacity
             style={[styles.button, loading && { opacity: 0.5 }]}
             onPress={handleFollowToggle}

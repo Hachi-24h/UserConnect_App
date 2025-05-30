@@ -20,6 +20,11 @@ import color from '../../Custom/Color';
 import Footer from '../other/Footer';
 import { UserAdd, Message } from 'iconsax-react-native';
 import { useSelector } from 'react-redux';
+import { RootState } from '../../store/types/redux';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback } from 'react';
+import { useDispatch } from 'react-redux';
+import { fetchFollowings } from '../../store/followingSlice';
 
 const { width, height } = Dimensions.get('window');
 
@@ -52,7 +57,8 @@ const ContactScreen = ({ navigation }: any) => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [selectedTab, setSelectedTab] = useState<TabType>('all');
   const followings = useSelector((state: any) => state.followings.dsFollowing);
-  
+  const currentUser  = useSelector((state: RootState) => state.user);
+  const dispatch = useDispatch();
   useEffect(() => {
     const fetchContacts = async () => {
       let hasPermission = true;
@@ -103,6 +109,12 @@ const ContactScreen = ({ navigation }: any) => {
     fetchContacts();
   }, []);
 
+  useFocusEffect(
+    useCallback(() => {
+      //@ts-ignore
+      dispatch(fetchFollowings(currentUser._id)); // Cập nhật lại followings khi quay lại màn hình
+    }, [currentUser._id])
+  );
   useEffect(() => {
     if (contacts.length === 0) return;
 
@@ -110,7 +122,10 @@ const ContactScreen = ({ navigation }: any) => {
       try {
         const res = await axios.post(
           'https://pulse-gateway.up.railway.app/users/by-phone-numbers',
-          { phoneNumbers },
+          {
+            phoneNumbers,
+            currentUserId: currentUser ._id
+          }
         );
         if (res.status === 200) {
           setUsers(res.data);
@@ -118,7 +133,7 @@ const ContactScreen = ({ navigation }: any) => {
           console.log('Error fetching users:', res.status, res.statusText);
         }
       } catch (error) {
-        console.error('API error fetching users:', error);
+        console.error('API error fetching users:', error.response?.data || error);
       }
     };
 
@@ -126,7 +141,6 @@ const ContactScreen = ({ navigation }: any) => {
     fetchUsersByPhoneNumbers(phoneNumbers);
   }, [contacts]);
 
-  // Merge contacts with backend users
   const combinedList: CombinedItem[] = [];
 
   users.forEach(user => combinedList.push({ ...user, isRegistered: true }));
@@ -181,17 +195,19 @@ const ContactScreen = ({ navigation }: any) => {
 
     return (
       <TouchableOpacity
+        activeOpacity={0.8}
         onPress={() => {
           if (registered) {
             navigation.navigate('FriendProfile', {
-              user: item, // Truyền dữ liệu user
+              user: item,
             });
           }
         }}
         style={styles.contactItem}>
+
         <View style={styles.contactLeft}>
           <Image source={{ uri: avatarUri }} style={styles.avatar} />
-          <View style={{ marginLeft: width * 0.03 }}>
+          <View style={styles.contactInfo}>
             <Text style={styles.contactName}>{name}</Text>
             <Text style={styles.contactPhone}>{phone}</Text>
           </View>
@@ -211,9 +227,7 @@ const ContactScreen = ({ navigation }: any) => {
                     <Message size={22} color={color.textSecondary} />
                   </TouchableOpacity>
                 );
-              }
-              else {
-                // Hiện cả Follow và Nhắn tin nếu chưa follow
+              } else {
                 return (
                   <>
                     <TouchableOpacity
@@ -223,7 +237,7 @@ const ContactScreen = ({ navigation }: any) => {
                       <UserAdd size={22} color={color.textSecondary} />
                     </TouchableOpacity>
                     <TouchableOpacity
-                      style={{ marginLeft: width * 0.04 }}
+                      style={styles.messageButton}
                       onPress={() => {
                         alert(`Message ${name}`);
                       }}>
@@ -306,82 +320,124 @@ const ContactScreen = ({ navigation }: any) => {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: color.borderGray },
   searchBar: {
-    paddingHorizontal: width * 0.05,
-    paddingVertical: height * 0.015,
-    borderBottomWidth: 1,
-    borderBottomColor: color.border,
+    alignItems: 'center',
+    paddingTop: height * 0.015,
+    paddingBottom: height * 0.005,
+    backgroundColor: '#121212',
   },
   searchInput: {
-    backgroundColor: color.card,
-    borderRadius: width * 0.03,
+    width: width * 0.9,
+    backgroundColor: '#2c2c2c',
+    borderRadius: width * 0.04,
     paddingHorizontal: width * 0.04,
     paddingVertical: height * 0.012,
-    color: color.textPrimary,
+    color: '#fff',
     fontSize: width * 0.04,
+    borderWidth: 1,
+    borderColor: '#3a3a3a',
   },
+  
   tabRow: {
+    width: width * 0.9,
+    alignSelf: 'center',
     flexDirection: 'row',
     justifyContent: 'space-around',
-    borderBottomWidth: 1,
-    borderBottomColor: color.border,
-  },
+    paddingVertical: height * 0.01,
+    marginTop: height * 0.01,
+    backgroundColor: '#1e1e1e',
+    borderRadius: width * 0.04,
+  },  
+  
   tabButton: {
-    paddingVertical: height * 0.012,
-    flex: 1,
-    alignItems: 'center',
+    paddingVertical: height * 0.01,
+    paddingHorizontal: width * 0.04,
+    borderRadius: width * 0.03,
   },
+  
   tabButtonActive: {
-    borderBottomWidth: 3,
-    borderBottomColor: color.primary,
+    backgroundColor: '#2c2c2c',
   },
+  
   tabButtonText: {
-    fontSize: width * 0.042,
-    color: color.textSecondary,
+    fontSize: width * 0.04,
+    color: '#aaa',
   },
+  
   tabButtonTextActive: {
-    color: color.primary,
+    color: '#fff',
     fontWeight: 'bold',
   },
+
   contactItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: width * 0.05,
-    paddingVertical: height * 0.015,
-    borderBottomWidth: 1,
-    borderBottomColor: color.border,
+    marginHorizontal: width * 0.04,
+    marginVertical: height * 0.008,
+    padding: width * 0.04,
+    borderRadius: width * 0.03,
+    backgroundColor: '#1f1f1f',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
+  
   contactLeft: { flexDirection: 'row', alignItems: 'center' },
-  avatar: {
-    width: width * 0.12,
-    height: width * 0.12,
-    borderRadius: (width * 0.12) / 2,
-    marginRight: width * 0.04,
-    backgroundColor: '#ccc',
+  
+  contactInfo: {
+    marginLeft: width * 0.03,
   },
+  
+  avatar: {
+    width: width * 0.14,
+    height: width * 0.14,
+    borderRadius: (width * 0.14) / 2,
+    backgroundColor: '#aaa',
+  },
+  
   contactName: {
     color: color.textPrimary,
-    fontSize: width * 0.042,
+    fontSize: width * 0.045,
+    fontWeight: 'bold',
   },
+  
   contactPhone: {
-    fontSize: 14,
+    fontSize: width * 0.038,
     color: color.textSecondary,
     marginTop: 4,
   },
-  contactActions: { flexDirection: 'row', alignItems: 'center' },
+  
+  contactActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: width * 0.03,
+  },
+  
+  messageButton: {
+    marginLeft: width * 0.04,
+  },
+  
   inviteButton: {
-    backgroundColor: color.primary,
+    backgroundColor: '#00C853',
     paddingVertical: height * 0.007,
     paddingHorizontal: width * 0.04,
     borderRadius: width * 0.02,
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 2,
   },
+  
   inviteText: {
     color: '#fff',
     fontWeight: '600',
     fontSize: width * 0.04,
   },
+  
   emptyText: {
     textAlign: 'center',
     fontSize: width * 0.038,
