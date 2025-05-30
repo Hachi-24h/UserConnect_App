@@ -85,14 +85,14 @@ const styles = StyleSheet.create({
   eyeIcon:{
     width: width * 0.05,
     height: width * 0.05,
-    top: height * 0.254,
+    top: height * 0.269,
     position: 'absolute',
     right: width * 0.1,
   },
   eyeIcon2:{
     width: width * 0.05,
     height: width * 0.05,
-    top: height * 0.33,
+    top: height * 0.35,
     position: 'absolute',
     right: width * 0.1,
   },

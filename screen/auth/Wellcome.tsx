@@ -68,7 +68,7 @@ const WelcomeScreen = ({ navigation }: any) => {
         iterationDelay={status !== "slideInUp" ? 2000 : 0}
         iterationCount={status !== "slideInUp" ? "infinite" : 1}
       >
-        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('SignUp')}>
+        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('SignIn')}>
           <Text style={styles.buttonText}>Get Started</Text>
         </TouchableOpacity>
       </Animatable.View>

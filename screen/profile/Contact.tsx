@@ -12,6 +12,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+
 } from 'react-native';
 
 import axios from 'axios';
@@ -25,6 +26,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import { fetchFollowings } from '../../store/followingSlice';
+import { showNotification } from '../../Custom/notification';
 
 const { width, height } = Dimensions.get('window');
 
@@ -133,7 +135,11 @@ const ContactScreen = ({ navigation }: any) => {
           console.log('Error fetching users:', res.status, res.statusText);
         }
       } catch (error) {
-        console.error('API error fetching users:', error.response?.data || error);
+        if (axios.isAxiosError(error)) {
+          console.error('API error fetching users:', error.response?.data || error.message);
+        } else {
+          console.error('Unexpected error fetching users:', error);
+        }
       }
     };
 
@@ -222,7 +228,8 @@ const ContactScreen = ({ navigation }: any) => {
                 return (
                   <TouchableOpacity
                     onPress={() => {
-                      alert(`Message ${name}`);
+                      // Alert(`Message ${name}`);
+                      showNotification(`Message ${name}`, `success`); 
                     }}>
                     <Message size={22} color={color.textSecondary} />
                   </TouchableOpacity>
@@ -232,14 +239,17 @@ const ContactScreen = ({ navigation }: any) => {
                   <>
                     <TouchableOpacity
                       onPress={() => {
-                        alert(`Follow ${name}`);
+                        // Alert(`Follow ${name}`);
+                      showNotification(`Follow ${name}`, `success`); 
+
                       }}>
                       <UserAdd size={22} color={color.textSecondary} />
                     </TouchableOpacity>
                     <TouchableOpacity
                       style={styles.messageButton}
                       onPress={() => {
-                        alert(`Message ${name}`);
+                        // alert(`Message ${name}`);
+                      showNotification(`Message ${name}`, `success`); 
                       }}>
                       <Message size={22} color={color.textSecondary} />
                     </TouchableOpacity>
@@ -251,7 +261,8 @@ const ContactScreen = ({ navigation }: any) => {
             <TouchableOpacity
               style={styles.inviteButton}
               onPress={() => {
-                alert(`Invite ${name} (${phone})`);
+                // alert(`Invite ${name} (${phone})`);
+                showNotification(`Invite ${name} (${phone})`, `success`); 
               }}>
               <Text style={styles.inviteText}>Invite</Text>
             </TouchableOpacity>

@@ -18,6 +18,7 @@ import styles from '../../Css/UserInfoScreen';
 import color from '../../Custom/Color';
 import { updateUserInfo } from '../../utils/user';
 import { setUserDetail } from '../../store/userDetailSlice';
+import Footer from '../other/Footer';
 
 const { width, height } = Dimensions.get('window');
 
@@ -306,6 +307,7 @@ const UserInfoScreen = ({ navigation }: any) => {
           </Text>
         </TouchableOpacity>
       </ScrollView>
+      <Footer navigation={navigation} />
     </View>
   );
 };

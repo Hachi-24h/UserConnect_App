@@ -14,32 +14,32 @@ import { useSelector, useDispatch } from 'react-redux';
 import { followUser, fetchFollowings, unfollowUser } from '../../store/followingSlice';
 import { AppDispatch, RootState } from '../../store/types/redux';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { getPrivateConversationWithUser } from '../../store/chatSlice';
 
 const { width } = Dimensions.get('window');
 
 export default function FriendProfile() {
-  // const navigation = useNavigation();
   const route = useRoute();
   const { user }: any = route.params;
-  const id_user_login = useSelector((state: RootState) => state.user._id);
-  const conversationId = user.conversationId;
-  const conversation = useSelector((state: any) =>
-      state.chat.conversations.find((c: any) => c._id === conversationId)
-    );
-  const iduserFollow = user?.userId;
-  console.log("id user đang xem :", iduserFollow)
-  const dispatch = useDispatch<AppDispatch>();
 
+  const id_user_login = useSelector((state: RootState) => state.user._id);
+
+  const conversations = useSelector((state: RootState) => state.chat.conversations);
+  const conv = conversations?.[0]?.members || [];
+  const iduserFollow = user?.userId;
+  const followings = useSelector((state: RootState) => state.followings.dsFollowing);
+  const [isFollowed, setIsFollowed] = useState(followings.some((f: { _id: any; }) => f._id === iduserFollow))
+  const conversation222 = useSelector((state) =>
+    getPrivateConversationWithUser(state, iduserFollow)
+  );
+  const conversationId = conversation222?._id || '';
+  const dispatch = useDispatch<AppDispatch>();
 
   const fullName = `${user.firstname} ${user.lastname}`;
   const avatar = user.avatar || 'https://i.postimg.cc/7Y7ypVD2/avatar-mac-dinh.jpg';
   const background = user.backgroundAvatar || 'https://i.imgur.com/xu7M3Yq.jpeg';
   const initials = `${user.firstname?.[0] || ''}${user.lastname?.[0] || ''}`.toUpperCase();
-
-  const followings = useSelector((state: RootState) => state.followings.dsFollowing);
-  // console.log("danh sách user follow :", followings)
   const loading = useSelector((state: RootState) => state.followings.loading);
-  const [isFollowed, setIsFollowed] = useState(followings.some((f: { _id: any; }) => f._id === iduserFollow))
 
   type NavigationProp = StackNavigationProp<RootStackParamList, 'Chat'>;
   const navigation = useNavigation<NavigationProp>();
@@ -56,9 +56,6 @@ export default function FriendProfile() {
       };
     };
   };
-
-
-  console.log("kiểm tra follow chưa :", isFollowed)
   useEffect(() => {
     dispatch(fetchFollowings(id_user_login) as any);
   }, [id_user_login]);
@@ -156,11 +153,11 @@ export default function FriendProfile() {
                 user: {
                   isGroup: false, // true nếu là nhóm
                   avatar: user.avatar,
-                  conversationId: user.conversationId,
+                  conversationId: conversationId,
                   firstname: user.firstname,
                   lastname: user.lastname,
                   username: user.username,
-                  userChatId: user._id,
+                  userChatId: conversationId,
                 }
               });
             }}

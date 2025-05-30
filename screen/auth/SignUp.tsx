@@ -15,10 +15,10 @@ import LoadingModal from '../../Custom/Loading';
 const { width } = Dimensions.get('window');
 const CELL_COUNT = 6;
 const SignUp = ({ navigation }: any) => {
-  const [phoneNumber, setPhoneNumber] = useState('0379664715');
-  const [username, setUsername] = useState('hachi');
-  const [password, setPassword] = useState('nam@1234');
-  const [repeatPassword, setRepeatPassword] = useState('nam@1234');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [repeatPassword, setRepeatPassword] = useState('');
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [passwordVisible2, setPasswordVisible2] = useState(false);
   const [confirmation, setConfirmation] = useState<any>(null);

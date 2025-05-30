@@ -46,7 +46,7 @@ interface RootState {
 const ChatScreen = ({ navigation }: any) => {
   const route = useRoute<RouteProp<Record<string, { user: UserChat }>, string>>();
   const { user } = route.params;
-  console.log("user: ", user)
+  console.log("user chat nhận được: ", user)
   const dispatch = useDispatch();
   const currentUser = useSelector((state: RootState) => state.user);
   const conversationId = user.conversationId;
@@ -161,7 +161,7 @@ const ChatScreen = ({ navigation }: any) => {
     return result;
   };
 
-  const messageListWithDates = buildMessageListWithDates(messages);
+  const messageListWithDates = buildMessageListWithDates(messages as any);
 
   const messageIndexMap = new Map<string, number>();
   messageListWithDates.forEach((item, index) => {

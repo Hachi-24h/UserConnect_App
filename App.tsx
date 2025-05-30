@@ -22,7 +22,7 @@ const defaultOptions = {
 };
 
 const AppContent = () => {
-  const [initialScreen] = useState("SignIn");
+  const [initialScreen] = useState("SignIn"); //
 
   const dispatch = useDispatch();
 

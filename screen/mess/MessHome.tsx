@@ -114,7 +114,7 @@ const MessHome = ({ navigation }: any) => {
         username: user.username,
         isGroup,
       };
-
+      console.log("Thông tin người dùng đầy đủ:", fullUserInfo);
       navigation.navigate('Chat', { user: fullUserInfo });
     } catch (err) {
       console.error('❌ Lỗi khi mở cuộc trò chuyện:', err);

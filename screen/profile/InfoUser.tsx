@@ -11,6 +11,7 @@ import {
 import { useSelector } from 'react-redux';
 import styles from '../../Css/InfoUser';
 import color from '../../Custom/Color';
+import Footer from '../other/Footer';
 
 const { width } = Dimensions.get('window');
 
@@ -109,6 +110,8 @@ const InfoUser = ({ navigation }: any) => {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      <Footer navigation={navigation} />
     </View>
   );
 };

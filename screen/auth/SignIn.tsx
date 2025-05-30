@@ -24,8 +24,8 @@ import { fetchFollowings } from '../../store/followingSlice';
 
 const { height, width } = Dimensions.get('window');
 const SignInScreen = ({ navigation }: any) => {
-  const [username, setUsername] = useState('hachi11');
-  const [password, setPassword] = useState('hachi11');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();

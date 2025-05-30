@@ -282,3 +282,18 @@ export const getMessagesByConversation = createSelector(
     return messagesByConversation[conversationId] || [];
   }
 );
+
+export const getPrivateConversationWithUser = createSelector(
+  [
+    (state: any) => state.chat.conversations,
+    (_: any, userId: string) => userId
+  ],
+  (conversations, userId) => {
+    return conversations.find(
+      (conv: any) =>
+        !conv.isGroup &&
+        conv.otherUser &&
+        conv.otherUser._id === userId
+    );
+  }
+);
