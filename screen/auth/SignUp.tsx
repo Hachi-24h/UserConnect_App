@@ -1,19 +1,35 @@
-import React, { useState } from 'react';
-import {
-  View, Text, TextInput, TouchableOpacity, Image, Alert, Modal, Dimensions
-} from 'react-native';
-import LinearGradient from 'react-native-linear-gradient';
-import { Eye, EyeSlash } from 'iconsax-react-native';
-import Svg, { Text as SvgText, Defs, LinearGradient as SvgLinearGradient, Stop } from 'react-native-svg';
-import styles from '../../Css/auth/SignUp';
-import color from '../../Custom/Color';
-import { showNotification } from '../../Custom/notification';
-import { validateRegisterForm, checkUserExists, registerUserWithPhone } from '../../utils/auth';
 import { getAuth, signInWithPhoneNumber } from '@react-native-firebase/auth';
-import { CodeField, Cursor, useBlurOnFulfill, useClearByFocusCell } from 'react-native-confirmation-code-field';
+import { Call, Eye, EyeSlash, Lock, User } from 'iconsax-react-native';
+import React, { useEffect, useState } from 'react';
+import {
+  Dimensions,
+  Image,
+  Modal,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import {
+  CodeField,
+  Cursor,
+  useBlurOnFulfill,
+  useClearByFocusCell,
+} from 'react-native-confirmation-code-field';
+import LinearGradient from 'react-native-linear-gradient';
+import Svg, { Text as SvgText } from 'react-native-svg';
+import styles from '../../Css/auth/SignUp';
 import LoadingModal from '../../Custom/Loading';
+import { showNotification } from '../../Custom/notification';
+import {
+  checkUserExists,
+  registerUserWithPhone,
+  validateRegisterForm,
+} from '../../utils/auth';
+
 const { width } = Dimensions.get('window');
 const CELL_COUNT = 6;
+
 const SignUp = ({ navigation }: any) => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [username, setUsername] = useState('');
@@ -24,21 +40,44 @@ const SignUp = ({ navigation }: any) => {
   const [confirmation, setConfirmation] = useState<any>(null);
   const [otp, setOtp] = useState('');
   const [showModal, setShowModal] = useState(false);
+  const [errorText, setErrorText] = useState('');
+  const [isBtnEnabled, setIsBtnEnabled] = useState(false);
 
   const ref = useBlurOnFulfill({ value: otp, cellCount: CELL_COUNT });
-  const [props, getCellOnLayoutHandler] = useClearByFocusCell({ value: otp, setValue: setOtp });
+  const [props, getCellOnLayoutHandler] = useClearByFocusCell({
+    value: otp,
+    setValue: setOtp,
+  });
   const [isLoading, setIsLoading] = useState(false);
+
+  // Enable button when fields are filled
+  useEffect(() => {
+    setIsBtnEnabled(
+      phoneNumber.trim() !== '' &&
+        username.trim() !== '' &&
+        password.trim() !== '' &&
+        repeatPassword.trim() !== '',
+    );
+  }, [phoneNumber, username, password, repeatPassword]);
+
   const formatToE164 = (phone: string) => {
     return phone.startsWith('0') ? '+84' + phone.slice(1) : phone;
   };
 
   const handleSignUp = async () => {
-    const isValid = validateRegisterForm({ phoneNumber, username, password, repeatPassword }, showNotification);
-    if (!isValid) return;
+    setErrorText('');
+
+    const isValid = validateRegisterForm(
+      { phoneNumber, username, password, repeatPassword },
+      showNotification,
+    );
+    if (!isValid) {
+      return;
+    }
 
     const exists = await checkUserExists({ phoneNumber, username });
     if (exists) {
-      showNotification('Phone or username already in use', 'error');
+      setErrorText('Phone or username already in use');
       return;
     }
 
@@ -52,95 +91,153 @@ const SignUp = ({ navigation }: any) => {
       setIsLoading(false);
       setTimeout(() => setShowModal(true), 600);
     } catch (err) {
-      // console.error('❌ Lỗi gửi OTP:', err);
-      showNotification('Failed to send OTP !! ', 'error');
+      setErrorText('Failed to send OTP');
+      showNotification('Failed to send OTP', 'error');
       setIsLoading(false);
     }
   };
 
   const handleVerifyOTP = async () => {
-    if (!confirmation || otp.length < 6) return;
+    if (!confirmation || otp.length < 6) {
+      return;
+    }
 
     try {
       await confirmation.confirm(otp);
-      const localPhone = phoneNumber.startsWith('+84') ? phoneNumber.replace('+84', '0') : phoneNumber;
+      const localPhone = phoneNumber.startsWith('+84')
+        ? phoneNumber.replace('+84', '0')
+        : phoneNumber;
 
       const res = await registerUserWithPhone(localPhone, username, password);
-      showNotification('🎉 Đăng ký thành công!', 'success');
+      showNotification('🎉 Registration successful!', 'success');
       setShowModal(false);
       navigation.navigate('SignIn');
     } catch (error: any) {
-      // sai mật khẩu hoặc OTP
-      showNotification("Please check your OTP or password", 'error');
-      
+      showNotification('Please check your OTP or password', 'error');
     }
   };
 
   return (
-    <LinearGradient colors={['#3D5167', '#999999']} style={styles.container}>
+    <LinearGradient colors={['#0f172a', '#1e293b']} style={styles.container}>
       <View style={styles.formContainer}>
         <Svg height="50" width="250">
-          <Defs>
-            <SvgLinearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%">
-              <Stop offset="0%" stopColor="#4CAF50" stopOpacity="1" />
-              <Stop offset="50%" stopColor="#42A469" stopOpacity="1" />
-              <Stop offset="100%" stopColor="#1976D2" stopOpacity="1" />
-            </SvgLinearGradient>
-          </Defs>
-          <SvgText x="60" y="35" fontSize="40" fontWeight="bold" fill="url(#grad)">PULSE</SvgText>
+          <SvgText x="60" y="35" fontSize="40" fontWeight="bold" fill="#3B82F6">
+            PULSE
+          </SvgText>
         </Svg>
 
-        <TextInput style={styles.input} placeholder="Phone" placeholderTextColor="#aaa" value={phoneNumber} onChangeText={setPhoneNumber} />
-        <TextInput style={styles.input} placeholder="Username" placeholderTextColor="#aaa" value={username} onChangeText={setUsername} />
+        <Text style={styles.title}>Create your account</Text>
+        <Text style={styles.subtitle}>
+          Join our community! Please enter your details
+        </Text>
 
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          secureTextEntry={!passwordVisible}
-          placeholderTextColor="#aaa"
-          value={password}
-          onChangeText={setPassword}
-        />
-        <TouchableOpacity onPress={() => setPasswordVisible(!passwordVisible)} style={styles.eyeIcon}>
-          {passwordVisible ? <Eye size={20} color="gray" /> : <EyeSlash size={20} color="gray" />}
-        </TouchableOpacity>
+        {errorText ? (
+          <Text style={styles.errorText}>{errorText}</Text>
+        ) : (
+          <View style={{ height: 20 }} />
+        )}
 
-        <TextInput
-          style={styles.input}
-          placeholder="Repeat password"
-          secureTextEntry={!passwordVisible2}
-          placeholderTextColor="#aaa"
-          value={repeatPassword}
-          onChangeText={setRepeatPassword}
-        />
-        <TouchableOpacity onPress={() => setPasswordVisible2(!passwordVisible2)} style={styles.eyeIcon2}>
-          {passwordVisible2 ? <Eye size={20} color="gray" /> : <EyeSlash size={20} color="gray" />}
-        </TouchableOpacity>
+        {/* Phone input */}
+        <View style={styles.inputContainer}>
+          <Call size={20} color="#9ca3af" style={{ marginRight: 10 }} />
+          <TextInput
+            style={styles.input}
+            placeholder="Phone Number"
+            placeholderTextColor="#9ca3af"
+            value={phoneNumber}
+            onChangeText={setPhoneNumber}
+            keyboardType="phone-pad"
+          />
+        </View>
 
-        <TouchableOpacity style={styles.signUpButton} onPress={handleSignUp}>
+        {/* Username input */}
+        <View style={styles.inputContainer}>
+          <User size={20} color="#9ca3af" style={{ marginRight: 10 }} />
+          <TextInput
+            style={styles.input}
+            placeholder="Username"
+            placeholderTextColor="#9ca3af"
+            value={username}
+            onChangeText={setUsername}
+          />
+        </View>
+
+        {/* Password input */}
+        <View style={styles.inputContainer}>
+          <Lock size={20} color="#9ca3af" style={{ marginRight: 10 }} />
+          <TextInput
+            style={styles.input}
+            placeholder="Password"
+            secureTextEntry={!passwordVisible}
+            placeholderTextColor="#9ca3af"
+            value={password}
+            onChangeText={setPassword}
+          />
+          <TouchableOpacity
+            onPress={() => setPasswordVisible(!passwordVisible)}>
+            {passwordVisible ? (
+              <Eye size={20} color="#9ca3af" />
+            ) : (
+              <EyeSlash size={20} color="#9ca3af" />
+            )}
+          </TouchableOpacity>
+        </View>
+
+        {/* Repeat Password input */}
+        <View style={styles.inputContainer}>
+          <Lock size={20} color="#9ca3af" style={{ marginRight: 10 }} />
+          <TextInput
+            style={styles.input}
+            placeholder="Repeat Password"
+            secureTextEntry={!passwordVisible2}
+            placeholderTextColor="#9ca3af"
+            value={repeatPassword}
+            onChangeText={setRepeatPassword}
+          />
+          <TouchableOpacity
+            onPress={() => setPasswordVisible2(!passwordVisible2)}>
+            {passwordVisible2 ? (
+              <Eye size={20} color="#9ca3af" />
+            ) : (
+              <EyeSlash size={20} color="#9ca3af" />
+            )}
+          </TouchableOpacity>
+        </View>
+
+        <TouchableOpacity
+          style={[
+            styles.signUpButton,
+            !isBtnEnabled && { backgroundColor: '#4b5563' },
+          ]}
+          onPress={handleSignUp}
+          disabled={!isBtnEnabled}>
           <Text style={styles.buttonText}>Sign up</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.googleButton}>
-          <Image source={require('../../Icon/google.png')} style={styles.googleIcon} />
+          <Image
+            source={require('../../Icon/google.png')}
+            style={styles.googleIcon}
+          />
           <Text style={styles.buttonText2}>Sign up with Google</Text>
         </TouchableOpacity>
 
-        <View style={{ flexDirection: 'row' }}>
-          <Text style={styles.footerText}>You have an account? </Text>
-          <TouchableOpacity onPress={() => navigation.navigate('SignIn')} style={{ marginTop: 10 }}>
-            <Text style={styles.signInText}> Sign in, here!</Text>
+        <View style={styles.footerContainer}>
+          <Text style={styles.footerText}>Already have an account?</Text>
+          <TouchableOpacity onPress={() => navigation.navigate('SignIn')}>
+            <Text style={styles.signInText} > Sign in here!</Text>
           </TouchableOpacity>
         </View>
       </View>
 
-      {/* Modal nhập OTP */}
+      {/* OTP Modal */}
       <Modal visible={showModal} transparent animationType="fade">
         <View style={styles.modalContainer}>
-       
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Enter OTP</Text>
-            <Text style={styles.modalSubtitle}>A code has been sent to {formatToE164(phoneNumber)}</Text>
+            <Text style={styles.modalSubtitle}>
+              A code has been sent to {formatToE164(phoneNumber)}
+            </Text>
 
             <CodeField
               ref={ref}
@@ -155,25 +252,30 @@ const SignUp = ({ navigation }: any) => {
                 <View
                   key={index}
                   style={[styles.cell, isFocused && styles.cellFocused]}
-                  onLayout={getCellOnLayoutHandler(index)}
-                >
-                  <Text style={styles.cellText}>{symbol || (isFocused ? <Cursor /> : null)}</Text>
+                  onLayout={getCellOnLayoutHandler(index)}>
+                  <Text style={styles.cellText}>
+                    {symbol || (isFocused ? <Cursor /> : null)}
+                  </Text>
                 </View>
               )}
             />
 
             <View style={styles.modalButtons}>
-              <TouchableOpacity style={styles.verifyButton} onPress={handleVerifyOTP}>
+              <TouchableOpacity
+                style={styles.verifyButton}
+                onPress={handleVerifyOTP}>
                 <Text style={styles.verifyText}>Verify OTP</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => setShowModal(false)} style={styles.CancelButton}>
+              <TouchableOpacity
+                onPress={() => setShowModal(false)}
+                style={styles.CancelButton}>
                 <Text style={styles.cancelText}>Cancel</Text>
               </TouchableOpacity>
             </View>
           </View>
         </View>
-        
       </Modal>
+
       <LoadingModal visible={isLoading} />
     </LinearGradient>
   );

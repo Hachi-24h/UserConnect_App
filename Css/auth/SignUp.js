@@ -1,6 +1,5 @@
 // src/screens/SignUpStyle.ts
-import { StyleSheet, Dimensions } from 'react-native';
-import color from '../../Custom/Color';
+import { Dimensions, StyleSheet } from 'react-native';
 
 const { height, width } = Dimensions.get('window');
 
@@ -15,10 +14,10 @@ const styles = StyleSheet.create({
   formContainer: {
     width: width * 0.9,
     padding: 24,
-    backgroundColor: 'rgba(17, 24, 39, 0.9)', // Match SignIn background
+    backgroundColor: 'rgba(17, 24, 39, 0.9)',
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: 'rgba(75, 85, 99, 0.3)', // Match SignIn border
+    borderColor: 'rgba(75, 85, 99, 0.3)',
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
@@ -26,13 +25,40 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 5,
   },
-  input: {
-    width: '100%',
-    padding: 15,
-    backgroundColor: 'rgba(31, 41, 55, 0.8)', // Match SignIn input background
+  title: {
+    color: '#ffffff',
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginTop: 16,
+    textAlign: 'center',
+  },
+  subtitle: {
+    color: '#9ca3af',
+    fontSize: 14,
+    marginTop: 8,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  errorText: {
+    color: '#ef4444',
+    fontSize: 14,
+    marginTop: 12,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(31, 41, 55, 0.8)',
     borderRadius: 12,
     marginBottom: 16,
-    color: '#ffffff', // Match SignIn text color
+    paddingHorizontal: 16,
+    width: '100%',
+    height: 50,
+  },
+  input: {
+    flex: 1,
+    color: '#ffffff',
     fontSize: 16,
   },
   passwordContainer: {
@@ -50,17 +76,17 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   signUpButton: {
+    backgroundColor: '#4CAF50',
     paddingVertical: 14,
     width: '100%',
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 50,
     marginBottom: 16,
-    backgroundColor: '#4CAF50', // Match SignIn button color
   },
   googleButton: {
     flexDirection: 'row',
-    backgroundColor: '#1f2937', // Match SignIn Google button background
+    backgroundColor: '#1f2937',
     paddingVertical: 14,
     width: '100%',
     alignItems: 'center',
@@ -68,7 +94,7 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: 'rgba(75, 85, 99, 0.5)', // Match SignIn Google button border
+    borderColor: 'rgba(75, 85, 99, 0.5)',
   },
   googleIcon: {
     width: 20,
@@ -76,21 +102,26 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   buttonText: {
-    color: '#ffffff', // Match SignIn button text color
+    color: '#ffffff',
     fontWeight: 'bold',
     fontSize: 16,
   },
   buttonText2: {
-    color: '#ffffff', // Match SignIn Google button text color
+    color: '#ffffff',
     fontWeight: '500',
     fontSize: 16,
   },
+  footerContainer: {
+    flexDirection: 'row',
+    marginTop: 8,
+    alignItems: 'center',
+  },
   footerText: {
-    color: '#9ca3af', // Match SignIn footer text color
+    color: '#9ca3af',
     fontSize: 14,
   },
   signInText: {
-    color: '#4CAF50', // Match SignIn footer link color
+    color: '#3B82F6',
     fontWeight: 'bold',
     fontSize: 14,
   },
@@ -161,14 +192,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   verifyButton: {
-    backgroundColor: '#00FF99',
+    backgroundColor: '#4CAF50',
     paddingVertical: height * 0.015,
     paddingHorizontal: width * 0.1,
     borderRadius: 8,
     marginBottom: height * 0.015,
   },
   verifyText: {
-    color: '#000',
+    color: '#fff',
     fontWeight: 'bold',
   },
   CancelButton: {
