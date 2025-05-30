@@ -54,7 +54,7 @@ export default function CallManager({
       setIsCalling(false);
     });
 
-    socketCall.on('callAccepted', (data: { fromUserId: string }) => {
+    socketCall.on('callAcceptedMobile', (data: { fromUserId: string }) => {
       setIsCalling(false);
 
       // Mở màn hình VideoCall cho người gọi khi người nhận bấm Accept
@@ -73,32 +73,42 @@ export default function CallManager({
     return () => {
       socketCall.off('incomingCall');
       socketCall.off('callDeclined');
-      socketCall.off('callAccepted');
+      socketCall.off('callAcceptedMobile');
       socketCall.off('callEnded');
     };
   }, [currentUser._id, isCalling, navigation, socketCall]);
 
-  const handleVideoCall = useCallback(() => {
-    if (otherUserIds.length === 0) {
-      console.warn('Không có người nhận cuộc gọi');
-      return;
-    }
-    setIsCalling(true);
-    otherUserIds.forEach(id => {
-      socketCall.emit('incomingCall', {
-        fromUserId: currentUserDetail._id,
-        fromName:
-          `${currentUserDetail.firstname || ''} ${
-            currentUserDetail.lastname || ''
-          }`.trim() ||
-          currentUserDetail.username ||
-          'No Name',
-        fromAvatar: currentUserDetail.avatar,
-        toUserId: id, // id
-      });
+const handleVideoCall = useCallback(() => {
+  if (otherUserIds.length === 0) {
+    console.warn('Không có người nhận cuộc gọi');
+    return;
+  }
+
+  setIsCalling(true);
+
+  otherUserIds.forEach(id => {
+    socketCall.emit('incomingCall', {
+      fromUserId: currentUserDetail._id,
+      fromName:
+        `${currentUserDetail.firstname || ''} ${
+          currentUserDetail.lastname || ''
+        }`.trim() ||
+        currentUserDetail.username ||
+        'No Name',
+      fromAvatar: currentUserDetail.avatar,
+      toUserId: id,
     });
-    console.log('📞 Đang gọi video đến các ID:', otherUserIds);
-  }, [currentUserDetail, otherUserIds]);
+  });
+
+  console.log('📞 Đang gọi video đến các ID:', otherUserIds);
+
+  // ✅ Caller sẽ vào VideoCall luôn
+  navigation.navigate('VideoCall', {
+    currentUserId: currentUser._id,
+    otherUserId: otherUserIds[0], // nếu nhiều người thì lấy người đầu
+  });
+}, [currentUserDetail, otherUserIds, currentUser._id, navigation]);
+
 
   useEffect(() => {
     if (onCallRef) {
