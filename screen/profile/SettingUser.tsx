@@ -14,16 +14,11 @@ import color from '../../Custom/Color';
 const { width, height } = Dimensions.get('window');
 
 const SettingUser = ({ navigation }: any) => {
-  // Get user data from Redux
   const userDetail = useSelector((state: any) => state.userDetail.info);
-
-  // Get first and last name with fallbacks
   const firstname = userDetail?.firstname || '';
   const lastname = userDetail?.lastname || '';
-
-  // Full name with fallback text
   const fullName =
-    firstname && lastname ? `${firstname} ${lastname}` : 'Chưa cập nhật tên';
+    firstname && lastname ? `${firstname} ${lastname}` : 'No name provided';
 
   const renderItem = (label: string, onPress?: () => void) => (
     <TouchableOpacity style={styles.item} onPress={onPress}>
@@ -49,28 +44,31 @@ const SettingUser = ({ navigation }: any) => {
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll}>
-        {/* Thông tin cá nhân */}
-        {renderItem('Thông tin', () => navigation.navigate('UserInfo'))}
-        {renderItem('Đổi ảnh đại diện')}
-        {renderItem('Đổi ảnh bìa')}
-        {renderItem('Cập nhật giới thiệu bản thân')}
-        {renderItem('Ví của tôi')}
+        {/* Personal Info */}
+        <Text style={styles.sectionTitle}>Personal Information</Text>
+        {renderItem('User Info', () => navigation.navigate('UserInfo'))}
+        {renderItem('Change Avatar')}
+        {renderItem('Change Cover Image')}
+        {renderItem('Update Bio')}
+        {renderItem('My Wallet')}
 
         {/* Divider */}
         <View style={styles.divider} />
 
-        {/* Cài đặt */}
-        <Text style={styles.sectionTitle}>Cài đặt</Text>
-        {renderItem('Mã QR của tôi')}
-        {renderItem('Quyền riêng tư')}
-        {renderItem('Tài khoản và bảo mật', () =>
+        {/* Settings */}
+        <Text style={styles.sectionTitle}>Settings</Text>
+        {renderItem('My QR Code')}
+        {renderItem('Privacy')}
+        {renderItem('Account & Security', () =>
           navigation.navigate('ChangePassword'),
         )}
-        {renderItem('Cài đặt chung')}
+        {renderItem('General Settings')}
 
-        {/* Đăng xuất */}
+        {/* Divider */}
         <View style={styles.divider} />
-        {renderItem('Đăng xuất', handleLogout)}
+
+        {/* Logout */}
+        {renderItem('Log Out', handleLogout)}
       </ScrollView>
     </View>
   );
